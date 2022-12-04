@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% block head %}
+      <link rel="stylesheet" href="{{ url_prefix }}static/fonts.css"/>
+      <link rel="stylesheet" href="{{ url_prefix }}static/annis.min.css"/>
+      <script src="{{ url_prefix }}static/htmx.min.js"></script>
+      <title>
+        {% block title %}
+        {% endblock title %}
+      </title>
+    {% endblock head %}
+  </head>
+  <body>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand">
+        <img src="{{ url_prefix }}static/icons/annis_192.png"
+             width="52px"
+             height="auto"
+             alt="Logo of ANNIS depicting two anis fruits"
+             class="m-1">
+        <a role="button"
+           class="navbar-burger"
+           aria-label="menu"
+           aria-expanded="false"
+           onclick="document.querySelector('#annis-navbar').classList.toggle('is-active')">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div id="annis-navbar" class="navbar-menu">
+        <div class="navbar-start">
+          <a class="navbar-item" href="#">Corpora</a>
+          <a class="navbar-item" href="#">Export</a>
+          <a class="navbar-item" href="#">About</a>
+        </div>
+      </div>
+    </nav>
+    <div class="content">
+      {% block content %}
+      {% endblock content %}
+    </div>
+  </body>
+</html>

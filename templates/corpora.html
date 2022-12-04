@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}
+  ANNIS Corpus List
+{% endblock title %}
+{% block content %}
+  <h1 class="title">Corpus list</h1>
+  <ul>
+    {% for c in corpus_names %}<li>{{ c }}</li>{% endfor %}
+  </ul>
+{% endblock content %}
