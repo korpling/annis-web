@@ -9,6 +9,10 @@ use thiserror::Error;
 pub enum AppError {
     #[error(transparent)]
     Axum(#[from] axum::http::Error),
+    #[error(transparent)]
+    Askama(#[from] askama::Error),
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
     #[error("unknown error")]
     Unknown,
 }
@@ -28,6 +32,8 @@ impl IntoResponse for AppError {
                 "Unknown error".to_string(),
             ),
             AppError::Axum(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("{}", e)),
+            AppError::Askama(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("{}", e)),
+            AppError::Reqwest(e) => (StatusCode::BAD_GATEWAY, format!("{}", e)),
         };
         let template = ErrorTemplate {
             message,

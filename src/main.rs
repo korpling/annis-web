@@ -15,7 +15,7 @@ use std::net::SocketAddr;
 
 static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/static");
 
-type Result<T> = std::result::Result<T, errors::AppError>;
+pub type Result<T> = std::result::Result<T, errors::AppError>;
 
 async fn static_file(Path(path): Path<String>) -> Result<impl IntoResponse> {
     let path = path.trim_start_matches('/');

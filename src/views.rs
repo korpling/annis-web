@@ -1,7 +1,7 @@
-use std::vec;
-
 use askama::Template;
 use axum::{http::StatusCode, response::Html, response::IntoResponse};
+
+use crate::Result;
 
 #[derive(Template)]
 #[template(path = "corpora.html")]
@@ -10,12 +10,20 @@ struct CorporaViewTemplate {
     url_prefix: String,
 }
 
-pub async fn corpora() -> impl IntoResponse {
+pub async fn corpora() -> Result<impl IntoResponse> {
+    let mut corpora: Vec<String> = reqwest::get("http://localhost:5711/v1/corpora")
+        .await?
+        .json()
+        .await?;
+
+    corpora.sort_unstable_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+
     let template = CorporaViewTemplate {
         url_prefix: "/".to_string(),
-        corpus_names: vec!["pcc2".to_string(), "demo.dialog".to_string()],
+        corpus_names: corpora,
     };
-    (StatusCode::OK, Html(template.render().unwrap()))
+    let html = Html(template.render()?);
+    Ok((StatusCode::OK, html))
 }
 
 #[cfg(test)]
