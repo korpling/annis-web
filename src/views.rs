@@ -17,3 +17,33 @@ pub async fn corpora() -> impl IntoResponse {
     };
     (StatusCode::OK, Html(template.render().unwrap()))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::get_html;
+    use axum::{body::Body, http::Request};
+    use scraper::Selector;
+    use tower::ServiceExt;
+
+    #[tokio::test]
+    async fn list_corpora() {
+        let app = crate::app();
+
+        let response = app
+            .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let html = get_html(response).await;
+        let list_selector = Selector::parse(".content > ul > li").unwrap();
+        let corpora: Vec<_> = html
+            .select(&list_selector)
+            .map(|e| e.text().collect::<Vec<_>>().join(""))
+            .collect();
+
+        assert_eq!(vec!["pcc2", "demo.dialog"], corpora);
+    }
+}

@@ -36,14 +36,37 @@ async fn static_file(Path(path): Path<String>) -> Result<impl IntoResponse> {
     Ok(response)
 }
 
+fn app() -> Router {
+    Router::new()
+        .route("/", get(views::corpora))
+        .route("/static/*path", get(static_file))
+}
+
 #[tokio::main]
 async fn main() {
-    let app = Router::new()
-        .route("/", get(views::corpora))
-        .route("/static/*path", get(static_file));
+    let app = app();
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fmt::Debug;
+
+    use axum::{body::HttpBody, http::Response};
+    use scraper::Html;
+
+    pub async fn get_html<T>(response: Response<T>) -> Html
+    where
+        T: HttpBody,
+        <T as HttpBody>::Error: Debug,
+    {
+        let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
+        let body = String::from_utf8_lossy(&body[..]);
+
+        Html::parse_document(&body)
+    }
 }
