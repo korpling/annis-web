@@ -1,0 +1,1 @@
+This folder contains static ressources used by the web application.
