@@ -1,4 +1,4 @@
-name: Rust
+name: Execute automated tests
 
 on:
   push:
