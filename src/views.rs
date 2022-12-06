@@ -11,11 +11,7 @@ struct CorporaViewTemplate {
 }
 
 pub async fn corpora() -> Result<impl IntoResponse> {
-    let mut corpora: Vec<String> = reqwest::get("http://localhost:5711/v1/corpora")
-        .await?
-        .json()
-        .await?;
-
+    let mut corpora: Vec<String> = vec!["pcc2", "dialog.demo"];
     corpora.sort_unstable_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
 
     let template = CorporaViewTemplate {
@@ -52,6 +48,6 @@ mod tests {
             .map(|e| e.text().collect::<Vec<_>>().join(""))
             .collect();
 
-        assert_eq!(vec!["pcc2", "demo.dialog"], corpora);
+        assert_eq!(vec!["demo.dialog", "pcc2"], corpora);
     }
 }
