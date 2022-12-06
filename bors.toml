@@ -2,4 +2,5 @@ status = [
   "Code Coverage",
   "Execute automated tests",
   "Static code analysis",
+  "Format Rust Code",
 ]
