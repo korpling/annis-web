@@ -48,7 +48,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
       - name: Run tests with code coverage
-        run: misc/test_coverage.sh
+        run: test_coverage.sh
 
       #  Compares two code coverage files and generates report as a comment
       - name: Generate Code Coverage report
