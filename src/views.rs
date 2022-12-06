@@ -11,7 +11,7 @@ struct CorporaViewTemplate {
 }
 
 pub async fn corpora() -> Result<impl IntoResponse> {
-    let mut corpora: Vec<String> = vec!["pcc2".to_string(), "dialog.demo".to_string()];
+    let mut corpora: Vec<String> = vec!["pcc2".to_string(), "demo.dialog".to_string()];
     corpora.sort_unstable_by_key(|k| k.to_lowercase());
 
     let template = CorporaViewTemplate {
