@@ -41,7 +41,7 @@ impl IntoResponse for AppError {
         };
         let html = template
             .render()
-            .unwrap_or("Error page template did not compile".to_string());
+            .unwrap_or_else(|e| format!("Error page template did not compile: {}", e));
         (status, Html(html)).into_response()
     }
 }
