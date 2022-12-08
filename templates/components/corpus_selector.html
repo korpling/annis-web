@@ -9,16 +9,14 @@
   <div class="tile is-parent is-4">
     <article class="tile is-child box">
       <h1 class="title">Selected corpora</h1>
-      <div>
-        <em>Currently, no corpus is selected.</em>
-      </div>
+      <div class="notification is-info">Currently, no corpus is selected.</div>
     </article>
   </div>
   <div class="tile is-parent is-8">
     <article class="tile is-child box">
       <h1 class="title">Available corpora</h1>
       <h2 class="subtitle">Select the corpora you want to analyze</h2>
-      <div class="control">
+      <div class="control block">
         <input class="input"
                type="text"
                name="filter"
@@ -29,32 +27,41 @@
                hx-swap="outerHTML"
                value="{{ filter }}">
       </div>
-      <div class="table-container">
-        <table class="table">
-          <thead>
-            <tr>
-              <td></td>
-              <td>Corpus name</td>
-            </tr>
-          </thead>
-          <tbody>
-            {% for c in corpus_names %}
+      <div class="table-container block">
+        {% if corpus_names.is_empty() %}
+          <div class="notification is-warning">
+            Empty corpus list.
+            {%  if !filter.is_empty() %}
+              Remove the filter "{{ filter }}"" to see all corpora.
+            {% endif %}
+          </div>
+        {% else %}
+          <table class="table">
+            <thead>
               <tr>
-                <td>
-                  <button class="button is-small">Add</button>
-                </td>
-                <td>{{ c }}</td>
+                <td></td>
+                <td>Corpus name</td>
               </tr>
-            {% endfor %}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="2">
-                <button class="button">Add all</button>
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+            </thead>
+            <tbody>
+              {% for c in corpus_names %}
+                <tr>
+                  <td>
+                    <button class="button is-small">Add</button>
+                  </td>
+                  <td>{{ c }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2">
+                  <button class="button">Add all</button>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        {% endif %}
       </div>
     </article>
   </div>
