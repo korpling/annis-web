@@ -8,7 +8,7 @@ use axum::{
     extract::Path,
     http::{header, HeaderValue, Response, StatusCode},
     response::IntoResponse,
-    routing::get,
+    routing::{get, post},
     Router,
 };
 use include_dir::{include_dir, Dir};
@@ -44,6 +44,10 @@ fn app() -> Result<Router> {
 
     let result = Router::new()
         .route("/", get(views::corpora))
+        .route(
+            "/components/corpus_selector",
+            post(components::corpus_selector::post),
+        )
         .route("/static/*path", get(static_file))
         .with_state(global_state);
     Ok(result)

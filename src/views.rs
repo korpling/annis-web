@@ -3,13 +3,13 @@ use std::sync::Arc;
 use askama::Template;
 use axum::{extract::State, http::StatusCode, response::Html, response::IntoResponse};
 
-use crate::{components::CorpusSelectorComponent, state::GlobalAppState, Result};
+use crate::{components::corpus_selector::CorpusSelectorTemplate, state::GlobalAppState, Result};
 
 #[derive(Template)]
 #[template(path = "corpora.html")]
 struct CorporaViewTemplate {
     url_prefix: String,
-    corpus_selector: CorpusSelectorComponent,
+    corpus_selector: CorpusSelectorTemplate,
 }
 
 pub async fn corpora(State(state): State<Arc<GlobalAppState>>) -> Result<impl IntoResponse> {
@@ -20,11 +20,12 @@ pub async fn corpora(State(state): State<Arc<GlobalAppState>>) -> Result<impl In
     corpora.sort_unstable_by_key(|k| k.to_lowercase());
 
     let template = CorporaViewTemplate {
-        url_prefix: "/".to_string(),
-        corpus_selector: CorpusSelectorComponent {
+        url_prefix: state.frontend_prefix.to_string(),
+        corpus_selector: CorpusSelectorTemplate {
             corpus_names: corpora,
-            url_prefix: "/".to_string(),
+            url_prefix: state.frontend_prefix.to_string(),
             id: "corpus-selector".to_string(),
+            filter: String::default(),
         },
     };
     let html = Html(template.render()?);

@@ -6,6 +6,7 @@ use crate::Result;
 
 pub struct GlobalAppState {
     pub service_url: Url,
+    pub frontend_prefix: Url,
 }
 
 impl GlobalAppState {
@@ -19,6 +20,8 @@ impl GlobalAppState {
 
         let result = Self {
             service_url: Url::parse(service_url)?,
+            // TODO: make this configurable
+            frontend_prefix: Url::parse("http://localhost:3000/")?,
         };
         Ok(result)
     }
