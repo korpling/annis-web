@@ -3,7 +3,10 @@ use std::sync::Arc;
 use askama::Template;
 use axum::{extract::State, http::StatusCode, response::Html, response::IntoResponse};
 
-use crate::{components::corpus_selector::CorpusSelectorTemplate, state::GlobalAppState, Result};
+use crate::{
+    client::search, components::corpus_selector::CorpusSelectorTemplate, state::GlobalAppState,
+    Result,
+};
 
 #[derive(Template)]
 #[template(path = "corpora.html")]
@@ -13,11 +16,7 @@ struct CorporaViewTemplate {
 }
 
 pub async fn corpora(State(state): State<Arc<GlobalAppState>>) -> Result<impl IntoResponse> {
-    let mut corpora: Vec<String> = reqwest::get(state.service_url.join("corpora")?)
-        .await?
-        .json()
-        .await?;
-    corpora.sort_unstable_by_key(|k| k.to_lowercase());
+    let corpora = search::corpora(state.as_ref()).await?;
 
     let template = CorporaViewTemplate {
         url_prefix: state.frontend_prefix.to_string(),

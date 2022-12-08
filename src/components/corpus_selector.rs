@@ -9,7 +9,7 @@ use axum::{
 };
 use serde::Deserialize;
 
-use crate::{state::GlobalAppState, Result};
+use crate::{client::search, state::GlobalAppState, Result};
 
 #[derive(Template)]
 #[template(path = "components/corpus_selector.html")]
@@ -29,10 +29,7 @@ pub async fn post(
     State(state): State<Arc<GlobalAppState>>,
     Form(payload): Form<Params>,
 ) -> Result<impl IntoResponse> {
-    let corpora: Vec<String> = reqwest::get(state.service_url.join("corpora")?)
-        .await?
-        .json()
-        .await?;
+    let corpora = search::corpora(state.as_ref()).await?;
     let mut filtered_corpora: Vec<_> = corpora
         .iter()
         .filter(|c| c.to_lowercase().contains(&payload.filter.to_lowercase()))
