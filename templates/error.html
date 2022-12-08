@@ -6,16 +6,16 @@
   <div class="tile  is-ancestor">
     <div class="tile is-parent">
       <article class="tile is-child notification is-danger">
-        <p class="title">An error has occurred</p>
-        <p class="subtitle">
+        <h1 class="title">An error has occurred</h1>
+        <h2 class="subtitle">
           The code of the error is {{ status_code.as_u16() }} ({{ status_code.canonical_reason().unwrap_or_default()}}) and the following message describes the issue in more detail:
-        </p>
+        </h2>
         <div class="content">{{ message }}</div>
       </article>
     </div>
     <div class="tile is-parent">
       <article class="tile is-child notification is-info">
-        <p class="title">What can you do?</p>
+        <h1 class="title">What can you do?</h1>
         <div class="content">
           You can try to
           <ul>

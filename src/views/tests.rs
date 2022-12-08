@@ -24,7 +24,7 @@ async fn list_corpora() {
         assert_eq!(response.status(), StatusCode::OK);
 
         let html = get_html(response).await;
-        let list_selector = Selector::parse(".content > ul > li").unwrap();
+        let list_selector = Selector::parse(".box > ul > li").unwrap();
         let corpora: Vec<_> = html
             .select(&list_selector)
             .map(|e| e.text().collect::<Vec<_>>().join(""))
@@ -61,7 +61,7 @@ async fn service_down() {
 
         // Check the title (with proper status code) and that the error message
         // is displayed
-        let subtitle_selector = Selector::parse("p.subtitle").unwrap();
+        let subtitle_selector = Selector::parse("h2.subtitle").unwrap();
         let subtitle_error = tiles[0]
             .select(&subtitle_selector)
             .next()
@@ -93,7 +93,7 @@ async fn service_down() {
         );
 
         // Also check that the second tile with the helpful information is there
-        let title_selector = Selector::parse("p.title").unwrap();
+        let title_selector = Selector::parse("h1.title").unwrap();
         let info_subtitle = tiles[1]
             .select(&title_selector)
             .next()
