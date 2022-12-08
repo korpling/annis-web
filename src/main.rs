@@ -1,4 +1,4 @@
-mod components;
+pub mod components;
 pub mod errors;
 pub mod state;
 mod views;

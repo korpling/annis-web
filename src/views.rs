@@ -3,13 +3,13 @@ use std::sync::Arc;
 use askama::Template;
 use axum::{extract::State, http::StatusCode, response::Html, response::IntoResponse};
 
-use crate::{state::GlobalAppState, Result};
+use crate::{components::CorpusSelectorComponent, state::GlobalAppState, Result};
 
 #[derive(Template)]
 #[template(path = "corpora.html")]
 struct CorporaViewTemplate {
-    corpus_names: Vec<String>,
     url_prefix: String,
+    corpus_selector: CorpusSelectorComponent,
 }
 
 pub async fn corpora(State(state): State<Arc<GlobalAppState>>) -> Result<impl IntoResponse> {
@@ -21,7 +21,11 @@ pub async fn corpora(State(state): State<Arc<GlobalAppState>>) -> Result<impl In
 
     let template = CorporaViewTemplate {
         url_prefix: "/".to_string(),
-        corpus_names: corpora,
+        corpus_selector: CorpusSelectorComponent {
+            corpus_names: corpora,
+            url_prefix: "/".to_string(),
+            id: "corpus-selector".to_string(),
+        },
     };
     let html = Html(template.render()?);
     Ok((StatusCode::OK, html))
