@@ -1,2 +1,31 @@
-<h1>Error occured ({{ status }})</h1>
-<div>{{ message }}</div>
+{% extends "base.html" %}
+{% block title %}
+  ANNIS Corpus List
+{% endblock title %}
+{% block content %}
+  <div class="tile  is-ancestor">
+    <div class="tile is-parent">
+      <article class="tile is-child notification is-danger">
+        <p class="title">An error has occurred</p>
+        <p class="subtitle">
+          The code of the error is {{ status_code.as_u16() }} ({{ status_code.canonical_reason().unwrap_or_default()}}) and the following message describes the issue in more detail:
+        </p>
+        <div class="content">{{ message }}</div>
+      </article>
+    </div>
+    <div class="tile is-parent">
+      <article class="tile is-child notification is-info">
+        <p class="title">What can you do?</p>
+        <div class="content">
+          You can try to
+          <ul>
+            <li>reload the page and see if the error still occurs,</li>
+            <li>try the same operation later (maybe the server is overloaded or there is maintenance work going on), or</li>
+            <li>close the browser, re-open it and try again (in case there is an issue with the login-session).</li>
+          </ul>
+          If the problem persists, please inform the administrator of this particular ANNIS server.
+        </div>
+      </article>
+    </div>
+  </div>
+{% endblock content %}

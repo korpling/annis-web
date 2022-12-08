@@ -24,7 +24,8 @@ pub enum AppError {
 #[template(path = "error.html")]
 struct ErrorTemplate {
     message: String,
-    status: u16,
+    status_code: StatusCode,
+    url_prefix: String,
 }
 
 impl IntoResponse for AppError {
@@ -45,7 +46,8 @@ impl IntoResponse for AppError {
         };
         let template = ErrorTemplate {
             message,
-            status: status.as_u16(),
+            status_code: status,
+            url_prefix: "/".to_string(),
         };
         let html = template
             .render()
