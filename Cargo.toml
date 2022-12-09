@@ -19,6 +19,7 @@ tracing-subscriber = "0.3"
 url = "2.3"
 
 [dev-dependencies]
+fantoccini = "0.19"
 hyper = {version = "0.14", features = ["full"]}
 mockito = "0.31"
 scraper = "0.13"

@@ -1,13 +1,16 @@
 use super::*;
-use crate::tests::get_html;
+use crate::tests::{get_html, start_end2end_servers};
 use axum::{body::Body, http::Request};
+use fantoccini::{ClientBuilder, Locator};
 use mockito::mock;
 use scraper::Selector;
+use std::net::{SocketAddr, TcpListener};
 use tower::ServiceExt;
 use tracing_test::traced_test;
 
 #[tokio::test]
 #[traced_test]
+#[ignore]
 async fn list_corpora() {
     let m = mock("GET", "/corpora")
         .with_header("content-type", "application/json")
@@ -33,6 +36,25 @@ async fn list_corpora() {
         assert_eq!(vec!["demo.dialog", "pcc2"], corpora);
     }
     m.assert();
+}
+
+#[tokio::test]
+async fn filter_corpus_name() {
+    let (c, url) = start_end2end_servers().await;
+    let _m = mock("GET", "/corpora")
+        .with_header("content-type", "application/json")
+        .with_body(r#"["pcc2", "demo.dialog"]"#)
+        .create();
+    {
+        c.goto(&url).await.unwrap();
+        c.find(Locator::Css("input.input"))
+            .await
+            .unwrap()
+            .send_keys("pcc")
+            .await
+            .unwrap();
+    }
+    c.close().await.unwrap();
 }
 
 #[tokio::test]
