@@ -1,10 +1,10 @@
 use super::*;
 use crate::tests::{get_html, start_end2end_servers};
 use axum::{body::Body, http::Request};
-use fantoccini::{ClientBuilder, Locator};
+use fantoccini::Locator;
 use mockito::mock;
 use scraper::Selector;
-use std::net::{SocketAddr, TcpListener};
+use std::net::SocketAddr;
 use tower::ServiceExt;
 use tracing_test::traced_test;
 
@@ -17,7 +17,7 @@ async fn list_corpora() {
         .with_body(r#"["pcc2", "demo.dialog"]"#)
         .create();
     {
-        let app = crate::app().unwrap();
+        let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000))).unwrap();
 
         let response = app
             .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
@@ -63,7 +63,7 @@ async fn service_down() {
     // Simulate an error with the backend service
     let m = mock("GET", "/corpora").with_status(500).create();
     {
-        let app = crate::app().unwrap();
+        let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000))).unwrap();
 
         let response = app
             .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())

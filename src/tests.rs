@@ -24,7 +24,7 @@ pub async fn start_end2end_servers() -> (fantoccini::Client, String) {
     tokio::spawn(async move {
         axum::Server::from_tcp(listener)
             .unwrap()
-            .serve(crate::app().unwrap().into_make_service())
+            .serve(crate::app(&addr).unwrap().into_make_service())
             .await
             .unwrap();
     });
@@ -52,7 +52,7 @@ where
 
 #[tokio::test]
 async fn existing_static_resource() {
-    let app = crate::app().unwrap();
+    let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000))).unwrap();
 
     let response = app
         .oneshot(
@@ -74,7 +74,7 @@ async fn existing_static_resource() {
 
 #[tokio::test]
 async fn missing_static_resource() {
-    let app = crate::app().unwrap();
+    let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000))).unwrap();
 
     let response = app
         .oneshot(

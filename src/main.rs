@@ -16,7 +16,7 @@ use include_dir::{include_dir, Dir};
 use state::GlobalAppState;
 use std::{net::SocketAddr, sync::Arc};
 use tracing::{error, info};
-
+use url::Url;
 static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/static");
 
 pub type Result<T> = std::result::Result<T, errors::AppError>;
@@ -40,9 +40,9 @@ async fn static_file(Path(path): Path<String>) -> Result<impl IntoResponse> {
     Ok(response)
 }
 
-fn app() -> Result<Router> {
-    let global_state = Arc::new(GlobalAppState::new()?);
-
+fn app(addr: &SocketAddr) -> Result<Router> {
+    let mut global_state = GlobalAppState::new()?;
+    global_state.frontend_prefix = Url::parse(&format!("http://{}", addr))?;
     let result = Router::new()
         .route("/", get(views::corpora))
         .route(
@@ -50,16 +50,17 @@ fn app() -> Result<Router> {
             post(components::corpus_selector::post),
         )
         .route("/static/*path", get(static_file))
-        .with_state(global_state);
+        .with_state(Arc::new(global_state));
     Ok(result)
 }
 
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt::init();
-    match app() {
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+
+    match app(&addr) {
         Ok(router) => {
-            let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
             info!("Starting server with address {addr}", addr = addr);
             let server = axum::Server::bind(&addr).serve(router.into_make_service());
             if let Err(e) = server.await {
