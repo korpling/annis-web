@@ -25,6 +25,7 @@ pub struct Params {
     filter: String,
 }
 
+#[tracing::instrument]
 pub async fn post(
     State(state): State<Arc<GlobalAppState>>,
     Form(payload): Form<Params>,

@@ -4,6 +4,7 @@ use url::Url;
 
 use crate::Result;
 
+#[derive(Debug)]
 pub struct GlobalAppState {
     pub service_url: Url,
     pub frontend_prefix: Url,

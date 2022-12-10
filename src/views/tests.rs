@@ -4,7 +4,7 @@ use axum::{body::Body, http::Request};
 use fantoccini::Locator;
 use mockito::mock;
 use scraper::Selector;
-use std::net::SocketAddr;
+use std::{net::SocketAddr, thread, time::Duration};
 use tower::ServiceExt;
 use tracing_test::traced_test;
 
@@ -39,20 +39,69 @@ async fn list_corpora() {
 }
 
 #[tokio::test]
+#[traced_test]
 async fn filter_corpus_name() {
     let (c, url) = start_end2end_servers().await;
     let _m = mock("GET", "/corpora")
         .with_header("content-type", "application/json")
-        .with_body(r#"["pcc2", "demo.dialog"]"#)
+        .with_body(r#"["TueBa-D/Z.6.0", "pcc2", "pcc11", "AnyPcCorpus", "demo.dialog"]"#)
         .create();
     {
         c.goto(&url).await.unwrap();
-        c.find(Locator::Css("input.input"))
-            .await
-            .unwrap()
-            .send_keys("pcc")
+        let input = c
+            .find(Locator::XPath(
+                "/html/body/div/div/div/div[2]/article/div[1]/input",
+            ))
             .await
             .unwrap();
+        input.send_keys("pcc").await.unwrap();
+
+        thread::sleep(Duration::from_secs(5));
+
+        // The input must still has the focus
+        let active_element = c.active_element().await.unwrap();
+        assert_eq!(input.element_id(), active_element.element_id());
+
+        // The corpus list should be reducted to the matching corpus names
+        let table = c
+            .find(Locator::XPath(
+                "/html/body/div/div/div/div[2]/article/div[2]/table",
+            ))
+            .await
+            .unwrap();
+
+        let rows = table.find_all(Locator::Css("tbody tr")).await.unwrap();
+        assert_eq!(3, rows.len());
+        assert_eq!(
+            "AnyPcCorpus",
+            rows[0]
+                .find(Locator::Css("td.corpus-name"))
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap()
+        );
+        assert_eq!(
+            "pcc11",
+            rows[1]
+                .find(Locator::Css("td.corpus-name"))
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap()
+        );
+        assert_eq!(
+            "pcc2",
+            rows[2]
+                .find(Locator::Css("td.corpus-name"))
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap()
+        );
     }
     c.close().await.unwrap();
 }

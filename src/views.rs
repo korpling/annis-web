@@ -15,6 +15,7 @@ struct CorporaViewTemplate {
     corpus_selector: CorpusSelectorTemplate,
 }
 
+#[tracing::instrument]
 pub async fn corpora(State(state): State<Arc<GlobalAppState>>) -> Result<impl IntoResponse> {
     let corpora = search::corpora(state.as_ref()).await?;
 
