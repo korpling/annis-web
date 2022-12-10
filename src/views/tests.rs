@@ -10,32 +10,86 @@ use tracing_test::traced_test;
 
 #[tokio::test]
 #[traced_test]
-#[ignore]
 async fn list_corpora() {
+    let (c, url) = start_end2end_servers().await;
     let m = mock("GET", "/corpora")
         .with_header("content-type", "application/json")
-        .with_body(r#"["pcc2", "demo.dialog"]"#)
+        .with_body(r#"["TueBa-D/Z.6.0", "pcc2", "pcc11", "AnyPcCorpus", "demo.dialog"]"#)
         .create();
     {
-        let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000))).unwrap();
+        c.goto(&url).await.unwrap();
 
-        let response = app
-            .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
+        c.wait()
+            .for_element(Locator::XPath(
+                "/html/body/div/div/div/div[2]/article/div[2]/table",
+            ))
             .await
             .unwrap();
 
-        assert_eq!(response.status(), StatusCode::OK);
+        // The corpus list should be sorted
+        let table = c
+            .find(Locator::XPath(
+                "/html/body/div/div/div/div[2]/article/div[2]/table",
+            ))
+            .await
+            .unwrap();
 
-        let html = get_html(response).await;
-        let list_selector = Selector::parse(".box > ul > li").unwrap();
-        let corpora: Vec<_> = html
-            .select(&list_selector)
-            .map(|e| e.text().collect::<Vec<_>>().join(""))
-            .collect();
-
-        assert_eq!(vec!["demo.dialog", "pcc2"], corpora);
+        let rows = table.find_all(Locator::Css("tbody tr")).await.unwrap();
+        assert_eq!(5, rows.len());
+        assert_eq!(
+            "AnyPcCorpus",
+            rows[0]
+                .find(Locator::Css("td.corpus-name"))
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap()
+        );
+        assert_eq!(
+            "demo.dialog",
+            rows[1]
+                .find(Locator::Css("td.corpus-name"))
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap()
+        );
+        assert_eq!(
+            "pcc11",
+            rows[2]
+                .find(Locator::Css("td.corpus-name"))
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap()
+        );
+        assert_eq!(
+            "pcc2",
+            rows[3]
+                .find(Locator::Css("td.corpus-name"))
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap()
+        );
+        assert_eq!(
+            "TueBa-D/Z.6.0",
+            rows[4]
+                .find(Locator::Css("td.corpus-name"))
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap()
+        );
     }
+
     m.assert();
+    c.close().await.unwrap();
 }
 
 #[tokio::test]
