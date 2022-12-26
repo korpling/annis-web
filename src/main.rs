@@ -12,7 +12,9 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use axum_sessions::{async_session::MemoryStore, SessionLayer};
 use include_dir::{include_dir, Dir};
+use rand::prelude::*;
 use state::GlobalAppState;
 use std::{net::SocketAddr, sync::Arc};
 use tracing::{error, info};
@@ -43,6 +45,12 @@ async fn static_file(Path(path): Path<String>) -> Result<impl IntoResponse> {
 fn app(addr: &SocketAddr) -> Result<Router> {
     let mut global_state = GlobalAppState::new()?;
     global_state.frontend_prefix = Url::parse(&format!("http://{}", addr))?;
+
+    let store = MemoryStore::new();
+    let mut secret = [0_u8; 128];
+    rand::thread_rng().fill(&mut secret);
+    let session_layer = SessionLayer::new(store, &secret).with_secure(false);
+
     let result = Router::new()
         .route("/", get(views::corpora))
         .route(
@@ -50,7 +58,8 @@ fn app(addr: &SocketAddr) -> Result<Router> {
             post(components::corpus_selector::post),
         )
         .route("/static/*path", get(static_file))
-        .with_state(Arc::new(global_state));
+        .with_state(Arc::new(global_state))
+        .layer(session_layer);
     Ok(result)
 }
 
