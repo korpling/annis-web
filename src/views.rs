@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{collections::BTreeSet, sync::Arc};
 
 use askama::Template;
 use axum::{extract::State, http::StatusCode, response::Html, response::IntoResponse};
@@ -25,6 +25,7 @@ pub async fn corpora(State(state): State<Arc<GlobalAppState>>) -> Result<impl In
             url_prefix: state.frontend_prefix.to_string(),
             id: "corpus-selector".to_string(),
             filter: String::default(),
+            selected_corpora: BTreeSet::default(),
         },
     };
     let html = Html(template.render()?);
