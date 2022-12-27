@@ -67,7 +67,9 @@
                 {% for c in corpus_names %}
                   <tr>
                     <td>
-                      <button name="add_corpus" value="{{c}}" class="button is-small">Add</button>
+                      {% if !selected_corpora.contains(c.as_str()) %}
+                        <button name="add_corpus" value="{{c}}" class="button is-small">Add</button>
+                      {% endif %}
                     </td>
                     <td class="corpus-name">{{ c }}</td>
                   </tr>
