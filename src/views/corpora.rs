@@ -1,7 +1,14 @@
 use std::{collections::BTreeSet, sync::Arc};
 
 use askama::Template;
-use axum::{extract::State, http::StatusCode, response::Html, response::IntoResponse, Form};
+use axum::{
+    extract::State,
+    headers::HeaderMap,
+    http::StatusCode,
+    response::Html,
+    response::{IntoResponse, Response},
+    Form,
+};
 use axum_sessions::extractors::WritableSession;
 use serde::Deserialize;
 
@@ -21,10 +28,21 @@ pub struct Corpora {
     pub filter: String,
 }
 
+impl Corpora {
+    fn new(app_state: &GlobalAppState) -> Self {
+        Self {
+            id: "corpus-selector".to_string(),
+            url_prefix: app_state.frontend_prefix.to_string(),
+            corpus_names: Vec::new(),
+            selected_corpora: BTreeSet::default(),
+            filter: String::default(),
+        }
+    }
+}
+
 #[derive(Template)]
 #[template(path = "corpora_full.html")]
 struct CorporaFull {
-    pub id: String,
     url_prefix: String,
     inner: Corpora,
 }
@@ -32,16 +50,12 @@ struct CorporaFull {
 #[tracing::instrument]
 pub async fn get(State(state): State<Arc<GlobalAppState>>) -> Result<impl IntoResponse> {
     let corpora = search::corpora(state.as_ref()).await?;
+    let mut inner = Corpora::new(state.as_ref());
+    inner.corpus_names = corpora;
+
     let template = CorporaFull {
         url_prefix: state.frontend_prefix.to_string(),
-        id: "corpus-view-root".into(),
-        inner: Corpora {
-            corpus_names: corpora,
-            url_prefix: state.frontend_prefix.to_string(),
-            id: "corpus-selector".to_string(),
-            filter: String::default(),
-            selected_corpora: BTreeSet::default(),
-        },
+        inner,
     };
     let html = Html(template.render()?);
     Ok((StatusCode::OK, html))
@@ -56,9 +70,10 @@ pub struct Params {
 #[tracing::instrument]
 pub async fn post(
     mut session: WritableSession,
+    headers: HeaderMap,
     State(app_state): State<Arc<GlobalAppState>>,
     Form(payload): Form<Params>,
-) -> Result<impl IntoResponse> {
+) -> Result<Response> {
     let corpora = search::corpora(app_state.as_ref()).await?;
     let mut filtered_corpora: Vec<_> = corpora
         .iter()
@@ -75,22 +90,24 @@ pub async fn post(
 
     session.insert("state", session_state.clone())?;
 
-    let inner = Corpora {
-        corpus_names: filtered_corpora,
-        url_prefix: app_state.frontend_prefix.to_string(),
-        id: "corpus-selector".to_string(),
-        filter: payload.filter,
-        selected_corpora: session_state.selected_corpora,
-    };
+    let mut inner = Corpora::new(app_state.as_ref());
+    inner.corpus_names = filtered_corpora;
+    inner.filter = payload.filter;
+    inner.selected_corpora = session_state.selected_corpora;
 
-    let template = CorporaFull {
-        inner,
-        id: "corpus-view-root".into(),
-        url_prefix: app_state.frontend_prefix.to_string(),
-    };
-
-    let html = Html(template.render()?);
-    Ok((StatusCode::OK, html))
+    if headers.contains_key("HX-Target") {
+        // Only return the part that needs to be re-rendered
+        let html = Html(inner.render()?);
+        Ok((StatusCode::OK, [("HX-Trigger-After-Swap", "refocus")], html).into_response())
+    } else {
+        // Return the full site
+        let template = CorporaFull {
+            inner,
+            url_prefix: app_state.frontend_prefix.to_string(),
+        };
+        let html = Html(template.render()?);
+        Ok((StatusCode::OK, html).into_response())
+    }
 }
 
 #[cfg(test)]

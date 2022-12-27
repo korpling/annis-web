@@ -33,7 +33,11 @@
                    type="text"
                    name="filter"
                    placeholder="Filter by corpus name"
-                   value="{{ filter }}">
+                   value="{{ filter }}"
+                   hx-post="{{ url_prefix }}"
+                   hx-trigger="keyup changed delay:500ms"
+                   hx-target="#{{id}}"
+                   hx-swap="outerHTML">
           </div>
           <div class="control">
             <button type="submit" class="button is-primary">Apply</button>
