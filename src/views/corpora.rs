@@ -47,10 +47,16 @@ struct CorporaFull {
     inner: Corpora,
 }
 
-pub async fn get(State(state): State<Arc<GlobalAppState>>) -> Result<impl IntoResponse> {
+pub async fn get(
+    session: WritableSession,
+    State(state): State<Arc<GlobalAppState>>,
+) -> Result<impl IntoResponse> {
     let corpora = search::corpora(state.as_ref()).await?;
+    let session_state: SessionState = session.get("state").unwrap_or_default();
+
     let mut inner = Corpora::new(state.as_ref());
     inner.corpus_names = corpora;
+    inner.selected_corpora = session_state.selected_corpora;
 
     let template = CorporaFull {
         url_prefix: state.frontend_prefix.to_string(),
