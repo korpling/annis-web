@@ -24,6 +24,7 @@ pub struct Corpora {
 #[derive(Template)]
 #[template(path = "corpora_full.html")]
 struct CorporaFull {
+    pub id: String,
     url_prefix: String,
     inner: Corpora,
 }
@@ -33,6 +34,7 @@ pub async fn get(State(state): State<Arc<GlobalAppState>>) -> Result<impl IntoRe
     let corpora = search::corpora(state.as_ref()).await?;
     let template = CorporaFull {
         url_prefix: state.frontend_prefix.to_string(),
+        id: "corpus-view-root".into(),
         inner: Corpora {
             corpus_names: corpora,
             url_prefix: state.frontend_prefix.to_string(),
@@ -83,6 +85,7 @@ pub async fn post(
 
     let template = CorporaFull {
         inner,
+        id: "corpus-view-root".into(),
         url_prefix: app_state.frontend_prefix.to_string(),
     };
 
