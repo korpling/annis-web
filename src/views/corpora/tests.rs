@@ -21,7 +21,7 @@ async fn list_corpora() {
 
         c.wait()
             .for_element(Locator::XPath(
-                "/html/body/div/div/div/div[2]/article/div[2]/table",
+                "//*[@id='corpus-selector']/div/div[2]/article/div[2]/table",
             ))
             .await
             .unwrap();
@@ -29,7 +29,7 @@ async fn list_corpora() {
         // The corpus list should be sorted
         let table = c
             .find(Locator::XPath(
-                "/html/body/div/div/div/div[2]/article/div[2]/table",
+                "//*[@id='corpus-selector']/div/div[2]/article/div[2]/table",
             ))
             .await
             .unwrap();
@@ -104,7 +104,7 @@ async fn filter_corpus_name() {
         c.goto(&url).await.unwrap();
         let input = c
             .find(Locator::XPath(
-                "/html/body/div/div/div/div[2]/article/div[1]/input",
+                "//*[@id='corpus-selector']/div/div[2]/article/div[1]/div[1]/input",
             ))
             .await
             .unwrap();
@@ -119,7 +119,7 @@ async fn filter_corpus_name() {
         // The corpus list should be reducted to the matching corpus names
         let table = c
             .find(Locator::XPath(
-                "/html/body/div/div/div/div[2]/article/div[2]/table",
+                "//*[@id='corpus-selector']/div/div[2]/article/div[2]/table",
             ))
             .await
             .unwrap();
