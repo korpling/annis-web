@@ -1,8 +1,24 @@
+use std::collections::BTreeSet;
+
 #[cfg(test)]
 use mockito;
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::Result;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SessionState {
+    pub selected_corpora: BTreeSet<String>,
+}
+
+impl Default for SessionState {
+    fn default() -> Self {
+        Self {
+            selected_corpora: BTreeSet::default(),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct GlobalAppState {

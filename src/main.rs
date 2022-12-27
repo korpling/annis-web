@@ -1,5 +1,4 @@
 pub mod client;
-pub mod components;
 pub mod errors;
 pub mod state;
 mod views;
@@ -52,11 +51,8 @@ fn app(addr: &SocketAddr) -> Result<Router> {
     let session_layer = SessionLayer::new(store, &secret).with_secure(false);
 
     let result = Router::new()
-        .route("/", get(views::corpora))
-        .route(
-            "/components/corpus_selector",
-            post(components::corpus_selector::post),
-        )
+        .route("/", get(views::corpora::get))
+        .route("/", post(views::corpora::post))
         .route("/static/*path", get(static_file))
         .with_state(Arc::new(global_state))
         .layer(session_layer);
