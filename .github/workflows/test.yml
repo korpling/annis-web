@@ -20,6 +20,9 @@ jobs:
       - name: Build
         run: cargo build --verbose
       - name: Start chromedriver for tests
-        run: chromedriver --port=4444 &
+        run: |
+          export DISPLAY=:99
+          chromedriver --port=4444 &
+          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
       - name: Run tests
         run: cargo test --verbose
