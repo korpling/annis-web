@@ -15,8 +15,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - uses: nanasess/setup-chromedriver@v1
       - uses: Swatinem/rust-cache@v2.2.0
       - name: Build
         run: cargo build --verbose
+      - name: Start chromedriver for tests
+        run: chromedriver --port=4444 &
       - name: Run tests
         run: cargo test --verbose

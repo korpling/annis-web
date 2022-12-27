@@ -19,6 +19,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
+      - uses: nanasess/setup-chromedriver@v1
+      - name: Start chromedriver for tests
+        run: chromedriver --port=4444 &
       - name: Run tests with code coverage
         run: ./test_coverage.sh
       - name: Upload code coverage for ref branch
@@ -47,6 +50,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
+      - uses: nanasess/setup-chromedriver@v1
+      - name: Start chromedriver for tests
+        run: chromedriver --port=4444 &
       - name: Run tests with code coverage
         run: ./test_coverage.sh
 

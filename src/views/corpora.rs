@@ -47,7 +47,6 @@ struct CorporaFull {
     inner: Corpora,
 }
 
-#[tracing::instrument]
 pub async fn get(State(state): State<Arc<GlobalAppState>>) -> Result<impl IntoResponse> {
     let corpora = search::corpora(state.as_ref()).await?;
     let mut inner = Corpora::new(state.as_ref());
@@ -67,7 +66,6 @@ pub struct Params {
     add_corpus: Option<String>,
 }
 
-#[tracing::instrument]
 pub async fn post(
     mut session: WritableSession,
     headers: HeaderMap,
