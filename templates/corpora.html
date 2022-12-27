@@ -17,9 +17,13 @@
         {% if selected_corpora.is_empty() %}
           <div class="notification is-info">Currently, no corpus is selected.</div>
         {% else %}
-          <ul>
-            {% for c in selected_corpora %}<li>{{ c }}</li>{% endfor %}
-          </ul>
+          <div class="tags">
+            {% for c in selected_corpora %}
+              <span class="tag is-medium">{{ c }}
+                <button class="delete is-small" name="remove_corpus" value="{{c}}"></button>
+              </span>
+            {% endfor %}
+          </div>
         {% endif %}
       </article>
     </div>
@@ -63,7 +67,7 @@
                 {% for c in corpus_names %}
                   <tr>
                     <td>
-                      <button name="add_corpus" value="{{c}}"  class="button is-small">Add</button>
+                      <button name="add_corpus" value="{{c}}" class="button is-small">Add</button>
                     </td>
                     <td class="corpus-name">{{ c }}</td>
                   </tr>

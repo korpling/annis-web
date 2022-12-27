@@ -64,6 +64,7 @@ pub async fn get(State(state): State<Arc<GlobalAppState>>) -> Result<impl IntoRe
 pub struct Params {
     filter: String,
     add_corpus: Option<String>,
+    remove_corpus: Option<String>,
 }
 
 pub async fn post(
@@ -84,6 +85,9 @@ pub async fn post(
 
     if let Some(add_corpus) = payload.add_corpus {
         session_state.selected_corpora.insert(add_corpus);
+    }
+    if let Some(remove_corpus) = payload.remove_corpus {
+        session_state.selected_corpora.remove(&remove_corpus);
     }
 
     session.insert("state", session_state.clone())?;
