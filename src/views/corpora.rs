@@ -65,6 +65,7 @@ pub struct Params {
     filter: String,
     add_corpus: Option<String>,
     remove_corpus: Option<String>,
+    add_all_corpora: Option<String>,
 }
 
 pub async fn post(
@@ -88,6 +89,12 @@ pub async fn post(
     }
     if let Some(remove_corpus) = payload.remove_corpus {
         session_state.selected_corpora.remove(&remove_corpus);
+    }
+    if payload.add_all_corpora == Some("true".to_string()) {
+        // Add all the filtered corpora to the selection
+        for c in &filtered_corpora {
+            session_state.selected_corpora.insert(c.clone());
+        }
     }
 
     session.insert("state", session_state.clone())?;
