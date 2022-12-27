@@ -1,10 +1,91 @@
-{% extends "base.html" %}
-{% block title %}
-  ANNIS Corpus List
-{% endblock title %}
-{% block content %}
-  <h1 class="title">Corpus list</h1>
-  <ul>
-    {% for c in corpus_names %}<li>{{ c }}</li>{% endfor %}
-  </ul>
-{% endblock content %}
+<div id="{{id}}" class="tile is-ancestor">
+  <script>
+  document.body.addEventListener("refocus", function(evt){
+    const input = htmx.find("#{{id}} input");
+    const end = input.value.length;
+    input.setSelectionRange(end, end);
+    input.focus();
+  });
+  document.body.addEventListener("htmx:beforeSend", function(evt){
+        htmx.addClass(htmx.find('#{{id}} .control'), 'is-loading');
+  });
+  </script>
+  <div class="tile is-parent">
+    <div class="tile is-parent is-4">
+      <article class="tile is-child box">
+        <h1 class="title">Selected corpora</h1>
+        {% if selected_corpora.is_empty() %}
+          <div class="notification is-info">Currently, no corpus is selected.</div>
+        {% else %}
+          <div class="tags">
+            {% for c in selected_corpora %}
+              <span class="tag is-medium">{{ c }}
+                <button class="delete is-small" name="remove_corpus" value="{{c}}"></button>
+              </span>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </article>
+    </div>
+    <div class="tile is-parent is-8">
+      <article class="tile is-child box">
+        <h1 class="title">Available corpora</h1>
+        <h2 class="subtitle">Select the corpora you want to analyze</h2>
+        <div class="field has-addons">
+          <div class="control is-expanded">
+            <input class="input"
+                   type="text"
+                   name="filter"
+                   placeholder="Filter by corpus name"
+                   value="{{ filter }}"
+                   hx-post="{{ url_prefix }}"
+                   hx-trigger="keyup changed delay:500ms"
+                   hx-target="#{{id}}"
+                   hx-swap="outerHTML">
+          </div>
+          <div class="control">
+            <button type="submit" class="button is-primary">Apply</button>
+          </div>
+        </div>
+        <div class="table-container block">
+          {% if corpus_names.is_empty() %}
+            <div class="notification is-warning">
+              Empty corpus list.
+              {%  if !filter.is_empty() %}
+                Remove the filter "{{ filter }}"" to see all corpora.
+              {% endif %}
+            </div>
+          {% else %}
+            <table class="table">
+              <thead>
+                <tr>
+                  <td></td>
+                  <td>Corpus name</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in corpus_names %}
+                  <tr>
+                    <td>
+                      {% if !selected_corpora.contains(c.as_str()) %}
+                        <button name="add_corpus" value="{{c}}" class="button is-small">Add</button>
+                      {% endif %}
+                    </td>
+                    <td class="corpus-name">{{ c }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2">
+                    <button class="button" name="add_all_corpora" value="true">Add all</button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          {% endif %}
+        </div>
+      </article>
+    </div>
+  </div>
+</div>

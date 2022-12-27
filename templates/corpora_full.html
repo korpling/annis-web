@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}
+  ANNIS Corpus List
+{% endblock title %}
+{% block content %}
+  <form method="post" action="{{ url_prefix }}" hx-boost="true">
+    {{ inner|safe }}
+  </form>
+{% endblock content %}
