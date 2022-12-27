@@ -18,6 +18,8 @@ pub enum AppError {
     UrlParsing(#[from] url::ParseError),
     #[error(transparent)]
     AxumSerdeJson(#[from] axum_sessions::async_session::serde_json::Error),
+    #[error(transparent)]
+    IO(#[from] std::io::Error),
 }
 
 #[derive(Template)]
@@ -40,6 +42,7 @@ impl IntoResponse for AppError {
                 StatusCode::INTERNAL_SERVER_ERROR,
                 format!("Url could not be parsed: {}", e),
             ),
+            AppError::IO(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("{}", e)),
         };
         let template = ErrorTemplate {
             message,

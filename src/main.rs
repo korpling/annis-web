@@ -1,4 +1,5 @@
 pub mod client;
+pub mod converter;
 pub mod errors;
 pub mod state;
 mod views;
@@ -53,6 +54,7 @@ fn app(addr: &SocketAddr) -> Result<Router> {
     let result = Router::new()
         .route("/", get(views::corpora::get))
         .route("/", post(views::corpora::post))
+        .route("/export", get(views::export::get))
         .route("/static/*path", get(static_file))
         .with_state(Arc::new(global_state))
         .layer(session_layer);
