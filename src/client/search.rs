@@ -1,9 +1,10 @@
 use futures::TryStreamExt;
 use serde::Serialize;
-use std::io::ErrorKind;
+use std::{io::ErrorKind, mem::size_of};
 use tokio::io::AsyncBufReadExt;
 use tokio_util::io::StreamReader;
 use tracing::error;
+use transient_btree_index::{BtreeConfig, BtreeIndex};
 
 use crate::{state::GlobalAppState, Result};
 
@@ -31,7 +32,7 @@ pub async fn find(
     corpora: Vec<String>,
     limit: Option<u64>,
     state: &GlobalAppState,
-) -> Result<Vec<String>> {
+) -> Result<BtreeIndex<u64, Vec<String>>> {
     let url = state.service_url.join("search/find")?;
     let client = reqwest::Client::builder().build()?;
 
@@ -51,14 +52,19 @@ pub async fn find(
     let response = response.await?.bytes_stream();
 
     // Each line is a match, go through the body of the response and collect the matches
-    let mut result = Vec::default();
+    let mut result = BtreeIndex::with_capacity(
+        BtreeConfig::default().fixed_key_size(size_of::<u64>()),
+        1024,
+    )?;
     let mut lines = StreamReader::new(response.map_err(|e| -> std::io::Error {
         error!("Could not get next matches for find query. {}", e);
         ErrorKind::ConnectionAborted.into()
     }))
     .lines();
+    let mut i = 0;
     while let Some(l) = lines.next_line().await? {
-        result.push(l);
+        result.insert(i, graphannis::util::node_names_from_match(&l))?;
+        i += 1;
     }
 
     Ok(result)
