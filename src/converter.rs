@@ -1,6 +1,10 @@
 use transient_btree_index::BtreeIndex;
 
-use crate::{client::search, state::GlobalAppState, Result};
+use crate::{
+    client::{corpora, search},
+    state::GlobalAppState,
+    Result,
+};
 
 pub struct CSVExporter {
     aql: String,
@@ -16,22 +20,31 @@ impl CSVExporter {
     pub async fn convert_text<W: std::io::Write>(
         &self,
         state: &GlobalAppState,
+        limit: Option<u64>,
         output: &mut W,
     ) -> Result<()> {
         // Get all the matches as Salt ID
-        let result = search::find(&self.aql, vec!["pcc2".to_string()], Some(2), state).await?;
+        let result = search::find(&self.aql, vec!["pcc2".to_string()], limit, state).await?;
 
-        self.first_pass(&result)?;
+        self.first_pass(&result, state)?;
         self.second_pass(&result, output)?;
         Ok(())
     }
 
-    fn first_pass(&self, matches: &BtreeIndex<u64, Vec<String>>) -> Result<()> {
+    fn first_pass(
+        &self,
+        matches: &BtreeIndex<u64, Vec<String>>,
+        state: &GlobalAppState,
+    ) -> Result<()> {
         for m in matches.range(..)? {
             let (idx, node_ids) = m?;
-            // Get the subgraph for the IDs
-
-            // Collect annotations for the matched nodes
+            // Get the corpus from the first node
+            if let Some(id) = node_ids.first() {
+                let (corpus, _) = id.split_once("/").unwrap_or_default();
+                // Get the subgraph for the IDs
+                let g = corpora::subgraph(corpus, node_ids.clone(), None, 0, 0, state);
+                // Collect annotations for the matched nodes
+            }
         }
         Ok(())
     }

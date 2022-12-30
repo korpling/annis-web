@@ -48,6 +48,7 @@ dependencies = [
  "fantoccini",
  "futures",
  "graphannis",
+ "graphannis-core",
  "hyper",
  "include_dir",
  "mime_guess",

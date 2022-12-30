@@ -13,7 +13,7 @@ use axum_sessions::extractors::WritableSession;
 use serde::Deserialize;
 
 use crate::{
-    client::search,
+    client::{corpora, search},
     state::{GlobalAppState, SessionState},
     Result,
 };
@@ -51,7 +51,7 @@ pub async fn get(
     session: WritableSession,
     State(state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let corpora = search::corpora(state.as_ref()).await?;
+    let corpora = corpora::list(state.as_ref()).await?;
     let session_state: SessionState = session.get("state").unwrap_or_default();
 
     let mut inner = Corpora::new(state.as_ref());
@@ -80,7 +80,7 @@ pub async fn post(
     State(app_state): State<Arc<GlobalAppState>>,
     Form(payload): Form<Params>,
 ) -> Result<Response> {
-    let corpora = search::corpora(app_state.as_ref()).await?;
+    let corpora = corpora::list(app_state.as_ref()).await?;
     let mut filtered_corpora: Vec<_> = corpora
         .iter()
         .filter(|c| c.to_lowercase().contains(&payload.filter.to_lowercase()))

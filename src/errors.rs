@@ -9,21 +9,23 @@ use thiserror::Error;
 #[non_exhaustive]
 pub enum AppError {
     #[error(transparent)]
-    Axum(#[from] axum::http::Error),
-    #[error(transparent)]
     Askama(#[from] askama::Error),
     #[error(transparent)]
-    Reqwest(#[from] reqwest::Error),
-    #[error(transparent)]
-    UrlParsing(#[from] url::ParseError),
+    Axum(#[from] axum::http::Error),
     #[error(transparent)]
     AxumSerdeJson(#[from] axum_sessions::async_session::serde_json::Error),
     #[error(transparent)]
+    CSV(#[from] csv::Error),
+    #[error(transparent)]
+    GraphAnnisCore(#[from] graphannis_core::errors::GraphAnnisCoreError),
+    #[error(transparent)]
     IO(#[from] std::io::Error),
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
     #[error(transparent)]
     TransientBtreeIndex(#[from] transient_btree_index::Error),
     #[error(transparent)]
-    CSV(#[from] csv::Error),
+    UrlParsing(#[from] url::ParseError),
 }
 
 #[derive(Template)]
