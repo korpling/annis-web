@@ -13,6 +13,7 @@ struct FindRequest {
     query: String,
     corpora: Vec<String>,
     limit: u64,
+    order: String,
 }
 
 /// Find all matches for a given query
@@ -29,6 +30,7 @@ pub async fn find(
         corpora,
         limit: limit.unwrap_or(u64::MAX),
         query: aql.to_string(),
+        order: "NotSorted".to_string(),
     };
 
     let request = client
