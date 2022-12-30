@@ -39,7 +39,7 @@
             {% let corpus_class = "is-info" -%}
           {% endif %}
           <a class="navbar-item" href="{{ url_prefix }}">Corpora  <span class="ml-1 tag is-small {{ corpus_class }}"
-        title="{{ state.selected_corpora.len() }} selected">{{ state.selected_corpora.len() }}</span></a>
+        title='{{ state.selected_corpora|join(", ") }}'>{{ state.selected_corpora.len() }}</span></a>
           <a class="navbar-item" href="{{ url_prefix }}export">Export</a>
           <a class="navbar-item" href="#">About</a>
         </div>
