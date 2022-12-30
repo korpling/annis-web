@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet};
 
 use graphannis::graph::AnnoKey;
 use transient_btree_index::BtreeIndex;
@@ -11,14 +11,14 @@ use crate::{
 
 pub struct CSVExporter {
     aql: String,
-    annotations_for_matched_nodes: HashMap<usize, HashSet<AnnoKey>>,
+    annotations_for_matched_nodes: BTreeMap<usize, BTreeSet<AnnoKey>>,
 }
 
 impl CSVExporter {
     pub fn new<S: AsRef<str>>(aql: S) -> Self {
         Self {
             aql: String::from(aql.as_ref()),
-            annotations_for_matched_nodes: HashMap::new(),
+            annotations_for_matched_nodes: BTreeMap::new(),
         }
     }
 
@@ -32,7 +32,7 @@ impl CSVExporter {
         let result = search::find(&self.aql, vec!["pcc2".to_string()], limit, state).await?;
 
         self.first_pass(&result, state).await?;
-        self.second_pass(&result, output)?;
+        self.second_pass(&result, state, output).await?;
         Ok(())
     }
 
@@ -42,12 +42,12 @@ impl CSVExporter {
         state: &GlobalAppState,
     ) -> Result<()> {
         for m in matches.range(..)? {
-            let (match_nr, node_ids) = m?;
+            let (_match_nr, node_ids) = m?;
             // Get the corpus from the first node
             if let Some(id) = node_ids.first() {
                 let (corpus, _) = id.split_once("/").unwrap_or_default();
                 // Get the subgraph for the IDs
-                let g = corpora::subgraph(corpus, node_ids.clone(), None, 0, 0, state).await?;
+                let g = corpora::subgraph(corpus, node_ids.clone(), None, 1, 1, state).await?;
                 // Collect annotations for the matched nodes
                 for (pos_in_match, node_name) in node_ids.iter().enumerate() {
                     if let Some(n_id) = g.get_node_id_from_name(&node_name)? {
@@ -68,28 +68,58 @@ impl CSVExporter {
         Ok(())
     }
 
-    fn second_pass<W>(&self, matches: &BtreeIndex<u64, Vec<String>>, output: &mut W) -> Result<()>
+    async fn second_pass<W>(
+        &self,
+        matches: &BtreeIndex<u64, Vec<String>>,
+        state: &GlobalAppState,
+        output: &mut W,
+    ) -> Result<()>
     where
         W: std::io::Write,
     {
         let mut writer = csv::Writer::from_writer(output);
-        // TODO: actually produce the CSV, just output the node IDs for node
-        if let Some(first_id) = matches.get(&0)? {
-            let mut header = Vec::with_capacity(first_id.len() + 1);
-            header.push("match_number".to_string());
-            for i in 0..first_id.len() {
-                header.push(format!("{}_node_name", i + 1));
+        // Create the header from the first entry
+        if let Some(_) = matches.get(&0)? {
+            let mut header = Vec::default();
+            header.push("match number".to_string());
+            for (m_nr, annos) in &self.annotations_for_matched_nodes {
+                header.push(format!("{} node name", m_nr + 1));
+                for anno_key in annos {
+                    let anno_qname =
+                        graphannis_core::util::join_qname(&anno_key.ns, &anno_key.name);
+                    header.push(format!("{} {}", m_nr + 1, anno_qname));
+                }
             }
             writer.write_record(header)?;
         }
+
+        // Iterate over all matches
         for m in matches.range(..)? {
             let (idx, node_ids) = m?;
-            let mut record = Vec::with_capacity(node_ids.len() + 1);
-            record.push((idx + 1).to_string());
-            for n in node_ids {
-                record.push(n);
+            if let Some(first_id) = node_ids.first() {
+                let (corpus, _) = first_id.split_once("/").unwrap_or_default();
+                // Get the subgraph for the IDs
+                let g = corpora::subgraph(corpus, node_ids.clone(), None, 1, 1, state).await?;
+
+                let mut record: Vec<String> = Vec::with_capacity(node_ids.len() + 1);
+                // Output all columns for this match, first column is the match number
+                record.push((idx + 1).to_string());
+                for (m_nr, annos) in &self.annotations_for_matched_nodes {
+                    // Each matched nodes contains the node ID
+                    record.push(node_ids[*m_nr].clone());
+                    if let Some(id) = g.get_node_id_from_name(&node_ids[*m_nr])? {
+                        // Get the annotation values for this node
+                        for anno_key in annos {
+                            let value = g
+                                .get_node_annos()
+                                .get_value_for_item(&id, anno_key)?
+                                .unwrap_or_default();
+                            record.push(value.to_string());
+                        }
+                    }
+                }
+                writer.write_record(record)?;
             }
-            writer.write_record(record)?;
         }
         Ok(())
     }

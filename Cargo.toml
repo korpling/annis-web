@@ -15,6 +15,7 @@ graphannis = "2"
 graphannis-core = "2"
 include_dir = "0.7"
 mime_guess = "2"
+percent-encoding = "2.2.0"
 rand = "0.8"
 reqwest = {version = "0.11", features = ["json", "stream"]}
 serde = "1"

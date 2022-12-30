@@ -13,7 +13,7 @@ use axum_sessions::extractors::WritableSession;
 use serde::Deserialize;
 
 use crate::{
-    client::{corpora, search},
+    client::corpora,
     state::{GlobalAppState, SessionState},
     Result,
 };

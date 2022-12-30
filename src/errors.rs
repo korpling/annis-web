@@ -3,6 +3,7 @@ use axum::{
     http::StatusCode,
     response::{Html, IntoResponse},
 };
+use reqwest::Url;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -14,6 +15,8 @@ pub enum AppError {
     Axum(#[from] axum::http::Error),
     #[error(transparent)]
     AxumSerdeJson(#[from] axum_sessions::async_session::serde_json::Error),
+    #[error("Got status code '{status_code}' when fetching URL '{url}' from backend.")]
+    Backend { status_code: StatusCode, url: Url },
     #[error(transparent)]
     CSV(#[from] csv::Error),
     #[error(transparent)]
@@ -38,9 +41,10 @@ struct ErrorTemplate {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
-        tracing::trace!("{}", &self);
+        tracing::error!("{}", &self);
         let (status, message) = match self {
             AppError::Reqwest(e) => (StatusCode::BAD_GATEWAY, format!("{}", e)),
+            AppError::Backend { .. } => (StatusCode::BAD_GATEWAY, format!("{}", &self)),
             AppError::UrlParsing(e) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 format!("Url could not be parsed: {}", e),

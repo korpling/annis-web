@@ -1,7 +1,8 @@
 use graphannis::AnnotationGraph;
+use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 use serde::Serialize;
 
-use crate::{state::GlobalAppState, Result};
+use crate::{errors::AppError, state::GlobalAppState, Result};
 
 /// Get a sorted list of all corpus names
 pub async fn list(state: &GlobalAppState) -> Result<Vec<String>> {
@@ -22,6 +23,8 @@ struct SubgraphRequest {
     right: usize,
 }
 
+const QUERY: &AsciiSet = &CONTROLS.add(b' ').add(b'"').add(b'#').add(b'<').add(b'>');
+
 /// Get the subgraph for a given match
 pub async fn subgraph(
     corpus: &str,
@@ -31,8 +34,10 @@ pub async fn subgraph(
     right: usize,
     state: &GlobalAppState,
 ) -> Result<AnnotationGraph> {
-    let url = state.service_url.join("corpus")?;
-    let url = url.join(corpus)?;
+    let url = state.service_url.join(&format!(
+        "corpora/{}/subgraph",
+        utf8_percent_encode(corpus, QUERY)
+    ))?;
     let client = reqwest::Client::builder().build()?;
 
     let body = SubgraphRequest {
@@ -47,13 +52,21 @@ pub async fn subgraph(
         .json(&body)
         .build()?;
 
-    let response = client.execute(request).await?.bytes().await?;
+    let response = client.execute(request).await?;
+    if response.status().is_success() {
+        let response_body = response.text().await?;
 
-    let (g, _config) = graphannis_core::graph::serialization::graphml::import::<
-        graphannis::model::AnnotationComponentType,
-        _,
-        _,
-    >(&response[..], false, |_| {})?;
+        let (g, _config) = graphannis_core::graph::serialization::graphml::import::<
+            graphannis::model::AnnotationComponentType,
+            _,
+            _,
+        >(response_body.as_bytes(), false, |_| {})?;
 
-    Ok(g)
+        Ok(g)
+    } else {
+        Err(AppError::Backend {
+            status_code: response.status(),
+            url: response.url().clone(),
+        })
+    }
 }

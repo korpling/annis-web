@@ -53,6 +53,7 @@ dependencies = [
  "include_dir",
  "mime_guess",
  "mockito",
+ "percent-encoding",
  "rand 0.8.5",
  "reqwest",
  "scraper",
