@@ -1,3 +1,6 @@
+use std::collections::{HashMap, HashSet};
+
+use graphannis::graph::AnnoKey;
 use transient_btree_index::BtreeIndex;
 
 use crate::{
@@ -8,17 +11,19 @@ use crate::{
 
 pub struct CSVExporter {
     aql: String,
+    annotations_for_matched_nodes: HashMap<usize, HashSet<AnnoKey>>,
 }
 
 impl CSVExporter {
     pub fn new<S: AsRef<str>>(aql: S) -> Self {
         Self {
             aql: String::from(aql.as_ref()),
+            annotations_for_matched_nodes: HashMap::new(),
         }
     }
 
     pub async fn convert_text<W: std::io::Write>(
-        &self,
+        &mut self,
         state: &GlobalAppState,
         limit: Option<u64>,
         output: &mut W,
@@ -26,24 +31,38 @@ impl CSVExporter {
         // Get all the matches as Salt ID
         let result = search::find(&self.aql, vec!["pcc2".to_string()], limit, state).await?;
 
-        self.first_pass(&result, state)?;
+        self.first_pass(&result, state).await?;
         self.second_pass(&result, output)?;
         Ok(())
     }
 
-    fn first_pass(
-        &self,
+    async fn first_pass(
+        &mut self,
         matches: &BtreeIndex<u64, Vec<String>>,
         state: &GlobalAppState,
     ) -> Result<()> {
         for m in matches.range(..)? {
-            let (idx, node_ids) = m?;
+            let (match_nr, node_ids) = m?;
             // Get the corpus from the first node
             if let Some(id) = node_ids.first() {
                 let (corpus, _) = id.split_once("/").unwrap_or_default();
                 // Get the subgraph for the IDs
-                let g = corpora::subgraph(corpus, node_ids.clone(), None, 0, 0, state);
+                let g = corpora::subgraph(corpus, node_ids.clone(), None, 0, 0, state).await?;
                 // Collect annotations for the matched nodes
+                for (pos_in_match, node_name) in node_ids.iter().enumerate() {
+                    if let Some(n_id) = g.get_node_id_from_name(&node_name)? {
+                        let annos = g
+                            .get_node_annos()
+                            .get_annotations_for_item(&n_id)?
+                            .into_iter()
+                            .filter(|a| a.key.ns != "annis")
+                            .map(|a| a.key);
+                        self.annotations_for_matched_nodes
+                            .entry(pos_in_match)
+                            .or_default()
+                            .extend(annos);
+                    }
+                }
             }
         }
         Ok(())

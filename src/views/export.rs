@@ -21,7 +21,7 @@ pub async fn get(State(state): State<Arc<GlobalAppState>>) -> Result<impl IntoRe
         example: "".to_string(),
     };
 
-    let exporter = CSVExporter::new("tok");
+    let mut exporter = CSVExporter::new("tok");
     let mut example_string_buffer = Vec::new();
     exporter
         .convert_text(state.as_ref(), Some(3), &mut example_string_buffer)
