@@ -15,7 +15,7 @@
       <article class="tile is-child box">
         <h1 class="title">Selected corpora</h1>
         {% if selected_corpora.is_empty() %}
-          <div class="notification is-info">Currently, no corpus is selected.</div>
+          <div class="notification is-warning">Currently, no corpus is selected.</div>
         {% else %}
           <div class="tags">
             {% for c in selected_corpora %}

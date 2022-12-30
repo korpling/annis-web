@@ -32,7 +32,14 @@
       </div>
       <div id="annis-navbar" class="navbar-menu">
         <div class="navbar-start">
-          <a class="navbar-item" href="{{ url_prefix }}">Corpora</a>
+          {% let corpus_class -%}
+          {% if state.selected_corpora.len() == 0 %}
+            {% let corpus_class = "is-warning" -%}
+          {% else %}
+            {% let corpus_class = "is-info" -%}
+          {% endif %}
+          <a class="navbar-item" href="{{ url_prefix }}">Corpora  <span class="ml-1 tag is-small {{ corpus_class }}"
+        title="{{ state.selected_corpora.len() }} selected">{{ state.selected_corpora.len() }}</span></a>
           <a class="navbar-item" href="{{ url_prefix }}export">Export</a>
           <a class="navbar-item" href="#">About</a>
         </div>

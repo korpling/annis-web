@@ -45,6 +45,7 @@ impl Corpora {
 struct CorporaFull {
     url_prefix: String,
     inner: Corpora,
+    state: SessionState,
 }
 
 pub async fn get(
@@ -56,11 +57,12 @@ pub async fn get(
 
     let mut inner = Corpora::new(state.as_ref());
     inner.corpus_names = corpora;
-    inner.selected_corpora = session_state.selected_corpora;
+    inner.selected_corpora = session_state.selected_corpora.clone();
 
     let template = CorporaFull {
         url_prefix: state.frontend_prefix.to_string(),
         inner,
+        state: session_state,
     };
     let html = Html(template.render()?);
     Ok((StatusCode::OK, html))
@@ -108,7 +110,7 @@ pub async fn post(
     let mut inner = Corpora::new(app_state.as_ref());
     inner.corpus_names = filtered_corpora;
     inner.filter = payload.filter;
-    inner.selected_corpora = session_state.selected_corpora;
+    inner.selected_corpora = session_state.selected_corpora.clone();
 
     if headers.contains_key("HX-Target") {
         // Only return the part that needs to be re-rendered
@@ -119,6 +121,7 @@ pub async fn post(
         let template = CorporaFull {
             inner,
             url_prefix: app_state.frontend_prefix.to_string(),
+            state: session_state,
         };
         let html = Html(template.render()?);
         Ok((StatusCode::OK, html).into_response())

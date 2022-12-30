@@ -6,6 +6,8 @@ use axum::{
 use reqwest::Url;
 use thiserror::Error;
 
+use crate::state::SessionState;
+
 #[derive(Error, Debug)]
 #[non_exhaustive]
 pub enum AppError {
@@ -37,6 +39,7 @@ struct ErrorTemplate {
     message: String,
     status_code: StatusCode,
     url_prefix: String,
+    state: SessionState,
 }
 
 impl IntoResponse for AppError {
@@ -55,6 +58,7 @@ impl IntoResponse for AppError {
             message,
             status_code: status,
             url_prefix: "/".to_string(),
+            state: SessionState::default(),
         };
         let html = template
             .render()
