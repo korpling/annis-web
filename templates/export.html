@@ -3,14 +3,20 @@
   ANNIS CSV Export
 {% endblock title %}
 {% block content %}
-  <form method="post" action="{{ url_prefix }}/export" hx-boost="true">
+  <form method="post" action="{{ url_prefix }}export" hx-boost="true">
     <article>
       <h1 class="title">Export</h1>
       <div class="tile is-ancestor">
         <div class="tile is-parent">
           <div class="tile is-parent is-6">
             <div class="tile is-child box">
-              <textarea name="aql"" class="textarea is-family-code" placeholder='AQL query, to search for all token use the following query: tok '></textarea>
+              <textarea
+                name="query"" class="textarea is-family-code" 
+                placeholder='AQL query, to search for all token use the following query: tok '
+                hx-get="{{ url_prefix }}export/update-example"
+                hx-trigger="keyup changed delay:500ms"
+                hx-target="#export-example-output"
+                hx-swap="innerHTML"></textarea>
             </div>
           </div>
           <div class="tile is-parent is-6">
@@ -22,8 +28,8 @@
       </div>
       <div class="tile is-parent">
         <div class="tile is-child box">
-          <h2 class="title is-5">Preview</h2>
-          <pre class="content is-family-monospace">{{ example }}</pre>
+          <h2 class="title is-5">Example output</h2>
+          <div id="export-example-output">{{ example_output|safe }}</div>
         </div>
       </div>
     </article>
