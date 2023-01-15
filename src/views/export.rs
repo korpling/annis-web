@@ -25,12 +25,14 @@ const DEFAULT_EXAMPLE: &str = r#"match number,1 node name,1 tiger::lemma,1 tiger
 #[template(path = "export-example-output.html")]
 struct ExampleOutput {
     example: String,
+    error: Option<String>,
 }
 
 impl Default for ExampleOutput {
     fn default() -> Self {
         Self {
             example: DEFAULT_EXAMPLE.to_string(),
+            error: None,
         }
     }
 }
@@ -81,14 +83,17 @@ pub async fn update_example(
 
     let mut template = ExampleOutput::default();
 
-    let mut exporter = CSVExporter::new(example_query);
-    let mut example_string_buffer = Vec::new();
-    exporter
-        .convert_text(state.as_ref(), Some(3), &mut example_string_buffer)
-        .await?;
-
-    template.example = String::from_utf8_lossy(&example_string_buffer).to_string();
-
+    if !example_query.corpora.is_empty() && !example_query.query.is_empty() {
+        let mut exporter = CSVExporter::new(example_query);
+        let mut example_string_buffer = Vec::new();
+        match exporter
+            .convert_text(state.as_ref(), Some(3), &mut example_string_buffer)
+            .await
+        {
+            Ok(_) => template.example = String::from_utf8_lossy(&example_string_buffer).to_string(),
+            Err(e) => template.error = Some(format!("{}", e)),
+        }
+    }
     let html = Html(template.render()?);
     Ok((StatusCode::OK, html))
 }
