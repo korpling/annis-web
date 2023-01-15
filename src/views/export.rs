@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
+    client::search::FindQuery,
     converter::CSVExporter,
     state::{GlobalAppState, SessionState},
     Result,
@@ -12,6 +13,7 @@ use axum::{
     response::{Html, IntoResponse},
 };
 use axum_sessions::extractors::WritableSession;
+use graphannis::corpusstorage::{QueryLanguage, ResultOrder};
 
 #[derive(Template, Debug)]
 #[template(path = "export.html")]
@@ -27,13 +29,21 @@ pub async fn get(
 ) -> Result<impl IntoResponse> {
     let session_state: SessionState = session.get("state").unwrap_or_default();
 
+    let example_query = FindQuery {
+        query: "tok".to_string(),
+        corpora: session_state.selected_corpora.iter().cloned().collect(),
+        query_language: QueryLanguage::AQL,
+        limit: None,
+        order: ResultOrder::NotSorted,
+    };
+
     let mut template = Export {
         url_prefix: state.frontend_prefix.to_string(),
         example: "".to_string(),
         state: session_state,
     };
 
-    let mut exporter = CSVExporter::new("tok");
+    let mut exporter = CSVExporter::new(example_query);
     let mut example_string_buffer = Vec::new();
     exporter
         .convert_text(state.as_ref(), Some(3), &mut example_string_buffer)

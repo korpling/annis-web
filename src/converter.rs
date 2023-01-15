@@ -4,20 +4,23 @@ use graphannis::graph::AnnoKey;
 use transient_btree_index::BtreeIndex;
 
 use crate::{
-    client::{corpora, search},
+    client::{
+        corpora,
+        search::{self, FindQuery},
+    },
     state::GlobalAppState,
     Result,
 };
 
 pub struct CSVExporter {
-    aql: String,
+    query: FindQuery,
     annotations_for_matched_nodes: BTreeMap<usize, BTreeSet<AnnoKey>>,
 }
 
 impl CSVExporter {
-    pub fn new<S: AsRef<str>>(aql: S) -> Self {
+    pub fn new(query: FindQuery) -> Self {
         Self {
-            aql: String::from(aql.as_ref()),
+            query,
             annotations_for_matched_nodes: BTreeMap::new(),
         }
     }
@@ -29,7 +32,10 @@ impl CSVExporter {
         output: &mut W,
     ) -> Result<()> {
         // Get all the matches as Salt ID
-        let result = search::find(&self.aql, vec!["pcc2".to_string()], limit, state).await?;
+        let mut query = self.query.clone();
+        query.limit = limit;
+
+        let result = search::find(&query, state).await?;
 
         self.first_pass(&result, state).await?;
         self.second_pass(&result, state, output).await?;

@@ -1,4 +1,5 @@
 use futures::TryStreamExt;
+use graphannis::corpusstorage::{QueryLanguage, ResultOrder};
 use serde::Serialize;
 use std::{io::ErrorKind, mem::size_of};
 use tokio::io::AsyncBufReadExt;
@@ -8,34 +9,26 @@ use transient_btree_index::{BtreeConfig, BtreeIndex};
 
 use crate::{state::GlobalAppState, Result};
 
-#[derive(Serialize)]
-struct FindRequest {
-    query: String,
-    corpora: Vec<String>,
-    limit: u64,
-    order: String,
+#[derive(Serialize, Clone)]
+pub struct FindQuery {
+    pub query: String,
+    pub corpora: Vec<String>,
+    pub query_language: QueryLanguage,
+    pub limit: Option<u64>,
+    pub order: ResultOrder,
 }
 
 /// Find all matches for a given query
 pub async fn find(
-    aql: &str,
-    corpora: Vec<String>,
-    limit: Option<u64>,
+    query: &FindQuery,
     state: &GlobalAppState,
 ) -> Result<BtreeIndex<u64, Vec<String>>> {
     let url = state.service_url.join("search/find")?;
     let client = reqwest::Client::builder().build()?;
 
-    let body = FindRequest {
-        corpora,
-        limit: limit.unwrap_or(u64::MAX),
-        query: aql.to_string(),
-        order: "NotSorted".to_string(),
-    };
-
     let request = client
         .request(reqwest::Method::POST, url.clone())
-        .json(&body)
+        .json(&query)
         .build()?;
 
     let response = client.execute(request);
