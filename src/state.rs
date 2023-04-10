@@ -1,7 +1,6 @@
 use std::collections::BTreeSet;
 
 #[cfg(test)]
-use mockito;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -28,12 +27,8 @@ pub struct GlobalAppState {
 
 impl GlobalAppState {
     pub fn new() -> Result<Self> {
-        #[cfg(not(test))]
         // TODO: get this parameter a configuration
         let service_url = "http://localhost:5711/v1/";
-
-        #[cfg(test)]
-        let service_url: &str = &mockito::server_url();
 
         let result = Self {
             service_url: Url::parse(service_url)?,

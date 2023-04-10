@@ -23,7 +23,7 @@ url = "2.3"
 [dev-dependencies]
 fantoccini = "0.19"
 hyper = {version = "0.14", features = ["full"]}
-mockito = "0.31"
-scraper = "0.13"
+mockito = "1"
+scraper = "0.16"
 tower = {version = "0.4", features = ["util"]}
 tracing-test = "0.2"
