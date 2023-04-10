@@ -2,7 +2,7 @@ use super::*;
 use crate::tests::{get_html, start_end2end_servers};
 use axum::{body::Body, http::Request};
 use fantoccini::Locator;
-use mockito::mock;
+use mockito::Server;
 use scraper::Selector;
 use std::{net::SocketAddr, thread, time::Duration};
 use tower::ServiceExt;
@@ -11,8 +11,9 @@ use tracing_test::traced_test;
 #[tokio::test]
 #[traced_test]
 async fn list_corpora() {
-    let (c, url) = start_end2end_servers().await;
-    let m = mock("GET", "/corpora")
+    let (c, mut service_mock, url) = start_end2end_servers().await;
+    let m = service_mock
+        .mock("GET", "/corpora")
         .with_header("content-type", "application/json")
         .with_body(r#"["TueBa-D/Z.6.0", "pcc2", "pcc11", "AnyPcCorpus", "demo.dialog"]"#)
         .create();
@@ -95,8 +96,9 @@ async fn list_corpora() {
 #[tokio::test]
 #[traced_test]
 async fn filter_corpus_name() {
-    let (c, url) = start_end2end_servers().await;
-    let _m = mock("GET", "/corpora")
+    let (c, mut service_mock, url) = start_end2end_servers().await;
+    let _m = service_mock
+        .mock("GET", "/corpora")
         .with_header("content-type", "application/json")
         .with_body(r#"["TueBa-D/Z.6.0", "pcc2", "pcc11", "AnyPcCorpus", "demo.dialog"]"#)
         .create();
@@ -164,9 +166,17 @@ async fn filter_corpus_name() {
 #[traced_test]
 async fn service_down() {
     // Simulate an error with the backend service
-    let m = mock("GET", "/corpora").with_status(500).create();
+    let mut service_mock = Server::new_with_port(0);
+    let m = service_mock
+        .mock("GET", "/corpora")
+        .with_status(500)
+        .create();
     {
-        let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000))).unwrap();
+        let app = crate::app(
+            &SocketAddr::from(([127, 0, 0, 1], 3000)),
+            Some(&service_mock.url()),
+        )
+        .unwrap();
 
         let response = app
             .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())

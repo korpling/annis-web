@@ -42,9 +42,12 @@ async fn static_file(Path(path): Path<String>) -> Result<impl IntoResponse> {
     Ok(response)
 }
 
-fn app(addr: &SocketAddr) -> Result<Router> {
+fn app(addr: &SocketAddr, service_url: Option<&str>) -> Result<Router> {
     let mut global_state = GlobalAppState::new()?;
     global_state.frontend_prefix = Url::parse(&format!("http://{}", addr))?;
+    if let Some(service_url) = service_url {
+        global_state.service_url = Url::parse(service_url)?;
+    }
 
     let store = MemoryStore::new();
     let mut secret = [0_u8; 128];
@@ -67,7 +70,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
-    match app(&addr) {
+    match app(&addr, None) {
         Ok(router) => {
             info!("Starting server with address {addr}", addr = addr);
             let server = axum::Server::bind(&addr).serve(router.into_make_service());
