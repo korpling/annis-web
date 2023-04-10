@@ -1,7 +1,5 @@
-use std::collections::BTreeSet;
-
-#[cfg(test)]
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeSet;
 use url::Url;
 
 use crate::Result;
