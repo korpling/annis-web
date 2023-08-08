@@ -37,6 +37,21 @@
           <div id="export-example-output">{{ example_output|safe }}</div>
         </div>
       </div>
-    </article>
-  </form>
+      <div class="tile is-parent">
+        <div class="tile is-child box">
+          <button class="button" name="start_export" value="true">Start export</button>
+        </div>
+      </div>
+      {% match export_status %}
+      {% when Some with (status) %}
+      <div class="tile is-parent">
+        <div class="tile is-child box">
+          <h2 class="title is-5">Export status</h2>
+          <textarea readonly>{{ status.messages}}</textarea>
+        </div>
+      </div>
+      {% when None %}
+    {% endmatch %}
+  </article>
+</form>
 {% endblock content %}

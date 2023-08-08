@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
+use tokio::task::JoinHandle;
 use url::Url;
 
 use crate::Result;
@@ -21,6 +22,7 @@ impl Default for SessionState {
 pub struct GlobalAppState {
     pub service_url: Url,
     pub frontend_prefix: Url,
+    pub background_jobs: dashmap::DashMap<uuid::Uuid, JoinHandle<Result<String>>>,
 }
 
 impl GlobalAppState {
@@ -32,6 +34,7 @@ impl GlobalAppState {
             service_url: Url::parse(service_url)?,
             // TODO: make this configurable
             frontend_prefix: Url::parse("http://localhost:3000/")?,
+            background_jobs: dashmap::DashMap::new(),
         };
         Ok(result)
     }

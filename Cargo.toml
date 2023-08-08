@@ -26,6 +26,8 @@ tracing = "0.1"
 tracing-subscriber = "0.3"
 transient-btree-index = "0.5.0"
 url = "2.3"
+dashmap = "5.5.0"
+uuid =  {version="1.4.1", features = ["v4"]}
 
 [dev-dependencies]
 fantoccini = "0.19"

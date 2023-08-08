@@ -58,6 +58,7 @@ fn app(addr: &SocketAddr, service_url: Option<&str>) -> Result<Router> {
         .route("/", get(views::corpora::get))
         .route("/", post(views::corpora::post))
         .route("/export", get(views::export::get))
+        .route("/export", post(views::export::post))
         .route("/export/update-example", get(views::export::update_example))
         .route("/static/*path", get(static_file))
         .with_state(Arc::new(global_state))
