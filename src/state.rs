@@ -4,17 +4,9 @@ use url::Url;
 
 use crate::Result;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct SessionState {
     pub selected_corpora: BTreeSet<String>,
-}
-
-impl Default for SessionState {
-    fn default() -> Self {
-        Self {
-            selected_corpora: BTreeSet::default(),
-        }
-    }
 }
 
 #[derive(Debug)]
