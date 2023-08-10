@@ -6,7 +6,8 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-askama = "0.12"
+askama = {version = "0.12", features = ["with-axum"]}
+askama_axum = "0.3"
 async-sqlx-session = {version = "0.4.0", features = ["sqlite", "async_std"]}
 axum = {version = "0.6.1", features = ["headers"]}
 axum-sessions = "0.5"
