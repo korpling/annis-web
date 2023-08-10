@@ -24,6 +24,12 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
+      - uses: nanasess/setup-chromedriver@v2
+      - name: Start chromedriver for tests
+        run: |
+          export DISPLAY=:99
+          chromedriver --port=4444 &
+          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
       - name: Run tests with code coverage
         run: ./test_coverage.sh
       - name: Upload code coverage for ref branch
@@ -48,6 +54,12 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
+      - uses: nanasess/setup-chromedriver@v2
+      - name: Start chromedriver for tests
+        run: |
+          export DISPLAY=:99
+          chromedriver --port=4444 &
+          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
       - name: Run tests with code coverage
         run: ./test_coverage.sh
 
