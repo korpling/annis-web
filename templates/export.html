@@ -3,55 +3,55 @@
   ANNIS CSV Export
 {% endblock title %}
 {% block content %}
-  <form method="post" action="{{ url_prefix }}export" hx-boost="true">
-    <article>
-      <h1 class="title">Export</h1>
-      <div class="tile is-ancestor">
-        <div class="tile is-parent">
-          <div class="tile is-parent is-6">
-            <div class="tile is-child box">
-              <textarea
-                name="query"" class="textarea is-family-code" 
-                placeholder='AQL query, to search for all token use the following query: tok '
-                hx-get="{{ url_prefix }}export/update-example"
-                hx-trigger="keyup changed delay:500ms"
-                hx-target="#export-example-output"></textarea>
-            </div>
-          </div>
-          <div class="tile is-parent is-6">
-            <div class="tile is-child box">
-              <h2 class="title is-5">Description</h2>
-              <div>
-                The CSV Exporter exports only the values of the elements searched for by the user,
-                ignoring the context around search results.
-                The values for all annotations of each of the found nodes
-                is given in a comma-separated table (CSV).
-              </div>
-            </div>
+  <article>
+    <h1 class="title">Export</h1>
+    <div class="tile is-ancestor">
+      <div class="tile is-parent">
+        <div class="tile is-parent is-6">
+          <div class="tile is-child box">
+            <textarea
+            name="query"" class="textarea is-family-code" 
+            placeholder='AQL query, to search for all token use the following query: tok '
+            hx-get="{{ url_prefix }}export/update-example"
+            hx-trigger="keyup changed delay:500ms"
+            hx-target="#export-example-output"></textarea>
           </div>
         </div>
-      </div>
-      <div class="tile is-parent">
-        <div class="tile is-child box">
-          <h2 class="title is-5">Example output</h2>
-          <div id="export-example-output">{{ example_output|safe }}</div>
+        <div class="tile is-parent is-6">
+          <div class="tile is-child box">
+            <h2 class="title is-5">Description</h2>
+            <div>
+              The CSV Exporter exports only the values of the elements searched for by the user,
+              ignoring the context around search results.
+              The values for all annotations of each of the found nodes
+              is given in a comma-separated table (CSV).
+            </div>
+          </div>
         </div>
       </div>
-      <div class="tile is-parent">
-        <div class="tile is-child box">
-          <button class="button" name="start_export" value="true">Start export</button>
-        </div>
+    </div>
+    <div class="tile is-parent">
+      <div class="tile is-child box">
+        <h2 class="title is-5">Example output</h2>
+        <div id="export-example-output">{{ example_output|safe }}</div>
       </div>
-      {% match export_status %}
-      {% when Some with (status) %}
-      <div class="tile is-parent">
-        <div class="tile is-child box">
-          <h2 class="title is-5">Export status</h2>
-          <textarea readonly>{{ status.messages}}</textarea>
-        </div>
+    </div>
+    <div class="tile is-parent">
+      <div class="tile is-child box">
+        <button class="button"
+                name="start_export"
+                hx-get="{{ url_prefix }}export/start">Start export</button>
       </div>
-      {% when None %}
-    {% endmatch %}
-  </article>
-</form>
+    </div>
+    {% match export_status %}
+    {% when Some with (status) %}
+    <div class="tile is-parent">
+      <div class="tile is-child box">
+        <h2 class="title is-5">Export status</h2>
+        <textarea readonly>{{ status.messages}}</textarea>
+      </div>
+    </div>
+    {% when None %}
+  {% endmatch %}
+</article>
 {% endblock content %}

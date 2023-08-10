@@ -68,64 +68,60 @@ pub async fn get(
         export_status: None,
     };
 
-    let html = Html(template.render()?);
-    Ok((StatusCode::OK, html))
+    Ok(template)
 }
 #[derive(Deserialize, Debug)]
-pub struct Params {
+pub struct StartExportParams {
     query: String,
-    start_export: Option<String>,
 }
 
-pub async fn post(
+pub async fn start_export(
     mut session: WritableSession,
     State(app_state): State<Arc<GlobalAppState>>,
-    Form(payload): Form<Params>,
+    Form(params): Form<StartExportParams>,
 ) -> Result<impl IntoResponse> {
     let mut export_status = None;
     let session_state: SessionState = session.get("state").unwrap_or_default();
 
-    if payload.start_export.is_some() {
-        info!("Export requested");
-        export_status = Some(ExportStatus {
-            progress: 0.0,
-            messages: "Export started".to_string(),
-        });
+    info!("Export requested");
+    export_status = Some(ExportStatus {
+        progress: 0.0,
+        messages: "Export started".to_string(),
+    });
 
-        // Create a background job that performs the export
-        let find_query = FindQuery {
-            query: payload.query.clone(),
-            corpora: session_state.selected_corpora.iter().cloned().collect(),
-            query_language: QueryLanguage::AQL,
-            limit: None,
-            order: ResultOrder::Normal,
-        };
-        let app_state_copy = app_state.clone();
-        let handle: JoinHandle<Result<String>> = tokio::spawn(async move {
-            let mut exporter = CSVExporter::new(find_query);
-            let mut result_string_buffer = Vec::new();
+    // Create a background job that performs the export
+    let find_query = FindQuery {
+        query: params.query.clone(),
+        corpora: session_state.selected_corpora.iter().cloned().collect(),
+        query_language: QueryLanguage::AQL,
+        limit: None,
+        order: ResultOrder::Normal,
+    };
+    let app_state_copy = app_state.clone();
+    let handle: JoinHandle<Result<String>> = tokio::spawn(async move {
+        let mut exporter = CSVExporter::new(find_query);
+        let mut result_string_buffer = Vec::new();
 
-            exporter
-                .convert_text(&app_state_copy, Some(3), &mut result_string_buffer)
-                .await?;
-            let result = String::from_utf8_lossy(&result_string_buffer).to_string();
-            Ok(result)
-        });
-        // Store the join handle in the global application job pool and remember
-        // its ID in the session state
-        let handle_id = uuid::Uuid::new_v4();
-        app_state.background_jobs.insert(handle_id, handle);
-        session.insert("export-handle-id", handle_id.as_u128())?;
-    }
+        exporter
+            .convert_text(&app_state_copy, Some(3), &mut result_string_buffer)
+            .await?;
+        let result = String::from_utf8_lossy(&result_string_buffer).to_string();
+        Ok(result)
+    });
+    // Store the join handle in the global application job pool and remember
+    // its ID in the session state
+    let handle_id = uuid::Uuid::new_v4();
+    app_state.background_jobs.insert(handle_id, handle);
+    session.insert("export-handle-id", handle_id.as_u128())?;
+
     let template = Export {
         url_prefix: app_state.frontend_prefix.to_string(),
-        example_output: create_example_output_template(payload.query, &app_state, &session_state)
+        example_output: create_example_output_template(params.query, &app_state, &session_state)
             .await?,
         state: session_state.clone(),
         export_status,
     };
-    let html = Html(template.render()?);
-    Ok((StatusCode::OK, html))
+    Ok(template)
 }
 
 async fn create_example_output_template(
@@ -169,6 +165,5 @@ pub async fn update_example(
 ) -> Result<impl IntoResponse> {
     let session_state: SessionState = session.get("state").unwrap_or_default();
     let template = create_example_output_template(params.query, &state, &session_state).await?;
-    let html = Html(template.render()?);
-    Ok((StatusCode::OK, html))
+    Ok(template)
 }
