@@ -17,8 +17,9 @@ use clap::Parser;
 use include_dir::{include_dir, Dir};
 use rand::prelude::*;
 use state::GlobalAppState;
-use std::{net::SocketAddr, path::PathBuf, sync::Arc, time::Duration};
+use std::{net::SocketAddr, path::PathBuf, str::FromStr, sync::Arc, time::Duration};
 use tracing::{error, info};
+use tracing_subscriber::EnvFilter;
 use url::Url;
 static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/static");
 
@@ -93,7 +94,9 @@ struct Cli {
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_str("sqlx::query=warn,info").unwrap())
+        .init();
 
     let cli = Cli::parse();
 
