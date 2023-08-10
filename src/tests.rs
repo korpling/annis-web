@@ -28,7 +28,8 @@ pub async fn start_end2end_servers() -> (fantoccini::Client, mockito::Server, St
         axum::Server::from_tcp(listener)
             .unwrap()
             .serve(
-                crate::app(&addr, Some(&service_mock_url))
+                crate::app(&addr, Some(&service_mock_url), None)
+                    .await
                     .unwrap()
                     .into_make_service(),
             )
@@ -59,7 +60,9 @@ where
 
 #[tokio::test]
 async fn existing_static_resource() {
-    let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000)), None).unwrap();
+    let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000)), None, None)
+        .await
+        .unwrap();
 
     let response = app
         .oneshot(
@@ -81,7 +84,9 @@ async fn existing_static_resource() {
 
 #[tokio::test]
 async fn missing_static_resource() {
-    let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000)), None).unwrap();
+    let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000)), None, None)
+        .await
+        .unwrap();
 
     let response = app
         .oneshot(

@@ -10,7 +10,7 @@ use askama::Template;
 use axum::{
     extract::{Query, State},
     http::StatusCode,
-    response::{Html, IntoResponse, Response},
+    response::{Html, IntoResponse},
     Form,
 };
 use axum_sessions::extractors::WritableSession;

@@ -175,7 +175,9 @@ async fn service_down() {
         let app = crate::app(
             &SocketAddr::from(([127, 0, 0, 1], 3000)),
             Some(&service_mock.url()),
+            None,
         )
+        .await
         .unwrap();
 
         let response = app

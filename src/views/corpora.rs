@@ -59,13 +59,11 @@ pub async fn get(
     inner.corpus_names = corpora;
     inner.selected_corpora = session_state.selected_corpora.clone();
 
-    let template = CorporaFull {
+    Ok(CorporaFull {
         url_prefix: state.frontend_prefix.to_string(),
         inner,
         state: session_state,
-    };
-    let html = Html(template.render()?);
-    Ok((StatusCode::OK, html))
+    })
 }
 
 #[derive(Deserialize, Debug)]
@@ -123,8 +121,7 @@ pub async fn post(
             url_prefix: app_state.frontend_prefix.to_string(),
             state: session_state,
         };
-        let html = Html(template.render()?);
-        Ok((StatusCode::OK, html).into_response())
+        Ok((StatusCode::OK, template).into_response())
     }
 }
 

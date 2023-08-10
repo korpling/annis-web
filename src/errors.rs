@@ -31,6 +31,8 @@ pub enum AppError {
     TransientBtreeIndex(#[from] transient_btree_index::Error),
     #[error(transparent)]
     UrlParsing(#[from] url::ParseError),
+    #[error(transparent)]
+    Sqlx(#[from] sqlx_core::error::Error),
 }
 
 #[derive(Template)]
@@ -52,6 +54,7 @@ impl IntoResponse for AppError {
                 StatusCode::INTERNAL_SERVER_ERROR,
                 format!("Url could not be parsed: {}", e),
             ),
+            AppError::Sqlx(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("{}", e)),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, format!("{}", &self)),
         };
         let template = ErrorTemplate {

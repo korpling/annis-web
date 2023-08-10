@@ -6,10 +6,14 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-askama = "0.12"
+askama = {version = "0.12", features = ["with-axum"]}
+askama_axum = "0.3"
+async-sqlx-session = {version = "0.4.0", features = ["sqlite", "async_std"]}
 axum = {version = "0.6.1", features = ["headers"]}
 axum-sessions = "0.5"
+clap = {version = "4.3.21", features = ["derive"]}
 csv = "1.1"
+dashmap = "5.5.0"
 futures = "0.3"
 graphannis = "2"
 graphannis-core = "2"
@@ -19,15 +23,15 @@ percent-encoding = "2.2.0"
 rand = "0.8"
 reqwest = {version = "0.11", features = ["json", "stream"]}
 serde = "1"
+sqlx-core = "0.5"
 thiserror = "1"
 tokio = {version = "1.17.0", features = ["rt-multi-thread", "macros"]}
 tokio-util = "0.7.4"
 tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing-subscriber = {version = "0.3", features = ["env-filter"]}
 transient-btree-index = "0.5.0"
 url = "2.3"
-dashmap = "5.5.0"
-uuid =  {version="1.4.1", features = ["v4"]}
+uuid = {version = "1.4.1", features = ["v4"]}
 
 [dev-dependencies]
 fantoccini = "0.19"
