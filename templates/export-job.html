@@ -6,8 +6,6 @@
     {% when Some with (uuid) %}
     Running export job with ID {{ uuid }}.
     {% when None %}
-    <button class="button"
-            name="start_export"
-            hx-post="{{ url_prefix }}export/start">Start export</button>
+    <button class="button" hx-post="{{ url_prefix }}export/run">Start export</button>
 {% endmatch %}
 </div>

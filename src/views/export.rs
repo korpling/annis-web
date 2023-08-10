@@ -15,6 +15,7 @@ use axum::{
 use axum_sessions::extractors::WritableSession;
 use graphannis::corpusstorage::{QueryLanguage, ResultOrder};
 use serde::Deserialize;
+use tokio::sync::mpsc::channel;
 use tokio::task::JoinHandle;
 
 const DEFAULT_EXAMPLE: &str = r#"match number,1 node name,1 tiger::lemma,1 tiger::morph,1 tiger::pos
@@ -83,7 +84,7 @@ pub async fn get(
 
     Ok(template)
 }
-pub async fn start_export(
+pub async fn run(
     mut session: WritableSession,
     State(app_state): State<Arc<GlobalAppState>>,
     Form(params): Form<FormParams>,
@@ -99,8 +100,9 @@ pub async fn start_export(
         order: ResultOrder::Normal,
     };
     let app_state_copy = app_state.clone();
+    let (sender, receiver) = channel(1);
     let handle: JoinHandle<Result<String>> = tokio::spawn(async move {
-        let mut exporter = CSVExporter::new(find_query);
+        let mut exporter = CSVExporter::new(find_query, sender);
         let mut result_string_buffer = Vec::new();
 
         exporter
@@ -139,7 +141,8 @@ async fn create_example_output_template(
     let mut template = ExampleOutputTemplate::default();
 
     if !example_query.corpora.is_empty() && !example_query.query.is_empty() {
-        let mut exporter = CSVExporter::new(example_query);
+        let (sender, _receiver) = channel(1);
+        let mut exporter = CSVExporter::new(example_query, sender);
         let mut example_string_buffer = Vec::new();
         match exporter
             .convert_text(state, Some(3), &mut example_string_buffer)

@@ -33,6 +33,8 @@ pub enum AppError {
     UrlParsing(#[from] url::ParseError),
     #[error(transparent)]
     Sqlx(#[from] sqlx_core::error::Error),
+    #[error(transparent)]
+    ProgressSend(#[from] tokio::sync::mpsc::error::SendError<f32>),
 }
 
 #[derive(Template)]
@@ -54,7 +56,6 @@ impl IntoResponse for AppError {
                 StatusCode::INTERNAL_SERVER_ERROR,
                 format!("Url could not be parsed: {}", e),
             ),
-            AppError::Sqlx(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("{}", e)),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, format!("{}", &self)),
         };
         let template = ErrorTemplate {
