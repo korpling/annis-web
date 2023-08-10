@@ -1,5 +1,13 @@
-<div id="export-status" class="tile is-child box">
+<div id="export-status"
+     hx-target="this"
+     hx-swap="outerHTML"
+     class="tile is-child box">
+    {% match job %}
+    {% when Some with (uuid) %}
+    Running export job with ID {{ uuid }}.
+    {% when None %}
     <button class="button"
             name="start_export"
-            hx-get="{{ url_prefix }}export/start">Start export</button>
+            hx-post="{{ url_prefix }}export/start">Start export</button>
+{% endmatch %}
 </div>

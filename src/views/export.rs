@@ -42,6 +42,7 @@ impl Default for ExampleOutputTemplate {
 #[template(path = "export-job.html")]
 struct ExportJobTemplate {
     url_prefix: String,
+    job: Option<uuid::Uuid>,
 }
 
 #[derive(Template, Debug)]
@@ -76,6 +77,7 @@ pub async fn get(
         state: session_state,
         export_job: ExportJobTemplate {
             url_prefix: state.frontend_prefix.to_string(),
+            job: None,
         },
     };
 
@@ -115,6 +117,7 @@ pub async fn start_export(
 
     let template = ExportJobTemplate {
         url_prefix: app_state.frontend_prefix.to_string(),
+        job: Some(handle_id),
     };
 
     Ok(template)
