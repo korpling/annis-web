@@ -1,14 +1,17 @@
-use std::sync::Arc;
+use std::{fs::File, sync::Arc};
 
 use crate::{
     client::search::FindQuery,
     converter::CSVExporter,
+    errors::AppError,
     state::{ExportJob, GlobalAppState, SessionState},
     Result,
 };
 use askama::Template;
 use axum::{
+    body::StreamBody,
     extract::{Query, State},
+    http::header,
     response::IntoResponse,
     Form,
 };
@@ -17,6 +20,7 @@ use graphannis::corpusstorage::{QueryLanguage, ResultOrder};
 use serde::Deserialize;
 use tokio::sync::mpsc::channel;
 use tokio::task::JoinHandle;
+use tokio_util::io::ReaderStream;
 
 const DEFAULT_EXAMPLE: &str = r#"match number,1 node name,1 tiger::lemma,1 tiger::morph,1 tiger::pos
 1,pcc2/11299#tok_1,Feigenblatt,Nom.Sg.Neut,NN
@@ -107,15 +111,14 @@ pub async fn create_job(
             };
             let app_state_copy = app_state.clone();
             let (sender, receiver) = channel(1);
-            let handle: JoinHandle<Result<String>> = tokio::spawn(async move {
+            let handle: JoinHandle<Result<File>> = tokio::spawn(async move {
                 let mut exporter = CSVExporter::new(find_query, Some(sender));
-                let mut result_string_buffer = Vec::new();
+                let mut result_file = tempfile::tempfile()?;
 
                 exporter
-                    .convert_text(&app_state_copy, Some(3), &mut result_string_buffer)
+                    .convert_text(&app_state_copy, Some(3), &mut result_file)
                     .await?;
-                let result = String::from_utf8_lossy(&result_string_buffer).to_string();
-                Ok(result)
+                Ok(result_file)
             });
             ExportJob::new(handle, receiver)
         });
@@ -145,12 +148,26 @@ pub async fn download_file(
     session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let template = ExportJobTemplate {
-        url_prefix: app_state.frontend_prefix.to_string(),
-        state: current_job(&session, &app_state),
-    };
+    let session_id = session.id();
 
-    Ok(template)
+    if let Some((_, job)) = app_state.background_jobs.remove(session_id) {
+        let file = job.handle.await??;
+        // convert the `AsyncRead` into a `Stream`
+        let stream = ReaderStream::new(tokio::fs::File::from(file));
+        // convert the `Stream` into an `axum::body::HttpBody`
+        let body = StreamBody::new(stream);
+
+        let mut headers = header::HeaderMap::new();
+        headers.insert(header::CONTENT_TYPE, "text/plain; charset=utf-8".parse()?);
+        headers.insert(
+            header::CONTENT_DISPOSITION,
+            "attachment; filename=\"annis-export.csv\"".parse()?,
+        );
+
+        Ok((headers, body))
+    } else {
+        Err(AppError::DownloadFileNotFound)
+    }
 }
 
 #[derive(Clone, Debug)]

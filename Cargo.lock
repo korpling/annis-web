@@ -101,6 +101,7 @@ dependencies = [
  "scraper",
  "serde",
  "sqlx-core",
+ "tempfile",
  "thiserror",
  "tokio",
  "tokio-util",

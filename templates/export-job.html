@@ -12,6 +12,6 @@
     {{ progress * 100.0 }}%</progress>
   </div>
   {% when JobState::Finished %}
-  Finished.
+  <a hx-boost="false" href="{{ url_prefix }}export/file">Download result</a>
 {% endmatch %}
 </div>

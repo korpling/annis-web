@@ -1,10 +1,11 @@
 use askama::Template;
 use axum::{
-    http::StatusCode,
+    http::{header::InvalidHeaderValue, StatusCode},
     response::{Html, IntoResponse},
 };
 use reqwest::Url;
 use thiserror::Error;
+use tokio::task::JoinError;
 
 use crate::state::SessionState;
 
@@ -35,6 +36,12 @@ pub enum AppError {
     Sqlx(#[from] sqlx_core::error::Error),
     #[error(transparent)]
     ProgressSend(#[from] tokio::sync::mpsc::error::SendError<f32>),
+    #[error(transparent)]
+    JoinError(#[from] JoinError),
+    #[error(transparent)]
+    InvalidHeaderValue(#[from] InvalidHeaderValue),
+    #[error("Download file not found.")]
+    DownloadFileNotFound,
 }
 
 #[derive(Template)]
@@ -51,6 +58,7 @@ impl IntoResponse for AppError {
         tracing::error!("{}", &self);
         let (status, message) = match self {
             AppError::Reqwest(e) => (StatusCode::BAD_GATEWAY, format!("{}", e)),
+            AppError::DownloadFileNotFound => (StatusCode::NOT_FOUND, format!("{}", &self)),
             AppError::Backend { .. } => (StatusCode::BAD_GATEWAY, format!("{}", &self)),
             AppError::UrlParsing(e) => (
                 StatusCode::INTERNAL_SERVER_ERROR,

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
+use std::{collections::BTreeSet, fs::File};
 use tokio::{sync::mpsc::Receiver, task::JoinHandle};
 use url::Url;
 
@@ -12,13 +12,13 @@ pub struct SessionState {
 
 #[derive(Debug)]
 pub struct ExportJob {
-    pub handle: JoinHandle<Result<String>>,
+    pub handle: JoinHandle<Result<File>>,
     progress: f32,
     progress_receiver: Receiver<f32>,
 }
 
 impl ExportJob {
-    pub fn new(handle: JoinHandle<Result<String>>, progress_receiver: Receiver<f32>) -> ExportJob {
+    pub fn new(handle: JoinHandle<Result<File>>, progress_receiver: Receiver<f32>) -> ExportJob {
         ExportJob {
             handle,
             progress_receiver,
