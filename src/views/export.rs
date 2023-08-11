@@ -1,4 +1,4 @@
-use std::{fs::File, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     client::search::FindQuery,
@@ -18,6 +18,7 @@ use axum::{
 use axum_sessions::extractors::ReadableSession;
 use graphannis::corpusstorage::{QueryLanguage, ResultOrder};
 use serde::Deserialize;
+use tempfile::NamedTempFile;
 use tokio::sync::mpsc::channel;
 use tokio::task::JoinHandle;
 use tokio_util::io::ReaderStream;
@@ -111,12 +112,12 @@ pub async fn create_job(
             };
             let app_state_copy = app_state.clone();
             let (sender, receiver) = channel(1);
-            let handle: JoinHandle<Result<File>> = tokio::spawn(async move {
+            let handle: JoinHandle<Result<NamedTempFile>> = tokio::spawn(async move {
                 let mut exporter = CSVExporter::new(find_query, Some(sender));
-                let mut result_file = tempfile::tempfile()?;
+                let mut result_file = tempfile::NamedTempFile::new()?;
 
                 exporter
-                    .convert_text(&app_state_copy, Some(3), &mut result_file)
+                    .convert_text(&app_state_copy, None, &mut result_file)
                     .await?;
                 Ok(result_file)
             });
@@ -153,7 +154,8 @@ pub async fn download_file(
     if let Some((_, job)) = app_state.background_jobs.remove(session_id) {
         let file = job.handle.await??;
         // convert the `AsyncRead` into a `Stream`
-        let stream = ReaderStream::new(tokio::fs::File::from(file));
+        let tokio_file = tokio::fs::File::open(file.path()).await?;
+        let stream = ReaderStream::new(tokio_file);
         // convert the `Stream` into an `axum::body::HttpBody`
         let body = StreamBody::new(stream);
 

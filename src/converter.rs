@@ -19,6 +19,10 @@ pub struct CSVExporter {
     progress: Option<Sender<f32>>,
 }
 
+const SINGLE_STEP_PROGRESS: f32 = 1.0 / 3.0;
+const FIRST_PASS_PROGRESS: f32 = SINGLE_STEP_PROGRESS;
+const SECOND_PASS_PROGRESS: f32 = SINGLE_STEP_PROGRESS * 2.0;
+
 impl CSVExporter {
     pub fn new(query: FindQuery, progress: Option<Sender<f32>>) -> Self {
         Self {
@@ -41,15 +45,15 @@ impl CSVExporter {
         let result = search::find(&query, state).await?;
 
         if let Some(progress) = &self.progress {
-            progress.send(1.0 / 3.0).await?;
+            progress.send(FIRST_PASS_PROGRESS).await?;
         }
-
         self.first_pass(&result, state).await?;
-        if let Some(progress) = &self.progress {
-            progress.send(2.0 / 3.0).await?;
-        }
 
+        if let Some(progress) = &self.progress {
+            progress.send(SECOND_PASS_PROGRESS).await?;
+        }
         self.second_pass(&result, state, output).await?;
+
         if let Some(progress) = &self.progress {
             progress.send(1.0).await?;
         }
@@ -62,7 +66,7 @@ impl CSVExporter {
         state: &GlobalAppState,
     ) -> Result<()> {
         for m in matches.range(..)? {
-            let (_match_nr, node_ids) = m?;
+            let (match_nr, node_ids) = m?;
             // Get the corpus from the first node
             if let Some(id) = node_ids.first() {
                 let (corpus, _) = id.split_once("/").unwrap_or_default();
@@ -82,6 +86,14 @@ impl CSVExporter {
                             .or_default()
                             .extend(annos);
                     }
+                }
+            }
+            if match_nr % 10 == 0 {
+                if let Some(sender) = &self.progress {
+                    let partial_progress = match_nr as f32 / matches.len() as f32;
+                    sender
+                        .send(FIRST_PASS_PROGRESS + (partial_progress * SINGLE_STEP_PROGRESS))
+                        .await?;
                 }
             }
         }
@@ -139,6 +151,14 @@ impl CSVExporter {
                     }
                 }
                 writer.write_record(record)?;
+            }
+            if idx % 10 == 0 {
+                if let Some(sender) = &self.progress {
+                    let partial_progress = idx as f32 / matches.len() as f32;
+                    sender
+                        .send(SECOND_PASS_PROGRESS + (partial_progress * SINGLE_STEP_PROGRESS))
+                        .await?;
+                }
             }
         }
         Ok(())

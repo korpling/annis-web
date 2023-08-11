@@ -100,7 +100,7 @@ struct Cli {
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::from_str("sqlx::query=warn,info").unwrap())
+        .with_env_filter(EnvFilter::from_str("sqlx::query=warn,graphannis_core=warn,info").unwrap())
         .init();
 
     let cli = Cli::parse();
