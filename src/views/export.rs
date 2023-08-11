@@ -60,7 +60,7 @@ pub struct FormParams {
     query: Option<String>,
 }
 
-pub async fn get(
+pub async fn show_page(
     session: ReadableSession,
     Query(params): Query<FormParams>,
     State(state): State<Arc<GlobalAppState>>,
@@ -108,7 +108,7 @@ pub async fn create_job(
             let app_state_copy = app_state.clone();
             let (sender, receiver) = channel(1);
             let handle: JoinHandle<Result<String>> = tokio::spawn(async move {
-                let mut exporter = CSVExporter::new(find_query, sender);
+                let mut exporter = CSVExporter::new(find_query, Some(sender));
                 let mut result_string_buffer = Vec::new();
 
                 exporter
@@ -130,6 +130,18 @@ pub async fn create_job(
 }
 
 pub async fn job_status(
+    session: ReadableSession,
+    State(app_state): State<Arc<GlobalAppState>>,
+) -> Result<impl IntoResponse> {
+    let template = ExportJobTemplate {
+        url_prefix: app_state.frontend_prefix.to_string(),
+        state: current_job(&session, &app_state),
+    };
+
+    Ok(template)
+}
+
+pub async fn download_file(
     session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
@@ -177,8 +189,7 @@ async fn create_example_output_template(
     let mut template = ExampleOutputTemplate::default();
 
     if !example_query.corpora.is_empty() && !example_query.query.is_empty() {
-        let (sender, _receiver) = channel(1);
-        let mut exporter = CSVExporter::new(example_query, sender);
+        let mut exporter = CSVExporter::new(example_query, None);
         let mut example_string_buffer = Vec::new();
         match exporter
             .convert_text(state, Some(3), &mut example_string_buffer)

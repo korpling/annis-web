@@ -16,11 +16,11 @@ use crate::{
 pub struct CSVExporter {
     query: FindQuery,
     annotations_for_matched_nodes: BTreeMap<usize, BTreeSet<AnnoKey>>,
-    progress: Sender<f32>,
+    progress: Option<Sender<f32>>,
 }
 
 impl CSVExporter {
-    pub fn new(query: FindQuery, progress: Sender<f32>) -> Self {
+    pub fn new(query: FindQuery, progress: Option<Sender<f32>>) -> Self {
         Self {
             query,
             annotations_for_matched_nodes: BTreeMap::new(),
@@ -40,18 +40,18 @@ impl CSVExporter {
 
         let result = search::find(&query, state).await?;
 
-        if !self.progress.is_closed() {
-            self.progress.send(1.0 / 3.0).await?;
+        if let Some(progress) = &self.progress {
+            progress.send(1.0 / 3.0).await?;
         }
 
         self.first_pass(&result, state).await?;
-        if !self.progress.is_closed() {
-            self.progress.send(2.0 / 3.0).await?;
+        if let Some(progress) = &self.progress {
+            progress.send(2.0 / 3.0).await?;
         }
 
         self.second_pass(&result, state, output).await?;
-        if !self.progress.is_closed() {
-            self.progress.send(1.0).await?;
+        if let Some(progress) = &self.progress {
+            progress.send(1.0).await?;
         }
         Ok(())
     }
