@@ -4,13 +4,12 @@
 {% endblock title %}
 {% block content %}
   <article>
-    <h1 class="title">Export</h1>
-    <form>
+    <h1 class="title">Export CSV</h1>
+    <form class="box">
       <div class="tile is-ancestor">
-        <div class="tile is-parent">
-          <div class="tile is-parent is-6">
-            <div class="tile is-child box">
-              <textarea
+        <div class="tile is-parent is-6">
+          <div class="tile is-child">
+            <textarea
             name="query"" class="textarea is-family-code" 
             placeholder='AQL query, to search for all token use the following query: tok '
             hx-get="{{ url_prefix }}export"
@@ -19,28 +18,25 @@
             hx-select="#export-example-output"
             hx-swap="outerHTML"
             hx-push-url="true"></textarea>
-            </div>
           </div>
-          <div class="tile is-parent is-6">
-            <div class="tile is-child box">
-              <h2 class="title is-5">Description</h2>
-              <div>
-                The CSV Exporter exports only the values of the elements searched for by the user,
-                ignoring the context around search results.
-                The values for all annotations of each of the found nodes
-                is given in a comma-separated table (CSV).
-              </div>
+        </div>
+        <div class="tile is-parent is-6">
+          <div class="tile is-child">
+            <h2 class="title">Description</h2>
+            <div>
+              The CSV Exporter exports only the values of the elements searched for by the user,
+              ignoring the context around search results.
+              The values for all annotations of each of the found nodes
+              is given in a comma-separated table (CSV).
             </div>
           </div>
         </div>
       </div>
-      <div class="tile is-parent">
-        <div class="tile is-child box">
-          <h2 class="title is-5">Example output</h2>
-          <div id="export-example-output">{{ example_output|safe }}</div>
-        </div>
-      </div>
-      <div class="tile is-parent">{{ export_job|safe }}</div>
+      {{ export_job|safe }}
     </form>
+    <div class="box">
+      <h2 class="title is-5">Example output</h2>
+      <div id="export-example-output">{{ example_output|safe }}</div>
+    </div>
   </article>
 {% endblock content %}

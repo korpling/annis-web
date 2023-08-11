@@ -218,3 +218,6 @@ async fn create_example_output_template(
     }
     Ok(template)
 }
+
+#[cfg(test)]
+mod tests;
