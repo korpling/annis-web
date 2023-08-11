@@ -69,12 +69,12 @@ impl CSVExporter {
             let (match_nr, node_ids) = m?;
             // Get the corpus from the first node
             if let Some(id) = node_ids.first() {
-                let (corpus, _) = id.split_once("/").unwrap_or_default();
+                let (corpus, _) = id.split_once('/').unwrap_or_default();
                 // Get the subgraph for the IDs
                 let g = corpora::subgraph(corpus, node_ids.clone(), None, 1, 1, state).await?;
                 // Collect annotations for the matched nodes
                 for (pos_in_match, node_name) in node_ids.iter().enumerate() {
-                    if let Some(n_id) = g.get_node_id_from_name(&node_name)? {
+                    if let Some(n_id) = g.get_node_id_from_name(node_name)? {
                         let annos = g
                             .get_node_annos()
                             .get_annotations_for_item(&n_id)?
@@ -111,7 +111,7 @@ impl CSVExporter {
     {
         let mut writer = csv::Writer::from_writer(output);
         // Create the header from the first entry
-        if let Some(_) = matches.get(&0)? {
+        if matches.contains_key(&0)? {
             let mut header = Vec::default();
             header.push("match number".to_string());
             for (m_nr, annos) in &self.annotations_for_matched_nodes {
@@ -129,7 +129,7 @@ impl CSVExporter {
         for m in matches.range(..)? {
             let (idx, node_ids) = m?;
             if let Some(first_id) = node_ids.first() {
-                let (corpus, _) = first_id.split_once("/").unwrap_or_default();
+                let (corpus, _) = first_id.split_once('/').unwrap_or_default();
                 // Get the subgraph for the IDs
                 let g = corpora::subgraph(corpus, node_ids.clone(), None, 1, 1, state).await?;
 

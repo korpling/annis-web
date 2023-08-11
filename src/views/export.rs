@@ -104,7 +104,7 @@ pub async fn create_job(
         .or_insert_with(|| {
             // Create a background job that performs the export
             let find_query = FindQuery {
-                query: params.query.unwrap_or_default().clone(),
+                query: params.query.unwrap_or_default(),
                 corpora: session_state.selected_corpora.iter().cloned().collect(),
                 query_language: QueryLanguage::AQL,
                 limit: None,
@@ -153,10 +153,8 @@ pub async fn download_file(
 
     if let Some((_, job)) = app_state.background_jobs.remove(session_id) {
         let file = job.handle.await??;
-        // convert the `AsyncRead` into a `Stream`
         let tokio_file = tokio::fs::File::open(file.path()).await?;
         let stream = ReaderStream::new(tokio_file);
-        // convert the `Stream` into an `axum::body::HttpBody`
         let body = StreamBody::new(stream);
 
         let mut headers = header::HeaderMap::new();
