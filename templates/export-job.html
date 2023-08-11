@@ -7,11 +7,15 @@
   <button class="button" hx-post="{{ url_prefix }}export/job">Start export</button>
   {% when JobState::Running with (progress) %}
   <div hx-trigger="load delay:500ms" hx-get="{{ url_prefix }}export/job">
-    <label for="job-progress">Export progress:</label>
+    <label for="job-progress">Export progress</label>
     <progress id="job-progress" max="1" value="{{ progress }}">
     {{ progress * 100.0 }}%</progress>
   </div>
   {% when JobState::Finished %}
-  <a hx-boost="false" href="{{ url_prefix }}export/file">Download result</a>
+  <a hx-boost="false"
+     _="on load click() me"
+     href="{{ url_prefix }}export/file">Click here if the download does not start automatically.</a>
+  <!-- Poll if download was started and we can exchange the link again -->
+  <div hx-get="{{ url_prefix }}export/job" hx-trigger="every 2s"></div>
 {% endmatch %}
 </div>
