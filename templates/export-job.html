@@ -2,10 +2,16 @@
      hx-target="this"
      hx-swap="outerHTML"
      class="tile is-child box">
-    {% match job %}
-    {% when Some with (uuid) %}
-    Running export job with ID {{ uuid }}.
-    {% when None %}
-    <button class="button" hx-post="{{ url_prefix }}export/run">Start export</button>
+  {% match state %}
+  {% when JobState::Idle %}
+  <button class="button" hx-post="{{ url_prefix }}export/job">Start export</button>
+  {% when JobState::Running with (progress) %}
+  <div hx-trigger="load delay:500ms" hx-get="{{ url_prefix }}export/job">
+    <label for="job-progress">Export progress:</label>
+    <progress id="job-progress" max="1" value="{{ progress }}">
+    {{ progress * 100.0 }}%</progress>
+  </div>
+  {% when JobState::Finished %}
+  Finished.
 {% endmatch %}
 </div>

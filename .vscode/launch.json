@@ -1,45 +1,39 @@
 {
-    // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
-    // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
-    // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'annis-web'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=annis-web",
-                    "--package=annis-web"
-                ],
-                "filter": {
-                    "name": "annis-web",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'annis-web'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=annis-web",
-                    "--package=annis-web"
-                ],
-                "filter": {
-                    "name": "annis-web",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
+  // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
+  // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
+  // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'annis-web'",
+      "cargo": {
+        "args": ["build", "--bin=annis-web", "--package=annis-web"],
+        "filter": {
+          "name": "annis-web",
+          "kind": "bin"
         }
-    ]
+      },
+      "args": [
+        "--session-file",
+        "${workspaceFolder}/annis-frontend-sessions.db"
+      ],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'annis-web'",
+      "cargo": {
+        "args": ["test", "--no-run", "--bin=annis-web", "--package=annis-web"],
+        "filter": {
+          "name": "annis-web",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
 }

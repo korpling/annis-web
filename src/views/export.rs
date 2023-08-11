@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{
     client::search::FindQuery,
     converter::CSVExporter,
-    state::{GlobalAppState, SessionState},
+    state::{ExportJob, GlobalAppState, SessionState},
     Result,
 };
 use askama::Template;
@@ -12,7 +12,7 @@ use axum::{
     response::IntoResponse,
     Form,
 };
-use axum_sessions::extractors::WritableSession;
+use axum_sessions::extractors::ReadableSession;
 use graphannis::corpusstorage::{QueryLanguage, ResultOrder};
 use serde::Deserialize;
 use tokio::sync::mpsc::channel;
@@ -43,7 +43,7 @@ impl Default for ExampleOutputTemplate {
 #[template(path = "export-job.html")]
 struct ExportJobTemplate {
     url_prefix: String,
-    job: Option<uuid::Uuid>,
+    state: JobState,
 }
 
 #[derive(Template, Debug)]
@@ -61,7 +61,7 @@ pub struct FormParams {
 }
 
 pub async fn get(
-    session: WritableSession,
+    session: ReadableSession,
     Query(params): Query<FormParams>,
     State(state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
@@ -78,51 +78,87 @@ pub async fn get(
         state: session_state,
         export_job: ExportJobTemplate {
             url_prefix: state.frontend_prefix.to_string(),
-            job: None,
+            state: current_job(&session, &state),
         },
     };
 
     Ok(template)
 }
-pub async fn run(
-    mut session: WritableSession,
+pub async fn create_job(
+    session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
     Form(params): Form<FormParams>,
 ) -> Result<impl IntoResponse> {
     let session_state: SessionState = session.get("state").unwrap_or_default();
 
-    // Create a background job that performs the export
-    let find_query = FindQuery {
-        query: params.query.unwrap_or_default().clone(),
-        corpora: session_state.selected_corpora.iter().cloned().collect(),
-        query_language: QueryLanguage::AQL,
-        limit: None,
-        order: ResultOrder::Normal,
-    };
-    let app_state_copy = app_state.clone();
-    let (sender, receiver) = channel(1);
-    let handle: JoinHandle<Result<String>> = tokio::spawn(async move {
-        let mut exporter = CSVExporter::new(find_query, sender);
-        let mut result_string_buffer = Vec::new();
+    // Only allow one background job per session
+    let session_id = session.id();
+    app_state
+        .background_jobs
+        .entry(session_id.to_string())
+        .or_insert_with(|| {
+            // Create a background job that performs the export
+            let find_query = FindQuery {
+                query: params.query.unwrap_or_default().clone(),
+                corpora: session_state.selected_corpora.iter().cloned().collect(),
+                query_language: QueryLanguage::AQL,
+                limit: None,
+                order: ResultOrder::Normal,
+            };
+            let app_state_copy = app_state.clone();
+            let (sender, receiver) = channel(1);
+            let handle: JoinHandle<Result<String>> = tokio::spawn(async move {
+                let mut exporter = CSVExporter::new(find_query, sender);
+                let mut result_string_buffer = Vec::new();
 
-        exporter
-            .convert_text(&app_state_copy, Some(3), &mut result_string_buffer)
-            .await?;
-        let result = String::from_utf8_lossy(&result_string_buffer).to_string();
-        Ok(result)
-    });
-    // Store the join handle in the global application job pool and remember
-    // its ID in the session state
-    let handle_id = uuid::Uuid::new_v4();
-    app_state.background_jobs.insert(handle_id, handle);
-    session.insert("export-handle-id", handle_id.as_u128())?;
+                exporter
+                    .convert_text(&app_state_copy, Some(3), &mut result_string_buffer)
+                    .await?;
+                let result = String::from_utf8_lossy(&result_string_buffer).to_string();
+                Ok(result)
+            });
+            ExportJob::new(handle, receiver)
+        });
 
+    // Only render the export job status template
     let template = ExportJobTemplate {
         url_prefix: app_state.frontend_prefix.to_string(),
-        job: Some(handle_id),
+        state: current_job(&session, &app_state),
     };
 
     Ok(template)
+}
+
+pub async fn job_status(
+    session: ReadableSession,
+    State(app_state): State<Arc<GlobalAppState>>,
+) -> Result<impl IntoResponse> {
+    let template = ExportJobTemplate {
+        url_prefix: app_state.frontend_prefix.to_string(),
+        state: current_job(&session, &app_state),
+    };
+
+    Ok(template)
+}
+
+#[derive(Clone, Debug)]
+enum JobState {
+    Idle,
+    Running(f32),
+    Finished,
+}
+
+fn current_job(session: &ReadableSession, app_state: &GlobalAppState) -> JobState {
+    let session_id = session.id();
+    if let Some(mut job) = app_state.background_jobs.get_mut(session_id) {
+        if job.handle.is_finished() {
+            JobState::Finished
+        } else {
+            JobState::Running(job.get_progress())
+        }
+    } else {
+        JobState::Idle
+    }
 }
 
 async fn create_example_output_template(

@@ -60,7 +60,8 @@ async fn app(
         .route("/", get(views::corpora::get))
         .route("/", post(views::corpora::post))
         .route("/export", get(views::export::get))
-        .route("/export/run", post(views::export::run))
+        .route("/export/job", post(views::export::create_job))
+        .route("/export/job", get(views::export::job_status))
         .route("/static/*path", get(static_file))
         .with_state(Arc::new(global_state));
 
