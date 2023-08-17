@@ -32,7 +32,7 @@
           "kind": "bin"
         }
       },
-      "args": [],
+      "args": ["export_download"],
       "cwd": "${workspaceFolder}"
     }
   ]

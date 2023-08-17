@@ -4,7 +4,7 @@ use axum::{body::Body, http::Request};
 use fantoccini::Locator;
 use mockito::Server;
 use scraper::Selector;
-use std::{net::SocketAddr, thread, time::Duration};
+use std::{net::SocketAddr, time::Duration};
 use test_log::test;
 use tower::ServiceExt;
 

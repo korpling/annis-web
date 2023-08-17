@@ -7,9 +7,11 @@ use axum::{
     body::HttpBody,
     http::{Request, Response},
 };
-use fantoccini::ClientBuilder;
+use fantoccini::{wd::Capabilities, ClientBuilder};
 use hyper::{Body, StatusCode};
 use scraper::Html;
+use serde_json::json;
+use tempfile::TempDir;
 use test_log::test;
 use tokio::task::JoinHandle;
 use tower::ServiceExt;
@@ -19,19 +21,46 @@ pub struct TestEnvironment {
     pub backend: mockito::Server,
     pub frontend: JoinHandle<()>,
     pub frontend_addr: String,
+    pub download_folder: TempDir,
 }
 
 impl TestEnvironment {
     pub async fn close(self) {
         self.webdriver.close().await.unwrap();
         self.frontend.abort();
+        self.download_folder.close().unwrap();
     }
 }
 
 pub async fn start_end2end_servers() -> TestEnvironment {
     let service_mock = mockito::Server::new_with_port(0);
 
+    // Create a temporary folder used for downloaded files. In case the browser
+    // is restricted to only to be allowed to operate in the download folder of
+    // the user, use a temporary subdirectory inside the download folder.
+    let download_folder = if let Some(user_download) = dirs::download_dir() {
+        TempDir::new_in(user_download)
+    } else {
+        TempDir::new()
+    }
+    .unwrap();
+
+    // Configure the browser to autoamtically accept downloads and add them the given folder
+    let mut browser_capabilities = Capabilities::default();
+    browser_capabilities.insert(
+        "goog:chromeOptions".to_string(),
+        json!({
+                "prefs": {
+                    "download": {
+                        "default_directory": download_folder.path().to_string_lossy(),
+                    },
+                }
+            }
+        ),
+    );
+
     let webdriver = ClientBuilder::native()
+        .capabilities(browser_capabilities)
         .connect("http://localhost:4444")
         .await
         .expect("failed to connect to WebDriver");
@@ -58,6 +87,7 @@ pub async fn start_end2end_servers() -> TestEnvironment {
         backend: service_mock,
         frontend: http_server,
         frontend_addr: format!("http://{}", addr),
+        download_folder,
     }
 }
 
