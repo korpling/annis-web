@@ -1,4 +1,5 @@
 pub mod client;
+pub mod converter;
 pub mod errors;
 pub mod state;
 mod views;
@@ -9,7 +10,7 @@ use axum::{
     extract::Path,
     http::{header, HeaderValue, Response, StatusCode},
     response::IntoResponse,
-    routing::{get, post},
+    routing::{delete, get, post},
     Router,
 };
 use axum_sessions::{async_session::MemoryStore, SessionLayer};
@@ -58,6 +59,11 @@ async fn app(
     let result = Router::new()
         .route("/", get(views::corpora::get))
         .route("/", post(views::corpora::post))
+        .route("/export", get(views::export::show_page))
+        .route("/export/job", post(views::export::create_job))
+        .route("/export/job", get(views::export::job_status))
+        .route("/export/file", get(views::export::download_file))
+        .route("/export/job", delete(views::export::cancel_job))
         .route("/static/*path", get(static_file))
         .with_state(Arc::new(global_state));
 
@@ -95,7 +101,7 @@ struct Cli {
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::from_str("sqlx::query=warn,info").unwrap())
+        .with_env_filter(EnvFilter::from_str("sqlx::query=warn,graphannis_core=warn,info").unwrap())
         .init();
 
     let cli = Cli::parse();

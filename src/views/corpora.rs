@@ -13,7 +13,7 @@ use axum_sessions::extractors::WritableSession;
 use serde::Deserialize;
 
 use crate::{
-    client::search,
+    client::corpora,
     state::{GlobalAppState, SessionState},
     Result,
 };
@@ -45,22 +45,24 @@ impl Corpora {
 struct CorporaFull {
     url_prefix: String,
     inner: Corpora,
+    state: SessionState,
 }
 
 pub async fn get(
     session: WritableSession,
     State(state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let corpora = search::corpora(state.as_ref()).await?;
+    let corpora = corpora::list(state.as_ref()).await?;
     let session_state: SessionState = session.get("state").unwrap_or_default();
 
     let mut inner = Corpora::new(state.as_ref());
     inner.corpus_names = corpora;
-    inner.selected_corpora = session_state.selected_corpora;
+    inner.selected_corpora = session_state.selected_corpora.clone();
 
     Ok(CorporaFull {
         url_prefix: state.frontend_prefix.to_string(),
         inner,
+        state: session_state,
     })
 }
 
@@ -78,7 +80,7 @@ pub async fn post(
     State(app_state): State<Arc<GlobalAppState>>,
     Form(payload): Form<Params>,
 ) -> Result<Response> {
-    let corpora = search::corpora(app_state.as_ref()).await?;
+    let corpora = corpora::list(app_state.as_ref()).await?;
     let mut filtered_corpora: Vec<_> = corpora
         .iter()
         .filter(|c| c.to_lowercase().contains(&payload.filter.to_lowercase()))
@@ -106,7 +108,7 @@ pub async fn post(
     let mut inner = Corpora::new(app_state.as_ref());
     inner.corpus_names = filtered_corpora;
     inner.filter = payload.filter;
-    inner.selected_corpora = session_state.selected_corpora;
+    inner.selected_corpora = session_state.selected_corpora.clone();
 
     if headers.contains_key("HX-Target") {
         // Only return the part that needs to be re-rendered
@@ -117,6 +119,7 @@ pub async fn post(
         let template = CorporaFull {
             inner,
             url_prefix: app_state.frontend_prefix.to_string(),
+            state: session_state,
         };
         Ok((StatusCode::OK, template).into_response())
     }

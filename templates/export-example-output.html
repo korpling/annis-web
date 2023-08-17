@@ -1,0 +1,5 @@
+{% if error.is_some() %}
+  <div class="notification is-danger">{{ error.as_ref().unwrap() }}</div>
+{% else %}
+  <pre class="content is-family-monospace">{{ example }}</pre>
+{% endif %}

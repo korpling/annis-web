@@ -1,0 +1,41 @@
+<div id="export-status"
+     hx-target="this"
+     hx-swap="outerHTML"
+     class="field is-horizontal">
+  <div class="field-label">
+    <!-- Left empty for spacing -->
+  </div>
+  <div class="field-body">
+    <div class="field is-grouped">
+      {% match state %}
+      {% when JobState::Idle %}
+      <div class="control">
+        <button class="button is-primary" hx-post="{{ url_prefix }}export/job">Start export</button>
+      </div>
+      {% when JobState::Running with (progress) %}
+      <div class="control is-expanded">
+        <label for="job-progress">Export is running</label>
+        <progress id="job-progress"
+                  class="progress is-info"
+                  max="1"
+                  value="{{ progress }}"
+                  hx-trigger="load delay:500ms"
+                  hx-get="{{ url_prefix }}export/job">
+        {{ progress * 100.0 }}%</progress>
+      </div>
+      <div class="control">
+        <button hx-delete="{{ url_prefix }}export/job" class="button">Cancel</button>
+      </div>
+      {% when JobState::Finished %}
+      <!-- Poll if download was started and we can exchange the link again -->
+      <div class="control"
+           hx-get="{{ url_prefix }}export/job"
+           hx-trigger="every 500ms">
+        <a hx-boost="false"
+           _="on load click() me"
+           href="{{ url_prefix }}export/file">Export finished. Click here if the download does not start automatically.</a>
+      </div>
+    {% endmatch %}
+  </div>
+</div>
+</div>
