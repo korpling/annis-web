@@ -1,4 +1,4 @@
-<div id="{{id}}" class="tile is-ancestor">
+<div id="{{ id }}" class="tile is-ancestor">
   <script>
   document.body.addEventListener("refocus", function(evt){
     const input = htmx.find("#{{id}} input");
@@ -20,7 +20,7 @@
           <div class="tags">
             {% for c in selected_corpora %}
               <span class="tag is-medium">{{ c }}
-                <button class="delete is-small" name="remove_corpus" value="{{c}}"></button>
+                <button class="delete is-small" name="remove_corpus" value="{{ c }}"></button>
               </span>
             {% endfor %}
           </div>
@@ -40,8 +40,9 @@
                    value="{{ filter }}"
                    hx-post="{{ url_prefix }}"
                    hx-trigger="keyup changed delay:500ms"
-                   hx-target="#{{id}}"
-                   hx-swap="outerHTML">
+                   hx-target="#{{ id }}"
+                   hx-swap="outerHTML"
+                   id="corpus-filter">
           </div>
           <div class="control">
             <button type="submit" class="button is-primary">Apply</button>
@@ -51,9 +52,7 @@
           {% if corpus_names.is_empty() %}
             <div class="notification is-warning">
               Empty corpus list.
-              {%  if !filter.is_empty() %}
-                Remove the filter "{{ filter }}"" to see all corpora.
-              {% endif %}
+              {% if !filter.is_empty() %}Remove the filter "{{ filter }}"" to see all corpora.{% endif %}
             </div>
           {% else %}
             <table class="table">
@@ -68,7 +67,7 @@
                   <tr>
                     <td>
                       {% if !selected_corpora.contains(c.as_str()) %}
-                        <button name="add_corpus" value="{{c}}" class="button is-small">Add</button>
+                        <button name="add_corpus" value="{{ c }}" class="button is-small">Add</button>
                       {% endif %}
                     </td>
                     <td class="corpus-name">{{ c }}</td>

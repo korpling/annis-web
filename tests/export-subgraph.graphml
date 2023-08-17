@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml>
+    <key id="k0" for="node" attr.name="Dokumentname" attr.type="string"/>
+    <key id="k1" for="node" attr.name="exmaralda::Focus_newInf" attr.type="string"/>
+    <key id="k2" for="node" attr.name="Genre" attr.type="string"/>
+    <key id="k3" for="node" attr.name="exmaralda::Inf-Stat" attr.type="string"/>
+    <key id="k4" for="node" attr.name="exmaralda::NP" attr.type="string"/>
+    <key id="k5" for="node" attr.name="exmaralda::Sent" attr.type="string"/>
+    <key id="k6" for="node" attr.name="Titel" attr.type="string"/>
+    <key id="k7" for="node" attr.name="URL" attr.type="string"/>
+    <key id="k8" for="node" attr.name="mmax::ambiguity" attr.type="string"/>
+    <key id="k9" for="node" attr.name="annotation_description" attr.type="string"/>
+    <key id="k10" for="node" attr.name="annotation_levels" attr.type="string"/>
+    <key id="k11" for="node" attr.name="tiger::cat" attr.type="string"/>
+    <key id="k12" for="node" attr.name="mmax::complex_np" attr.type="string"/>
+    <key id="k13" for="node" attr.name="mmax::dir_speech" attr.type="string"/>
+    <key id="k14" for="node" attr.name="annis::doc" attr.type="string"/>
+    <key id="k15" for="node" attr.name="full_name" attr.type="string"/>
+    <key id="k16" for="node" attr.name="mmax::grammatical_role" attr.type="string"/>
+    <key id="k17" for="node" attr.name="rst::kind" attr.type="string"/>
+    <key id="k18" for="node" attr.name="language" attr.type="string"/>
+    <key id="k19" for="node" attr.name="annis::layer" attr.type="string"/>
+    <key id="k20" for="node" attr.name="tiger::lemma" attr.type="string"/>
+    <key id="k21" for="node" attr.name="tiger::morph" attr.type="string"/>
+    <key id="k22" for="node" attr.name="annis::node_type" attr.type="string"/>
+    <key id="k23" for="node" attr.name="mmax::np_form" attr.type="string"/>
+    <key id="k24" for="node" attr.name="mmax::phrase_type" attr.type="string"/>
+    <key id="k25" for="node" attr.name="tiger::pos" attr.type="string"/>
+    <key id="k26" for="node" attr.name="mmax::referentiality" attr.type="string"/>
+    <key id="k27" for="node" attr.name="annis::relannis-version" attr.type="string"/>
+    <key id="k28" for="node" attr.name="source" attr.type="string"/>
+    <key id="k29" for="node" attr.name="annis::tok" attr.type="string"/>
+    <key id="k30" for="node" attr.name="annis::tok-whitespace-after" attr.type="string"/>
+    <key id="k31" for="node" attr.name="mmax::type" attr.type="string"/>
+    <key id="k32" for="node" attr.name="rst::type" attr.type="string"/>
+    <key id="k33" for="node" attr.name="version" attr.type="string"/>
+    <key id="k34" for="node" attr.name="rst::relname" attr.type="string"/>
+    <key id="k35" for="node" attr.name="tiger::func" attr.type="string"/>
+    <key id="k36" for="node" attr.name="dep::func" attr.type="string"/>
+    <graph edgedefault="directed" parse.order="nodesfirst" parse.nodeids="free" parse.edgeids="canonical">
+        <node id="pcc2/4282">
+            <data key="k0">pcc-4282</data>
+            <data key="k14">4282</data>
+            <data key="k2">Sport</data>
+            <data key="k22">corpus</data>
+            <data key="k6">Steilpass</data>
+        </node>
+        <node id="pcc2">
+            <data key="k10">pos;lemma;morph;Inf-Stat;Focus_newInf;PP;NP;Topic;Sent;Foc_contr;heading;rst_relation;phrase_type;type;complex_np;np_form;referentiality;grammatical_role;ambiguity;dir_speech;rstRel_type;tiger:func (for dominance egdes);dep:func (for dependency pointing relations);anaphor_antecedent (pointing relations)</data>
+            <data key="k15">Potsdam Commentary Corpus (sample of 2 documents)</data>
+            <data key="k18">German</data>
+            <data key="k22">corpus</data>
+            <data key="k27">3.2</data>
+            <data key="k28">Project D1, SFB 632</data>
+            <data key="k33">7.0</data>
+            <data key="k7">&lt;a href=&quot;http://www.aclweb.org/anthology/W/W04/W04-0213.pdf&quot; target=&quot;_new&quot;&gt;link&lt;/a&gt;</data>
+            <data key="k9">POS, lemma, morphology, constituent and dependency syntax, information structure, coreference, rhetorical structure, article headings</data>
+        </node>
+        <node id="pcc2/4282#tok_73">
+            <data key="k19">token_merged</data>
+            <data key="k20">der</data>
+            <data key="k21">Acc.Sg.Masc</data>
+            <data key="k22">node</data>
+            <data key="k25">ART</data>
+            <data key="k29">den</data>
+            <data key="k30"> </data>
+        </node>
+        <node id="pcc2/4282#tok_74">
+            <data key="k19">token_merged</data>
+            <data key="k20">Ball</data>
+            <data key="k21">Acc.Sg.Masc</data>
+            <data key="k22">node</data>
+            <data key="k25">NN</data>
+            <data key="k29">Ball</data>
+            <data key="k30"> </data>
+        </node>
+        <node id="pcc2/4282#u28">
+            <data key="k17">group</data>
+            <data key="k19">rst</data>
+            <data key="k22">node</data>
+            <data key="k32">span</data>
+        </node>
+        <node id="pcc2/4282#sSpan5">
+            <data key="k1">nf-unsol</data>
+            <data key="k19">exmaralda</data>
+            <data key="k22">node</data>
+        </node>
+        <node id="pcc2/4282#u4">
+            <data key="k17">segment</data>
+            <data key="k19">rst</data>
+            <data key="k22">node</data>
+        </node>
+        <node id="pcc2/4282#sSpan94">
+            <data key="k19">exmaralda</data>
+            <data key="k22">node</data>
+            <data key="k5">s</data>
+        </node>
+        <node id="pcc2/4282#sSpan148">
+            <data key="k19">mmax</data>
+            <data key="k22">node</data>
+        </node>
+        <node id="pcc2/4282#u21">
+            <data key="k17">group</data>
+            <data key="k19">rst</data>
+            <data key="k22">node</data>
+            <data key="k32">span</data>
+        </node>
+        <node id="pcc2/4282#u27">
+            <data key="k17">group</data>
+            <data key="k19">rst</data>
+            <data key="k22">node</data>
+            <data key="k32">span</data>
+        </node>
+        <node id="pcc2/4282#const_33">
+            <data key="k11">S</data>
+            <data key="k19">tiger</data>
+            <data key="k22">node</data>
+        </node>
+        <node id="pcc2/4282#u0">
+            <data key="k17">segment</data>
+            <data key="k19">rst</data>
+            <data key="k22">node</data>
+        </node>
+        <node id="pcc2/4282#u17">
+            <data key="k17">group</data>
+            <data key="k19">rst</data>
+            <data key="k22">node</data>
+            <data key="k32">span</data>
+        </node>
+        <node id="pcc2/4282#u25">
+            <data key="k17">group</data>
+            <data key="k19">rst</data>
+            <data key="k22">node</data>
+            <data key="k32">span</data>
+        </node>
+        <node id="pcc2/4282#u6">
+            <data key="k17">segment</data>
+            <data key="k19">rst</data>
+            <data key="k22">node</data>
+        </node>
+        <node id="pcc2/4282#u5">
+            <data key="k17">segment</data>
+            <data key="k19">rst</data>
+            <data key="k22">node</data>
+        </node>
+        <node id="pcc2/4282#u18">
+            <data key="k17">group</data>
+            <data key="k19">rst</data>
+            <data key="k22">node</data>
+            <data key="k32">span</data>
+        </node>
+        <node id="pcc2/4282#tok_72">
+            <data key="k19">token_merged</data>
+            <data key="k20">haben</data>
+            <data key="k21">3.Pl.Pres.Ind</data>
+            <data key="k22">node</data>
+            <data key="k25">VAFIN</data>
+            <data key="k29">haben</data>
+            <data key="k30"> </data>
+        </node>
+        <node id="pcc2/4282#sSpan61">
+            <data key="k19">exmaralda</data>
+            <data key="k22">node</data>
+            <data key="k4">NP</data>
+        </node>
+        <node id="pcc2/4282#sSpan27">
+            <data key="k19">exmaralda</data>
+            <data key="k22">node</data>
+            <data key="k3">acc-inf</data>
+        </node>
+        <node id="pcc2/4282#const_29">
+            <data key="k11">VP</data>
+            <data key="k19">tiger</data>
+            <data key="k22">node</data>
+        </node>
+        <node id="pcc2/4282#const_26">
+            <data key="k11">NP</data>
+            <data key="k19">tiger</data>
+            <data key="k22">node</data>
+        </node>
+        <node id="pcc2/4282#sSpan141">
+            <data key="k12">no</data>
+            <data key="k13">text_level</data>
+            <data key="k16">other</data>
+            <data key="k19">mmax</data>
+            <data key="k22">node</data>
+            <data key="k23">defnp</data>
+            <data key="k24">np</data>
+            <data key="k26">discourse-new</data>
+            <data key="k31">none</data>
+            <data key="k8">not_ambig</data>
+        </node>
+        <node id="pcc2/4282#const_32">
+            <data key="k11">CVP</data>
+            <data key="k19">tiger</data>
+            <data key="k22">node</data>
+        </node>
+        <node id="pcc2/4282#tok_75">
+            <data key="k19">token_merged</data>
+            <data key="k20">erst</data>
+            <data key="k21">--</data>
+            <data key="k22">node</data>
+            <data key="k25">ADV</data>
+            <data key="k29">erst</data>
+            <data key="k30"> </data>
+        </node>
+        <node id="pcc2/4282#merged.maz-4282.text.xml">
+            <data key="k22">datasource</data>
+        </node>
+        <edge id="e0" source="pcc2/4282#u6" target="pcc2/4282#tok_72" label="Coverage//">
+        </edge>
+        <edge id="e1" source="pcc2/4282#u6" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e2" source="pcc2/4282#u6" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e3" source="pcc2/4282#u6" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e4" source="pcc2/4282#const_26" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e5" source="pcc2/4282#const_26" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e6" source="pcc2/4282#u25" target="pcc2/4282#tok_72" label="Coverage//">
+        </edge>
+        <edge id="e7" source="pcc2/4282#u25" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e8" source="pcc2/4282#u25" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e9" source="pcc2/4282#u25" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e10" source="pcc2/4282#u28" target="pcc2/4282#tok_72" label="Coverage//">
+        </edge>
+        <edge id="e11" source="pcc2/4282#u28" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e12" source="pcc2/4282#u28" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e13" source="pcc2/4282#u28" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e14" source="pcc2/4282#const_29" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e15" source="pcc2/4282#const_29" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e16" source="pcc2/4282#const_29" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e17" source="pcc2/4282#u5" target="pcc2/4282#tok_72" label="Coverage//">
+        </edge>
+        <edge id="e18" source="pcc2/4282#u5" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e19" source="pcc2/4282#u5" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e20" source="pcc2/4282#u5" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e21" source="pcc2/4282#const_33" target="pcc2/4282#tok_72" label="Coverage//">
+        </edge>
+        <edge id="e22" source="pcc2/4282#const_33" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e23" source="pcc2/4282#const_33" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e24" source="pcc2/4282#const_33" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e25" source="pcc2/4282#u17" target="pcc2/4282#tok_72" label="Coverage//">
+        </edge>
+        <edge id="e26" source="pcc2/4282#u17" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e27" source="pcc2/4282#u17" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e28" source="pcc2/4282#u17" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e29" source="pcc2/4282#u0" target="pcc2/4282#tok_72" label="Coverage//">
+        </edge>
+        <edge id="e30" source="pcc2/4282#u0" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e31" source="pcc2/4282#u0" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e32" source="pcc2/4282#u0" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e33" source="pcc2/4282#const_32" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e34" source="pcc2/4282#const_32" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e35" source="pcc2/4282#const_32" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e36" source="pcc2/4282#u21" target="pcc2/4282#tok_72" label="Coverage//">
+        </edge>
+        <edge id="e37" source="pcc2/4282#u21" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e38" source="pcc2/4282#u21" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e39" source="pcc2/4282#u21" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e40" source="pcc2/4282#u18" target="pcc2/4282#tok_72" label="Coverage//">
+        </edge>
+        <edge id="e41" source="pcc2/4282#u18" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e42" source="pcc2/4282#u18" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e43" source="pcc2/4282#u18" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e44" source="pcc2/4282#u27" target="pcc2/4282#tok_72" label="Coverage//">
+        </edge>
+        <edge id="e45" source="pcc2/4282#u27" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e46" source="pcc2/4282#u27" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e47" source="pcc2/4282#u27" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e48" source="pcc2/4282#u4" target="pcc2/4282#tok_72" label="Coverage//">
+        </edge>
+        <edge id="e49" source="pcc2/4282#u4" target="pcc2/4282#tok_73" label="Coverage//">
+        </edge>
+        <edge id="e50" source="pcc2/4282#u4" target="pcc2/4282#tok_74" label="Coverage//">
+        </edge>
+        <edge id="e51" source="pcc2/4282#u4" target="pcc2/4282#tok_75" label="Coverage//">
+        </edge>
+        <edge id="e52" source="pcc2/4282#sSpan27" target="pcc2/4282#tok_73" label="Coverage/exmaralda/">
+        </edge>
+        <edge id="e53" source="pcc2/4282#sSpan27" target="pcc2/4282#tok_74" label="Coverage/exmaralda/">
+        </edge>
+        <edge id="e54" source="pcc2/4282#sSpan5" target="pcc2/4282#tok_72" label="Coverage/exmaralda/">
+        </edge>
+        <edge id="e55" source="pcc2/4282#sSpan5" target="pcc2/4282#tok_73" label="Coverage/exmaralda/">
+        </edge>
+        <edge id="e56" source="pcc2/4282#sSpan5" target="pcc2/4282#tok_74" label="Coverage/exmaralda/">
+        </edge>
+        <edge id="e57" source="pcc2/4282#sSpan5" target="pcc2/4282#tok_75" label="Coverage/exmaralda/">
+        </edge>
+        <edge id="e58" source="pcc2/4282#sSpan61" target="pcc2/4282#tok_73" label="Coverage/exmaralda/">
+        </edge>
+        <edge id="e59" source="pcc2/4282#sSpan61" target="pcc2/4282#tok_74" label="Coverage/exmaralda/">
+        </edge>
+        <edge id="e60" source="pcc2/4282#sSpan94" target="pcc2/4282#tok_72" label="Coverage/exmaralda/">
+        </edge>
+        <edge id="e61" source="pcc2/4282#sSpan94" target="pcc2/4282#tok_73" label="Coverage/exmaralda/">
+        </edge>
+        <edge id="e62" source="pcc2/4282#sSpan94" target="pcc2/4282#tok_74" label="Coverage/exmaralda/">
+        </edge>
+        <edge id="e63" source="pcc2/4282#sSpan94" target="pcc2/4282#tok_75" label="Coverage/exmaralda/">
+        </edge>
+        <edge id="e64" source="pcc2/4282#sSpan148" target="pcc2/4282#tok_72" label="Coverage/mmax/">
+        </edge>
+        <edge id="e65" source="pcc2/4282#sSpan148" target="pcc2/4282#tok_73" label="Coverage/mmax/">
+        </edge>
+        <edge id="e66" source="pcc2/4282#sSpan148" target="pcc2/4282#tok_74" label="Coverage/mmax/">
+        </edge>
+        <edge id="e67" source="pcc2/4282#sSpan148" target="pcc2/4282#tok_75" label="Coverage/mmax/">
+        </edge>
+        <edge id="e68" source="pcc2/4282#sSpan141" target="pcc2/4282#tok_73" label="Coverage/mmax/">
+        </edge>
+        <edge id="e69" source="pcc2/4282#sSpan141" target="pcc2/4282#tok_74" label="Coverage/mmax/">
+        </edge>
+        <edge id="e70" source="pcc2/4282#u6" target="pcc2/4282#tok_72" label="Dominance/rst/">
+        </edge>
+        <edge id="e71" source="pcc2/4282#u6" target="pcc2/4282#tok_73" label="Dominance/rst/">
+        </edge>
+        <edge id="e72" source="pcc2/4282#u6" target="pcc2/4282#tok_74" label="Dominance/rst/">
+        </edge>
+        <edge id="e73" source="pcc2/4282#u6" target="pcc2/4282#tok_75" label="Dominance/rst/">
+        </edge>
+        <edge id="e74" source="pcc2/4282#u25" target="pcc2/4282#u18" label="Dominance/rst/">
+            <data key="k34">span</data>
+        </edge>
+        <edge id="e75" source="pcc2/4282#u28" target="pcc2/4282#u27" label="Dominance/rst/">
+            <data key="k34">span</data>
+        </edge>
+        <edge id="e76" source="pcc2/4282#u5" target="pcc2/4282#u6" label="Dominance/rst/">
+            <data key="k34">elaboration</data>
+        </edge>
+        <edge id="e77" source="pcc2/4282#u17" target="pcc2/4282#u25" label="Dominance/rst/">
+            <data key="k34">evaluation</data>
+        </edge>
+        <edge id="e78" source="pcc2/4282#u0" target="pcc2/4282#u28" label="Dominance/rst/">
+            <data key="k34">elaboration</data>
+        </edge>
+        <edge id="e79" source="pcc2/4282#u21" target="pcc2/4282#u5" label="Dominance/rst/">
+            <data key="k34">span</data>
+        </edge>
+        <edge id="e80" source="pcc2/4282#u18" target="pcc2/4282#u4" label="Dominance/rst/">
+            <data key="k34">span</data>
+        </edge>
+        <edge id="e81" source="pcc2/4282#u27" target="pcc2/4282#u17" label="Dominance/rst/">
+            <data key="k34">span</data>
+        </edge>
+        <edge id="e82" source="pcc2/4282#u4" target="pcc2/4282#u21" label="Dominance/rst/">
+            <data key="k34">evidence</data>
+        </edge>
+        <edge id="e83" source="pcc2/4282#const_32" target="pcc2/4282#const_29" label="Dominance/tiger/">
+            <data key="k35">CJ</data>
+        </edge>
+        <edge id="e84" source="pcc2/4282#const_29" target="pcc2/4282#tok_75" label="Dominance/tiger/">
+            <data key="k35">MO</data>
+        </edge>
+        <edge id="e85" source="pcc2/4282#const_29" target="pcc2/4282#const_26" label="Dominance/tiger/">
+            <data key="k35">OA</data>
+        </edge>
+        <edge id="e86" source="pcc2/4282#const_33" target="pcc2/4282#tok_72" label="Dominance/tiger/">
+            <data key="k35">HD</data>
+        </edge>
+        <edge id="e87" source="pcc2/4282#const_33" target="pcc2/4282#const_32" label="Dominance/tiger/">
+            <data key="k35">OC</data>
+        </edge>
+        <edge id="e88" source="pcc2/4282#const_26" target="pcc2/4282#tok_73" label="Dominance/tiger/">
+            <data key="k35">NK</data>
+        </edge>
+        <edge id="e89" source="pcc2/4282#const_26" target="pcc2/4282#tok_74" label="Dominance/tiger/">
+            <data key="k35">NK</data>
+        </edge>
+        <edge id="e90" source="pcc2/4282#u6" target="pcc2/4282#tok_72" label="Dominance/rst/edge">
+        </edge>
+        <edge id="e91" source="pcc2/4282#u6" target="pcc2/4282#tok_73" label="Dominance/rst/edge">
+        </edge>
+        <edge id="e92" source="pcc2/4282#u6" target="pcc2/4282#tok_74" label="Dominance/rst/edge">
+        </edge>
+        <edge id="e93" source="pcc2/4282#u6" target="pcc2/4282#tok_75" label="Dominance/rst/edge">
+        </edge>
+        <edge id="e94" source="pcc2/4282#u21" target="pcc2/4282#u5" label="Dominance/rst/edge">
+            <data key="k34">span</data>
+        </edge>
+        <edge id="e95" source="pcc2/4282#u25" target="pcc2/4282#u18" label="Dominance/rst/edge">
+            <data key="k34">span</data>
+        </edge>
+        <edge id="e96" source="pcc2/4282#u28" target="pcc2/4282#u27" label="Dominance/rst/edge">
+            <data key="k34">span</data>
+        </edge>
+        <edge id="e97" source="pcc2/4282#u18" target="pcc2/4282#u4" label="Dominance/rst/edge">
+            <data key="k34">span</data>
+        </edge>
+        <edge id="e98" source="pcc2/4282#u27" target="pcc2/4282#u17" label="Dominance/rst/edge">
+            <data key="k34">span</data>
+        </edge>
+        <edge id="e99" source="pcc2/4282#const_32" target="pcc2/4282#const_29" label="Dominance/tiger/edge">
+            <data key="k35">CJ</data>
+        </edge>
+        <edge id="e100" source="pcc2/4282#const_29" target="pcc2/4282#tok_75" label="Dominance/tiger/edge">
+            <data key="k35">MO</data>
+        </edge>
+        <edge id="e101" source="pcc2/4282#const_29" target="pcc2/4282#const_26" label="Dominance/tiger/edge">
+            <data key="k35">OA</data>
+        </edge>
+        <edge id="e102" source="pcc2/4282#const_33" target="pcc2/4282#tok_72" label="Dominance/tiger/edge">
+            <data key="k35">HD</data>
+        </edge>
+        <edge id="e103" source="pcc2/4282#const_33" target="pcc2/4282#const_32" label="Dominance/tiger/edge">
+            <data key="k35">OC</data>
+        </edge>
+        <edge id="e104" source="pcc2/4282#const_26" target="pcc2/4282#tok_73" label="Dominance/tiger/edge">
+            <data key="k35">NK</data>
+        </edge>
+        <edge id="e105" source="pcc2/4282#const_26" target="pcc2/4282#tok_74" label="Dominance/tiger/edge">
+            <data key="k35">NK</data>
+        </edge>
+        <edge id="e106" source="pcc2/4282#u4" target="pcc2/4282#u21" label="Dominance/rst/rst">
+            <data key="k34">evidence</data>
+        </edge>
+        <edge id="e107" source="pcc2/4282#u0" target="pcc2/4282#u28" label="Dominance/rst/rst">
+            <data key="k34">elaboration</data>
+        </edge>
+        <edge id="e108" source="pcc2/4282#u5" target="pcc2/4282#u6" label="Dominance/rst/rst">
+            <data key="k34">elaboration</data>
+        </edge>
+        <edge id="e109" source="pcc2/4282#u17" target="pcc2/4282#u25" label="Dominance/rst/rst">
+            <data key="k34">evaluation</data>
+        </edge>
+        <edge id="e110" source="pcc2/4282#tok_74" target="pcc2/4282#tok_73" label="Pointing/dep/dep">
+            <data key="k36">det</data>
+        </edge>
+        <edge id="e111" source="pcc2/4282#tok_72" target="pcc2/4282#tok_73" label="Ordering/annis/">
+        </edge>
+        <edge id="e112" source="pcc2/4282#tok_73" target="pcc2/4282#tok_74" label="Ordering/annis/">
+        </edge>
+        <edge id="e113" source="pcc2/4282#tok_74" target="pcc2/4282#tok_75" label="Ordering/annis/">
+        </edge>
+        <edge id="e114" source="pcc2/4282#tok_72" target="pcc2/4282#tok_75" label="Ordering/annis/datasource-gap">
+        </edge>
+        <edge id="e115" source="pcc2/4282#sSpan27" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e116" source="pcc2/4282#u6" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e117" source="pcc2/4282#tok_74" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e118" source="pcc2/4282#u28" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e119" source="pcc2/4282#sSpan148" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e120" source="pcc2/4282#sSpan61" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e121" source="pcc2/4282#const_29" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e122" source="pcc2/4282#u17" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e123" source="pcc2/4282#merged.maz-4282.text.xml" target="pcc2/4282" label="PartOf/annis/">
+        </edge>
+        <edge id="e124" source="pcc2/4282" target="pcc2" label="PartOf/annis/">
+        </edge>
+        <edge id="e125" source="pcc2/4282#u21" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e126" source="pcc2/4282#tok_73" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e127" source="pcc2/4282#u27" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e128" source="pcc2/4282#const_26" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e129" source="pcc2/4282#const_33" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e130" source="pcc2/4282#sSpan141" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e131" source="pcc2/4282#u25" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e132" source="pcc2/4282#sSpan5" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e133" source="pcc2/4282#sSpan94" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e134" source="pcc2/4282#u5" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e135" source="pcc2/4282#tok_75" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e136" source="pcc2/4282#tok_72" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e137" source="pcc2/4282#u0" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e138" source="pcc2/4282#const_32" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e139" source="pcc2/4282#u18" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+        <edge id="e140" source="pcc2/4282#u4" target="pcc2/4282#merged.maz-4282.text.xml" label="PartOf/annis/">
+        </edge>
+    </graph>
+</graphml>

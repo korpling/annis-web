@@ -10,11 +10,28 @@ use axum::{
 use fantoccini::ClientBuilder;
 use hyper::{Body, StatusCode};
 use scraper::Html;
+use test_log::test;
+use tokio::task::JoinHandle;
 use tower::ServiceExt;
 
-pub async fn start_end2end_servers() -> (fantoccini::Client, mockito::Server, String) {
+pub struct TestEnvironment {
+    pub webdriver: fantoccini::Client,
+    pub backend: mockito::Server,
+    pub frontend: JoinHandle<()>,
+    pub frontend_addr: String,
+}
+
+impl TestEnvironment {
+    pub async fn close(self) {
+        self.webdriver.close().await.unwrap();
+        self.frontend.abort();
+    }
+}
+
+pub async fn start_end2end_servers() -> TestEnvironment {
     let service_mock = mockito::Server::new_with_port(0);
-    let c = ClientBuilder::native()
+
+    let webdriver = ClientBuilder::native()
         .connect("http://localhost:4444")
         .await
         .expect("failed to connect to WebDriver");
@@ -24,7 +41,7 @@ pub async fn start_end2end_servers() -> (fantoccini::Client, mockito::Server, St
 
     let service_mock_url = service_mock.url();
 
-    tokio::spawn(async move {
+    let http_server = tokio::spawn(async move {
         axum::Server::from_tcp(listener)
             .unwrap()
             .serve(
@@ -36,7 +53,12 @@ pub async fn start_end2end_servers() -> (fantoccini::Client, mockito::Server, St
             .await
             .unwrap();
     });
-    (c, service_mock, format!("http://{}", addr))
+    TestEnvironment {
+        webdriver,
+        backend: service_mock,
+        frontend: http_server,
+        frontend_addr: format!("http://{}", addr),
+    }
 }
 
 pub async fn get_body<T>(response: Response<T>) -> String
@@ -58,7 +80,7 @@ where
     Html::parse_document(&body)
 }
 
-#[tokio::test]
+#[test(tokio::test)]
 async fn existing_static_resource() {
     let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000)), None, None)
         .await
@@ -82,7 +104,7 @@ async fn existing_static_resource() {
     );
 }
 
-#[tokio::test]
+#[test(tokio::test)]
 async fn missing_static_resource() {
     let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000)), None, None)
         .await

@@ -5,22 +5,23 @@ use fantoccini::Locator;
 use mockito::Server;
 use scraper::Selector;
 use std::{net::SocketAddr, thread, time::Duration};
+use test_log::test;
 use tower::ServiceExt;
-use tracing_test::traced_test;
 
-#[tokio::test]
-#[traced_test]
+#[test(tokio::test)]
 async fn list_corpora() {
-    let (c, mut service_mock, url) = start_end2end_servers().await;
-    let m = service_mock
+    let mut env = start_end2end_servers().await;
+    let m = env
+        .backend
         .mock("GET", "/corpora")
         .with_header("content-type", "application/json")
         .with_body(r#"["TueBa-D/Z.6.0", "pcc2", "pcc11", "AnyPcCorpus", "demo.dialog"]"#)
         .create();
     {
-        c.goto(&url).await.unwrap();
+        env.webdriver.goto(&env.frontend_addr).await.unwrap();
 
-        c.wait()
+        env.webdriver
+            .wait()
             .for_element(Locator::XPath(
                 "//*[@id='corpus-selector']/div/div[2]/article/div[2]/table",
             ))
@@ -28,7 +29,8 @@ async fn list_corpora() {
             .unwrap();
 
         // The corpus list should be sorted
-        let table = c
+        let table = env
+            .webdriver
             .find(Locator::XPath(
                 "//*[@id='corpus-selector']/div/div[2]/article/div[2]/table",
             ))
@@ -90,80 +92,84 @@ async fn list_corpora() {
     }
 
     m.assert();
-    c.close().await.unwrap();
+    env.close().await;
 }
 
-#[tokio::test]
-#[traced_test]
+#[test(tokio::test)]
 async fn filter_corpus_name() {
-    let (c, mut service_mock, url) = start_end2end_servers().await;
-    let _m = service_mock
+    let mut env = start_end2end_servers().await;
+    let _m = env
+        .backend
         .mock("GET", "/corpora")
         .with_header("content-type", "application/json")
         .with_body(r#"["TueBa-D/Z.6.0", "pcc2", "pcc11", "AnyPcCorpus", "demo.dialog"]"#)
         .create();
-    {
-        c.goto(&url).await.unwrap();
-        let input = c
-            .find(Locator::XPath(
-                "//*[@id='corpus-selector']/div/div[2]/article/div[1]/div[1]/input",
-            ))
+
+    env.webdriver.goto(&env.frontend_addr).await.unwrap();
+    let input = env
+        .webdriver
+        .find(Locator::XPath(
+            "//*[@id='corpus-selector']/div/div[2]/article/div[1]/div[1]/input",
+        ))
+        .await
+        .unwrap();
+    input.send_keys("pcc").await.unwrap();
+
+    tokio::time::sleep(Duration::from_secs(3)).await;
+
+    // The input must still has the focus
+    let active_element = env.webdriver.active_element().await.unwrap();
+    assert_eq!(
+        "corpus-filter",
+        active_element.attr("id").await.unwrap().unwrap_or_default()
+    );
+
+    // The corpus list should be reducted to the matching corpus names
+    let table = env
+        .webdriver
+        .find(Locator::XPath(
+            "//*[@id='corpus-selector']/div/div[2]/article/div[2]/table",
+        ))
+        .await
+        .unwrap();
+
+    let rows = table.find_all(Locator::Css("tbody tr")).await.unwrap();
+    assert_eq!(3, rows.len());
+    assert_eq!(
+        "AnyPcCorpus",
+        rows[0]
+            .find(Locator::Css("td.corpus-name"))
             .await
-            .unwrap();
-        input.send_keys("pcc").await.unwrap();
-
-        thread::sleep(Duration::from_secs(5));
-
-        // The input must still has the focus
-        let active_element = c.active_element().await.unwrap();
-        assert_eq!(input.element_id(), active_element.element_id());
-
-        // The corpus list should be reducted to the matching corpus names
-        let table = c
-            .find(Locator::XPath(
-                "//*[@id='corpus-selector']/div/div[2]/article/div[2]/table",
-            ))
+            .unwrap()
+            .text()
             .await
-            .unwrap();
+            .unwrap()
+    );
+    assert_eq!(
+        "pcc11",
+        rows[1]
+            .find(Locator::Css("td.corpus-name"))
+            .await
+            .unwrap()
+            .text()
+            .await
+            .unwrap()
+    );
+    assert_eq!(
+        "pcc2",
+        rows[2]
+            .find(Locator::Css("td.corpus-name"))
+            .await
+            .unwrap()
+            .text()
+            .await
+            .unwrap()
+    );
 
-        let rows = table.find_all(Locator::Css("tbody tr")).await.unwrap();
-        assert_eq!(3, rows.len());
-        assert_eq!(
-            "AnyPcCorpus",
-            rows[0]
-                .find(Locator::Css("td.corpus-name"))
-                .await
-                .unwrap()
-                .text()
-                .await
-                .unwrap()
-        );
-        assert_eq!(
-            "pcc11",
-            rows[1]
-                .find(Locator::Css("td.corpus-name"))
-                .await
-                .unwrap()
-                .text()
-                .await
-                .unwrap()
-        );
-        assert_eq!(
-            "pcc2",
-            rows[2]
-                .find(Locator::Css("td.corpus-name"))
-                .await
-                .unwrap()
-                .text()
-                .await
-                .unwrap()
-        );
-    }
-    c.close().await.unwrap();
+    env.close().await;
 }
 
-#[tokio::test]
-#[traced_test]
+#[test(tokio::test)]
 async fn service_down() {
     // Simulate an error with the backend service
     let mut service_mock = Server::new_with_port(0);
