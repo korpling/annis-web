@@ -10,7 +10,7 @@ use axum::{
     extract::Path,
     http::{header, HeaderValue, Response, StatusCode},
     response::IntoResponse,
-    routing::{get, post},
+    routing::{delete, get, post},
     Router,
 };
 use axum_sessions::{async_session::MemoryStore, SessionLayer};
@@ -63,6 +63,7 @@ async fn app(
         .route("/export/job", post(views::export::create_job))
         .route("/export/job", get(views::export::job_status))
         .route("/export/file", get(views::export::download_file))
+        .route("/export/job", delete(views::export::cancel_job))
         .route("/static/*path", get(static_file))
         .with_state(Arc::new(global_state));
 

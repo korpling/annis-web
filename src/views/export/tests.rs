@@ -120,8 +120,7 @@ async fn export_download() {
     // Set query and start export
     enter_query(&env.webdriver).await;
 
-    let start_button_locator =
-        Locator::XPath("//div[@id='export-status']/button[contains(text(), 'Start')]");
+    let start_button_locator = Locator::XPath("//button[contains(text(), 'Start export')]");
     let start_button = env.webdriver.find(start_button_locator).await.unwrap();
     start_button.click().await.unwrap();
 

@@ -145,6 +145,22 @@ pub async fn job_status(
     Ok(template)
 }
 
+pub async fn cancel_job(
+    session: ReadableSession,
+    State(app_state): State<Arc<GlobalAppState>>,
+) -> Result<impl IntoResponse> {
+    let session_id = session.id();
+    if let Some((_, job)) = app_state.background_jobs.remove(session_id) {
+        job.handle.abort();
+    }
+    let template = ExportJobTemplate {
+        url_prefix: app_state.frontend_prefix.to_string(),
+        state: JobState::Idle,
+    };
+
+    Ok(template)
+}
+
 pub async fn download_file(
     session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
