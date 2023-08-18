@@ -3,7 +3,6 @@ pub mod converter;
 pub mod errors;
 pub mod state;
 mod views;
-
 use async_sqlx_session::SqliteSessionStore;
 use axum::{
     body::{self, Empty, Full},
@@ -45,6 +44,26 @@ async fn static_file(Path(path): Path<String>) -> Result<impl IntoResponse> {
     Ok(response)
 }
 
+fn create_templates(env: &mut minijinja::Environment, frontend_prefix: &str) -> Result<()> {
+    env.add_global("url_prefix", frontend_prefix);
+
+    env.add_template("base.html", include_str!("../templates/base.html"))?;
+
+    env.add_template("export.html", include_str!("../templates/export.html"))?;
+    env.add_template(
+        "export-job.html",
+        include_str!("../templates/export-job.html"),
+    )?;
+    env.add_template(
+        "export-example-output.html",
+        include_str!("../templates/export-example-output.html"),
+    )?;
+
+    env.add_template("corpora.html", include_str!("../templates/corpora.html"))?;
+
+    Ok(())
+}
+
 async fn app(
     addr: &SocketAddr,
     service_url: Option<&str>,
@@ -55,6 +74,11 @@ async fn app(
     if let Some(service_url) = service_url {
         global_state.service_url = Url::parse(service_url)?;
     }
+
+    create_templates(
+        &mut global_state.templates,
+        global_state.frontend_prefix.as_str(),
+    )?;
 
     let result = Router::new()
         .route("/", get(views::corpora::get))

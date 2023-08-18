@@ -1,16 +1,15 @@
-use std::{collections::BTreeSet, sync::Arc};
+use std::sync::Arc;
 
-use askama::Template;
 use axum::{
     extract::State,
-    headers::HeaderMap,
     http::StatusCode,
     response::Html,
     response::{IntoResponse, Response},
     Form,
 };
 use axum_sessions::extractors::WritableSession;
-use serde::Deserialize;
+use minijinja::context;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     client::corpora,
@@ -18,52 +17,39 @@ use crate::{
     Result,
 };
 
-#[derive(Template)]
-#[template(path = "corpora.html")]
-pub struct Corpora {
-    pub id: String,
-    pub url_prefix: String,
-    pub corpus_names: Vec<String>,
-    pub selected_corpora: BTreeSet<String>,
-    pub filter: String,
-}
-
-impl Corpora {
-    fn new(app_state: &GlobalAppState) -> Self {
-        Self {
-            id: "corpus-selector".to_string(),
-            url_prefix: app_state.frontend_prefix.to_string(),
-            corpus_names: Vec::new(),
-            selected_corpora: BTreeSet::default(),
-            filter: String::default(),
-        }
-    }
-}
-
-#[derive(Template)]
-#[template(path = "corpora_full.html")]
-struct CorporaFull {
-    url_prefix: String,
-    inner: Corpora,
-    state: SessionState,
+#[derive(Serialize)]
+struct Corpus {
+    name: String,
+    selected: bool,
 }
 
 pub async fn get(
     session: WritableSession,
-    State(state): State<Arc<GlobalAppState>>,
+    State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let corpora = corpora::list(state.as_ref()).await?;
     let session_state: SessionState = session.get("state").unwrap_or_default();
 
-    let mut inner = Corpora::new(state.as_ref());
-    inner.corpus_names = corpora;
-    inner.selected_corpora = session_state.selected_corpora.clone();
+    let selected_corpora = session_state.selected_corpora.clone();
 
-    Ok(CorporaFull {
-        url_prefix: state.frontend_prefix.to_string(),
-        inner,
-        state: session_state,
-    })
+    let corpora: Vec<_> = corpora::list(app_state.as_ref())
+        .await?
+        .into_iter()
+        .map(|name| Corpus {
+            selected: selected_corpora.contains(&name),
+            name,
+        })
+        .collect();
+
+    let html = app_state
+        .templates
+        .get_template("corpora.html")?
+        .render(context! {
+            corpora,
+            selected_corpora,
+            session => session_state,
+        })?;
+
+    Ok(Html(html))
 }
 
 #[derive(Deserialize, Debug)]
@@ -76,7 +62,6 @@ pub struct Params {
 
 pub async fn post(
     mut session: WritableSession,
-    headers: HeaderMap,
     State(app_state): State<Arc<GlobalAppState>>,
     Form(payload): Form<Params>,
 ) -> Result<Response> {
@@ -105,24 +90,26 @@ pub async fn post(
 
     session.insert("state", session_state.clone())?;
 
-    let mut inner = Corpora::new(app_state.as_ref());
-    inner.corpus_names = filtered_corpora;
-    inner.filter = payload.filter;
-    inner.selected_corpora = session_state.selected_corpora.clone();
+    let selected_corpora = session_state.selected_corpora.clone();
+    let corpora: Vec<_> = filtered_corpora
+        .into_iter()
+        .map(|name| Corpus {
+            selected: selected_corpora.contains(&name),
+            name,
+        })
+        .collect();
 
-    if headers.contains_key("HX-Target") {
-        // Only return the part that needs to be re-rendered
-        let html = Html(inner.render()?);
-        Ok((StatusCode::OK, [("HX-Trigger-After-Swap", "refocus")], html).into_response())
-    } else {
-        // Return the full site
-        let template = CorporaFull {
-            inner,
-            url_prefix: app_state.frontend_prefix.to_string(),
-            state: session_state,
-        };
-        Ok((StatusCode::OK, template).into_response())
-    }
+    let html = app_state
+        .templates
+        .get_template("corpora.html")?
+        .render(context! {
+            corpora,
+            filter => payload.filter,
+            session => session_state,
+            selected_corpora,
+        })?;
+
+    Ok((StatusCode::OK, [("HX-Trigger-After-Swap", "refocus")], html).into_response())
 }
 
 #[cfg(test)]

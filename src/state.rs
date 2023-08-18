@@ -43,6 +43,7 @@ pub struct GlobalAppState {
     pub service_url: Url,
     pub frontend_prefix: Url,
     pub background_jobs: dashmap::DashMap<String, ExportJob>,
+    pub templates: minijinja::Environment<'static>,
 }
 
 impl GlobalAppState {
@@ -55,6 +56,7 @@ impl GlobalAppState {
             // TODO: make this configurable
             frontend_prefix: Url::parse("http://localhost:3000/")?,
             background_jobs: dashmap::DashMap::new(),
+            templates: minijinja::Environment::new(),
         };
         Ok(result)
     }

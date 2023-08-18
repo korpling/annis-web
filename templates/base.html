@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    {% block head %}
-      <link rel="shortcut icon" href="{{ url_prefix }}static/icons/favicon.ico">
-      <link rel="stylesheet" href="{{ url_prefix }}static/fonts.css" />
-      <link rel="stylesheet" href="{{ url_prefix }}static/annis.min.css" />
-      <script src="{{ url_prefix }}static/htmx-1.9.4.min.js"></script>
-      <script src="{{ url_prefix }}static/hyperscript-0.9.11.min.js"></script>
-      <title>
-        {% block title %}
-        {% endblock title %}
-      </title>
-    {% endblock head %}
+    <link rel="shortcut icon" href="{{ url_prefix }}static/icons/favicon.ico">
+    <link rel="stylesheet" href="{{ url_prefix }}static/fonts.css" />
+    <link rel="stylesheet" href="{{ url_prefix }}static/annis.min.css" />
+    <script src="{{ url_prefix }}static/htmx-1.9.4.min.js"></script>
+    <script src="{{ url_prefix }}static/hyperscript-0.9.11.min.js"></script>
+    <title>
+      {% block title %}
+      {% endblock title %}
+    </title>
   </head>
   <body>
     <nav class="navbar" role="navigation" aria-label="main navigation">
@@ -33,14 +31,14 @@
       </div>
       <div id="annis-navbar" class="navbar-menu">
         <div class="navbar-start">
-          {% let corpus_class -%}
-          {% if state.selected_corpora.len() == 0 %}
-            {% let corpus_class = "is-warning" -%}
+          {% set corpus_class = "" %}
+          {% if (session.selected_corpora|length) == 0 %}
+            {% set corpus_class = "is-warning" %}
           {% else %}
-            {% let corpus_class = "is-info" -%}
+            {% set corpus_class = "is-info" %}
           {% endif %}
           <a class="navbar-item" href="{{ url_prefix }}">Corpora  <span class="ml-1 tag is-small {{ corpus_class }}"
-        title='{{ state.selected_corpora|join(", ") }}'>{{ state.selected_corpora.len() }}</span></a>
+        title='{{ session.selected_corpora|join(", ") }}'>{{ session.selected_corpora|length }}</span></a>
           <a class="navbar-item" href="{{ url_prefix }}export">Export</a>
           <a class="navbar-item" href="#">About</a>
         </div>

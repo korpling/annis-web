@@ -133,7 +133,6 @@ async fn export_download() {
 
     // Get the downloaded file
     let expected_file_path = env.download_folder.path().join("annis-export.csv");
-    dbg!(&expected_file_path);
     let mut found_file = false;
     for _ in 0..5 {
         if expected_file_path.exists() {

@@ -6,8 +6,6 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-askama = { version = "0.12", features = ["with-axum"] }
-askama_axum = "0.3"
 async-sqlx-session = { version = "0.4.0", features = ["sqlite", "async_std"] }
 axum = { version = "0.6.1", features = ["headers"] }
 axum-sessions = "0.5"
@@ -19,11 +17,13 @@ graphannis = "2"
 graphannis-core = "2"
 include_dir = "0.7"
 mime_guess = "2"
+minijinja = { version = "1.0.6", features = ["builtins"] }
 percent-encoding = "2.2.0"
 rand = "0.8"
 reqwest = { version = "0.11", features = ["json", "stream"] }
 serde = "1"
 sqlx-core = "0.5"
+tempfile = "3"
 thiserror = "1"
 tokio = { version = "1.17.0", features = ["rt-multi-thread", "macros"] }
 tokio-util = "0.7.4"
@@ -32,19 +32,18 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 transient-btree-index = "0.5.0"
 url = "2.3"
 uuid = { version = "1.4.1", features = ["v4"] }
-tempfile = "3"
 
 [dev-dependencies]
+dirs = "5"
+env_logger = "0.10.0"
 fantoccini = "0.19"
 hyper = { version = "0.14", features = ["full"] }
 mockito = "1"
-scraper = "0.16"
-tower = { version = "0.4", features = ["util"] }
-test-log = "0.2"
 pretty_assertions = "1"
-env_logger = "0.10.0"
+scraper = "0.16"
 serde_json = "1"
-dirs = "5"
+test-log = "0.2"
+tower = { version = "0.4", features = ["util"] }
 
 [profile.dev.package.graphannis]
 opt-level = 3

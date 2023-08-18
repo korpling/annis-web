@@ -7,17 +7,17 @@ use crate::{
     state::{ExportJob, GlobalAppState, SessionState},
     Result,
 };
-use askama::Template;
 use axum::{
     body::StreamBody,
     extract::{Query, State},
     http::header,
-    response::IntoResponse,
+    response::{Html, IntoResponse},
     Form,
 };
 use axum_sessions::extractors::ReadableSession;
 use graphannis::corpusstorage::{QueryLanguage, ResultOrder};
-use serde::Deserialize;
+use minijinja::context;
+use serde::{Deserialize, Serialize};
 use tempfile::NamedTempFile;
 use tokio::sync::mpsc::channel;
 use tokio::task::JoinHandle;
@@ -27,38 +27,6 @@ const DEFAULT_EXAMPLE: &str = r#"match number,1 node name,1 tiger::lemma,1 tiger
 1,pcc2/11299#tok_1,Feigenblatt,Nom.Sg.Neut,NN
 2,pcc2/11299#tok_2,der,Nom.Pl.*,ART
 3,pcc2/11299#tok_3,jugendliche,Nom.Pl.*,NN"#;
-
-#[derive(Template, Debug)]
-#[template(path = "export-example-output.html")]
-struct ExampleOutputTemplate {
-    example: String,
-    error: Option<String>,
-}
-
-impl Default for ExampleOutputTemplate {
-    fn default() -> Self {
-        Self {
-            example: DEFAULT_EXAMPLE.to_string(),
-            error: None,
-        }
-    }
-}
-
-#[derive(Template, Debug)]
-#[template(path = "export-job.html")]
-struct ExportJobTemplate {
-    url_prefix: String,
-    state: JobState,
-}
-
-#[derive(Template, Debug)]
-#[template(path = "export.html")]
-struct Export {
-    url_prefix: String,
-    state: SessionState,
-    example_output: ExampleOutputTemplate,
-    export_job: ExportJobTemplate,
-}
 
 #[derive(Deserialize, Debug)]
 pub struct FormParams {
@@ -72,22 +40,21 @@ pub async fn show_page(
 ) -> Result<impl IntoResponse> {
     let session_state: SessionState = session.get("state").unwrap_or_default();
 
-    let example_output = if let Some(query) = params.query {
-        create_example_output_template(query, &state, &session_state).await?
+    let example = if let Some(query) = params.query {
+        create_example_output(query, &state, &session_state).await
     } else {
-        ExampleOutputTemplate::default()
+        Ok(DEFAULT_EXAMPLE.to_string())
     };
-    let template = Export {
-        url_prefix: state.frontend_prefix.to_string(),
-        example_output,
-        state: session_state,
-        export_job: ExportJobTemplate {
-            url_prefix: state.frontend_prefix.to_string(),
-            state: current_job(&session, &state),
-        },
-    };
+    let result = state
+        .templates
+        .get_template("export.html")?
+        .render(context! {
+            example,
+            session => session_state,
+            job => current_job(&session, &state),
+        })?;
 
-    Ok(template)
+    Ok(Html(result))
 }
 pub async fn create_job(
     session: ReadableSession,
@@ -125,24 +92,28 @@ pub async fn create_job(
         });
 
     // Only render the export job status template
-    let template = ExportJobTemplate {
-        url_prefix: app_state.frontend_prefix.to_string(),
-        state: current_job(&session, &app_state),
-    };
+    let result = app_state
+        .templates
+        .get_template("export-job.html")?
+        .render(context! {
+            job => current_job(&session, &app_state),
+        })?;
 
-    Ok(template)
+    Ok(Html(result))
 }
 
 pub async fn job_status(
     session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let template = ExportJobTemplate {
-        url_prefix: app_state.frontend_prefix.to_string(),
-        state: current_job(&session, &app_state),
-    };
+    let result = app_state
+        .templates
+        .get_template("export-job.html")?
+        .render(context! {
+            job => current_job(&session, &app_state),
+        })?;
 
-    Ok(template)
+    Ok(Html(result))
 }
 
 pub async fn cancel_job(
@@ -153,12 +124,14 @@ pub async fn cancel_job(
     if let Some((_, job)) = app_state.background_jobs.remove(session_id) {
         job.handle.abort();
     }
-    let template = ExportJobTemplate {
-        url_prefix: app_state.frontend_prefix.to_string(),
-        state: JobState::Idle,
-    };
+    let result = app_state
+        .templates
+        .get_template("export-job.html")?
+        .render(context! {
+            job => current_job(&session, &app_state),
+        })?;
 
-    Ok(template)
+    Ok(Html(result))
 }
 
 pub async fn download_file(
@@ -186,7 +159,7 @@ pub async fn download_file(
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 enum JobState {
     Idle,
     Running(f32),
@@ -206,11 +179,11 @@ fn current_job(session: &ReadableSession, app_state: &GlobalAppState) -> JobStat
     }
 }
 
-async fn create_example_output_template(
+async fn create_example_output(
     query: String,
     state: &GlobalAppState,
     session_state: &SessionState,
-) -> Result<ExampleOutputTemplate> {
+) -> std::result::Result<String, String> {
     let example_query = FindQuery {
         query,
         corpora: session_state.selected_corpora.iter().cloned().collect(),
@@ -219,20 +192,19 @@ async fn create_example_output_template(
         order: ResultOrder::NotSorted,
     };
 
-    let mut template = ExampleOutputTemplate::default();
-
     if !example_query.corpora.is_empty() && !example_query.query.is_empty() {
         let mut exporter = CSVExporter::new(example_query, None);
         let mut example_string_buffer = Vec::new();
-        match exporter
+
+        exporter
             .convert_text(state, Some(3), &mut example_string_buffer)
             .await
-        {
-            Ok(_) => template.example = String::from_utf8_lossy(&example_string_buffer).to_string(),
-            Err(e) => template.error = Some(format!("{}", e)),
-        }
+            .map_err(|e| format!("{}", e))?;
+        let result = String::from_utf8_lossy(&example_string_buffer).to_string();
+        Ok(result)
+    } else {
+        Ok(DEFAULT_EXAMPLE.to_string())
     }
-    Ok(template)
 }
 
 #[cfg(test)]

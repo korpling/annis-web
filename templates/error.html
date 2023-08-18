@@ -8,7 +8,7 @@
       <article class="tile is-child notification is-danger">
         <h1 class="title">An error has occurred</h1>
         <h2 class="subtitle">
-          The code of the error is {{ status_code.as_u16() }} ({{ status_code.canonical_reason().unwrap_or_default()}}) and the following message describes the issue in more detail:
+          The code of the error is {{ status_code }} ({{ canonical_reason }}) and the following message describes the issue in more detail:
         </h2>
         <div class="content">{{ message }}</div>
       </article>
