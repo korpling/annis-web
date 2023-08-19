@@ -1,0 +1,19 @@
+@charset "utf-8";
+
+// https://colordesigner.io/#ECF0F6-FFE11A-e53935-0D6986-07485B
+$annis-color: #ecf0f6;
+$yellow: #FFE11A;
+$red: #e53935;
+$blue: #0D6986;
+$dark-blue: #07485B;
+
+// Update Bulma's global variables
+$body-background-color: $annis-color;
+$primary: $dark-blue;
+$link: $blue;
+$background: $annis-color;
+
+$family-sans-serif: "Alegreya Sans", sans-serif;
+$family-monospace: "Roboto Mono", monospace;
+
+@import "../bulma-0.9.4/bulma.sass";
