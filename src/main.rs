@@ -21,7 +21,9 @@ use std::{net::SocketAddr, path::PathBuf, str::FromStr, sync::Arc, time::Duratio
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 use url::Url;
+
 static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/static");
+static TEMPLATES_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates");
 
 pub type Result<T> = std::result::Result<T, errors::AppError>;
 
@@ -45,21 +47,17 @@ async fn static_file(Path(path): Path<String>) -> Result<impl IntoResponse> {
 }
 
 fn create_templates(env: &mut minijinja::Environment, frontend_prefix: &str) -> Result<()> {
+    // Define any global variables
     env.add_global("url_prefix", frontend_prefix);
 
-    env.add_template("base.html", include_str!("../templates/base.html"))?;
-
-    env.add_template("export.html", include_str!("../templates/export.html"))?;
-    env.add_template(
-        "export-job.html",
-        include_str!("../templates/export-job.html"),
-    )?;
-    env.add_template(
-        "export-example-output.html",
-        include_str!("../templates/export-example-output.html"),
-    )?;
-
-    env.add_template("corpora.html", include_str!("../templates/corpora.html"))?;
+    // Load templates by name from the included templates folder
+    env.set_loader(|name| {
+        if let Some(file) = TEMPLATES_DIR.get_file(name) {
+            Ok(file.contents_utf8().map(|s| s.to_string()))
+        } else {
+            Ok(None)
+        }
+    });
 
     Ok(())
 }
