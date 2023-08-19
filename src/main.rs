@@ -78,16 +78,13 @@ async fn app(
         global_state.frontend_prefix.as_str(),
     )?;
 
-    let corpus_routes = views::corpora::create_routes()?;
-    let export_routes = views::export::create_routes()?;
-    let about_routes = views::about::create_routes()?;
-
     let routes = Router::new()
         .route("/", get(|| async { Redirect::temporary("corpora") }))
         .route("/static/*path", get(static_file))
-        .nest("/corpora", corpus_routes)
-        .nest("/export", export_routes)
-        .nest("/about", about_routes)
+        .nest("/corpora", views::corpora::create_routes()?)
+        .nest("/export", views::export::create_routes()?)
+        .nest("/about", views::about::create_routes()?)
+        .nest("/login", views::login::create_routes()?)
         .with_state(Arc::new(global_state));
 
     if let Some(session_file) = session_file {

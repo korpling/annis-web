@@ -25,18 +25,14 @@ async fn list_corpora() {
 
         env.webdriver
             .wait()
-            .for_element(Locator::XPath(
-                "//*[@id='corpus-selector']/div/div[2]/article/div[2]/table",
-            ))
+            .for_element(Locator::XPath("//*[@id='corpus-selector']//table"))
             .await
             .unwrap();
 
         // The corpus list should be sorted
         let table = env
             .webdriver
-            .find(Locator::XPath(
-                "//*[@id='corpus-selector']/div/div[2]/article/div[2]/table",
-            ))
+            .find(Locator::XPath("//*[@id='corpus-selector']//table"))
             .await
             .unwrap();
 
@@ -114,9 +110,7 @@ async fn filter_corpus_name() {
         .unwrap();
     let input = env
         .webdriver
-        .find(Locator::XPath(
-            "//*[@id='corpus-selector']/div/div[2]/article/div[1]/div[1]/input",
-        ))
+        .find(Locator::XPath("//*[@id='corpus-selector']//input"))
         .await
         .unwrap();
     input.send_keys("pcc").await.unwrap();
@@ -141,9 +135,7 @@ async fn filter_corpus_name() {
     // The corpus list should be reducted to the matching corpus names
     let table = env
         .webdriver
-        .find(Locator::XPath(
-            "//*[@id='corpus-selector']/div/div[2]/article/div[2]/table",
-        ))
+        .find(Locator::XPath("//*[@id='corpus-selector']//table"))
         .await
         .unwrap();
 

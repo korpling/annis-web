@@ -12,6 +12,7 @@ pub const STATE_KEY: &str = "state";
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct SessionState {
     pub selected_corpora: BTreeSet<String>,
+    pub api_token: Option<String>,
 }
 
 impl From<&ReadableSession> for SessionState {

@@ -115,7 +115,7 @@ async fn filter(
             selected_corpora,
         })?;
 
-    Ok((StatusCode::OK, [("HX-Trigger-After-Swap", "refocus")], html).into_response())
+    Ok((StatusCode::OK, html).into_response())
 }
 
 #[cfg(test)]
