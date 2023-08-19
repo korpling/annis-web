@@ -115,7 +115,15 @@ async fn filter_corpus_name() {
         .unwrap();
     input.send_keys("pcc").await.unwrap();
 
-    tokio::time::sleep(Duration::from_secs(3)).await;
+    // Wait until the table only has only three body rows
+    env.webdriver
+        .wait()
+        .at_most(Duration::from_secs(5))
+        .for_element(Locator::XPath(
+            "//*[@id='corpus-selector']//table/tbody[count(tr) = 3]",
+        ))
+        .await
+        .unwrap();
 
     // The input must still has the focus
     let active_element = env.webdriver.active_element().await.unwrap();

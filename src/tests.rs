@@ -4,11 +4,10 @@ use std::{
 };
 
 use axum::{
-    body::HttpBody,
-    http::{Request, Response},
+    body::{Body, HttpBody},
+    http::{Request, Response, StatusCode},
 };
 use fantoccini::{wd::Capabilities, ClientBuilder};
-use hyper::{Body, StatusCode};
 use scraper::Html;
 use serde_json::json;
 use tempfile::TempDir;
