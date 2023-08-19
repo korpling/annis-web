@@ -106,7 +106,7 @@ async fn create_job(
     // Only render the export job status template
     let result = app_state
         .templates
-        .get_template("export-job.html")?
+        .get_template("export/job.html")?
         .render(context! {
             job => current_job(&session, &app_state),
         })?;
@@ -120,7 +120,7 @@ async fn job_status(
 ) -> Result<impl IntoResponse> {
     let result = app_state
         .templates
-        .get_template("export-job.html")?
+        .get_template("export/job.html")?
         .render(context! {
             job => current_job(&session, &app_state),
         })?;
@@ -138,7 +138,7 @@ async fn cancel_job(
     }
     let result = app_state
         .templates
-        .get_template("export-job.html")?
+        .get_template("export/job.html")?
         .render(context! {
             job => current_job(&session, &app_state),
         })?;
