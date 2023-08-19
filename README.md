@@ -13,4 +13,4 @@ While Vaadin 7/8 was around as Open Source for a long time, we should be even mo
 - Bulma <https://bulma.io/>
 - htmx for dynamic updates of the UI <https://htmx.org/>
 - axum web framework <https://github.com/tokio-rs/axum>
-- askama template engine <https://github.com/djc/askama>
+- minijinja template engine <https://github.com/mitsuhiko/minijinja>
