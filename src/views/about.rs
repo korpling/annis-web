@@ -33,3 +33,35 @@ async fn show(
 
     Ok(Html(html))
 }
+
+#[cfg(test)]
+mod tests {
+    use std::net::SocketAddr;
+
+    use hyper::{Body, Request, StatusCode};
+    use test_log::test;
+    use tower::ServiceExt;
+
+    use crate::tests::get_body;
+
+    #[test(tokio::test)]
+    async fn about_page_shown() {
+        let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000)), None, None)
+            .await
+            .unwrap();
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/about")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = get_body(response).await;
+        assert!(body.contains("Version"));
+    }
+}

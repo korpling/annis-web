@@ -178,6 +178,69 @@ async fn filter_corpus_name() {
 }
 
 #[test(tokio::test)]
+async fn add_all_filtered_corpora() {
+    let mut env = start_end2end_servers().await;
+    let _m = env
+        .backend
+        .mock("GET", "/corpora")
+        .with_header("content-type", "application/json")
+        .with_body(r#"["TueBa-D/Z.6.0", "pcc2", "pcc11", "AnyPcCorpus", "demo.dialog"]"#)
+        .create();
+
+    env.webdriver
+        .goto(&format!("{}/corpora", &env.frontend_addr))
+        .await
+        .unwrap();
+    let filter_input = env
+        .webdriver
+        .find(Locator::XPath("//*[@id='corpus-selector']//input"))
+        .await
+        .unwrap();
+    filter_input.send_keys("pcc").await.unwrap();
+
+    // Wait until the table only has only three body rows
+    env.webdriver
+        .wait()
+        .at_most(Duration::from_secs(5))
+        .for_element(Locator::XPath(
+            "//*[@id='corpus-selector']//table/tbody[count(tr) = 3]",
+        ))
+        .await
+        .unwrap();
+    // Add all filtered corpora to the selection
+    let add_all_button = env
+        .webdriver
+        .find(Locator::XPath(
+            "//*[@id='corpus-selector']//table//button[@name='add_all_corpora']",
+        ))
+        .await
+        .unwrap();
+    add_all_button.click().await.unwrap();
+
+    // The 3 corpora should be added to the selection
+    let tag_selector = Locator::Css("#corpus-selector >* span.tag");
+    let tags = env.webdriver.find_all(tag_selector).await.unwrap();
+    assert_eq!(3, tags.len());
+    assert_eq!("AnyPcCorpus", tags[0].text().await.unwrap());
+    assert_eq!("pcc11", tags[1].text().await.unwrap());
+    assert_eq!("pcc2", tags[2].text().await.unwrap());
+
+    // Clear corpora and check none is selected
+    let clear_all_button = env
+        .webdriver
+        .find(Locator::XPath(
+            "//*[@id='corpus-selector']//button[@name='clear_selection']",
+        ))
+        .await
+        .unwrap();
+    clear_all_button.click().await.unwrap();
+    let tags = env.webdriver.find_all(tag_selector).await.unwrap();
+    assert_eq!(0, tags.len());
+
+    env.close().await;
+}
+
+#[test(tokio::test)]
 async fn service_down() {
     // Simulate an error with the backend service
     let mut service_mock = Server::new_with_port(0);

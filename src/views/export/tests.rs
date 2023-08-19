@@ -111,6 +111,38 @@ async fn export_preview() {
 }
 
 #[test(tokio::test)]
+async fn export_cancel() {
+    let mut env = start_end2end_servers().await;
+
+    create_conversion_mocks(&mut env.backend);
+    select_corpus_and_goto_export(&mut env).await;
+
+    // Set query and start export
+    enter_query(&env.webdriver).await;
+
+    let start_button_locator = Locator::XPath("//button[contains(text(), 'Start export')]");
+    let start_button = env.webdriver.find(start_button_locator).await.unwrap();
+    start_button.click().await.unwrap();
+
+    // Click on the cancel button
+    env.webdriver
+        .find(Locator::XPath("//button[contains(text(), 'Cancel')]"))
+        .await
+        .unwrap()
+        .click()
+        .await
+        .unwrap();
+
+    // The start export button should appear again
+    env.webdriver
+        .wait()
+        .for_element(start_button_locator)
+        .await
+        .unwrap();
+    env.close().await;
+}
+
+#[test(tokio::test)]
 async fn export_download() {
     let mut env = start_end2end_servers().await;
 

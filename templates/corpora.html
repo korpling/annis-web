@@ -36,7 +36,7 @@
       <h2 class="title is-4">Available</h2>
       <p class="subtitle">Add corpora you want to analyze.</p>
       <div class="field">
-        <div class="control is-expanded">
+        <div class="control">
           <input class="input"
                  type="text"
                  name="filter"
@@ -50,14 +50,14 @@
                  id="corpus-filter">
         </div>
       </div>
-      <div id="available-corpora" class="table-container block">
+      <div id="available-corpora" class="table-container">
         {% if corpora|length == 0 %}
           <div class="notification is-warning">
             Empty corpus list.
             {% if filter|length != 0 %}Remove the filter "{{ filter }}"" to see all corpora.{% endif %}
           </div>
         {% else %}
-          <table class="table">
+          <table class="table is-striped">
             <thead>
               <tr>
                 <td>
