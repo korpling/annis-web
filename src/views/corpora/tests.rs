@@ -1,6 +1,8 @@
-use super::*;
 use crate::tests::{get_html, start_end2end_servers};
-use axum::{body::Body, http::Request};
+use axum::{
+    body::Body,
+    http::{Request, StatusCode},
+};
 use fantoccini::Locator;
 use mockito::Server;
 use scraper::Selector;

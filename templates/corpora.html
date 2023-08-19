@@ -4,75 +4,80 @@
 {% endblock title %}
 {% block content %}
   <h1 class="title">Corpora</h1>
-  <form method="post" action="{{ url_prefix }}corpora" hx-boost="true">
-    <div id="corpus-selector" class="columns">
-      <div class="column is-one-third">
-        <h2 class="title is-4">Selected</h2>
-        <p class="subtitle">The following corpora will be included in any analysis.</p>
-        {% if selected_corpora|length == 0 %}
-          <div class="notification is-warning">Currently, no corpus is selected.</div>
-        {% else %}
-          <div class="tags notification">
-            {% for c in selected_corpora %}
-              <span class="tag is-medium is-primary">{{ c }}
-                <button class="delete is-small" name="remove_corpus" value="{{ c }}"></button>
-              </span>
-            {% endfor %}
+  <form id="corpus-selector"
+        class="columns"
+        method="post"
+        action="{{ url_prefix }}corpora"
+        hx-boost="true"
+        hx-target="#corpus-selector"
+        hx-select="#corpus-selector"
+        hx-swap="outerHTML">
+    <div class="column is-one-third">
+      <h2 class="title is-4">Selected</h2>
+      <p class="subtitle">The following corpora will be included in any analysis.</p>
+      {% if session.selected_corpora|length == 0 %}
+        <div class="notification is-warning">Currently, no corpus is selected.</div>
+      {% else %}
+        <div class="field">
+          <div class="control">
+            <button class="button" name="clear_selection" value="true">Clear selection</button>
           </div>
-        {% endif %}
+        </div>
+        <div class="tags notification">
+          {% for c in session.selected_corpora %}
+            <span class="tag is-medium is-primary">{{ c }}
+              <button class="delete is-small" name="remove_corpus" value="{{ c }}"></button>
+            </span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    <div class="column is-two-thirds">
+      <h2 class="title is-4">Available</h2>
+      <p class="subtitle">Add corpora you want to analyze.</p>
+      <div class="field">
+        <div class="control is-expanded">
+          <input class="input"
+                 type="text"
+                 name="filter"
+                 value="{{ filter }}"
+                 placeholder="Filter by corpus name"
+                 hx-post="{{ url_prefix }}corpora"
+                 hx-trigger="keyup changed delay:500ms"
+                 hx-target="#corpus-selector"
+                 hx-select="#corpus-selector"
+                 hx-swap="outerHTML"
+                 id="corpus-filter">
+        </div>
       </div>
-      <div class="column is-two-thirds">
-        <h2 class="title is-4">Available</h2>
-        <p class="subtitle">Add corpora you want to analyze.</p>
-        <div class="field has-addons">
-          <div class="control is-expanded">
-            <input class="input"
-                   type="text"
-                   name="filter"
-                   placeholder="Filter by corpus name"
-                   value="{{ filter }}"
-                   hx-post="{{ url_prefix }}corpora"
-                   hx-trigger="keyup changed delay:500ms"
-                   hx-target="#corpus-selector"
-                   hx-select="#corpus-selector"
-                   hx-swap="outerHTML"
-                   id="corpus-filter">
+      <div id="available-corpora" class="table-container block">
+        {% if corpora|length == 0 %}
+          <div class="notification is-warning">
+            Empty corpus list.
+            {% if filter|length != 0 %}Remove the filter "{{ filter }}"" to see all corpora.{% endif %}
           </div>
-        </div>
-        <div class="table-container block">
-          {% if corpora|length == 0 %}
-            <div class="notification is-warning">
-              Empty corpus list.
-              {% if filter|length != 0 %}Remove the filter "{{ filter }}"" to see all corpora.{% endif %}
-            </div>
-          {% else %}
-            <table class="table">
-              <thead>
+        {% else %}
+          <table class="table">
+            <thead>
+              <tr>
+                <td>
+                  <button class="button is-small" name="add_all_corpora" value="true">Add all</button>
+                </td>
+                <td>Corpus name</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in corpora %}
                 <tr>
-                  <td></td>
-                  <td>Corpus name</td>
-                </tr>
-              </thead>
-              <tbody>
-                {% for c in corpora %}
-                  <tr>
-                    <td>
-                      {% if not c.selected %}<button name="add_corpus" value="{{ c.name }}" class="button is-small">Add</button>{% endif %}
-                    </td>
-                    <td class="corpus-name">{{ c.name }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="2">
-                    <button class="button" name="add_all_corpora" value="true">Add all</button>
+                  <td>
+                    {% if not c.selected %}<button name="add_corpus" value="{{ c.name }}" class="button is-small">Add</button>{% endif %}
                   </td>
+                  <td class="corpus-name">{{ c.name }}</td>
                 </tr>
-              </tfoot>
-            </table>
-          {% endif %}
-        </div>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
       </div>
     </div>
   </form>

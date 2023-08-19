@@ -2,9 +2,8 @@ use std::sync::Arc;
 
 use axum::{
     extract::State,
-    http::StatusCode,
     response::Html,
-    response::{IntoResponse, Response},
+    response::IntoResponse,
     routing::{get, post},
     Form, Router,
 };
@@ -19,7 +18,7 @@ use crate::{
 };
 
 pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
-    let result = Router::new().route("/", get(show)).route("/", post(filter));
+    let result = Router::new().route("/", get(show)).route("/", post(update));
     Ok(result)
 }
 
@@ -51,7 +50,6 @@ async fn show(
         .get_template("corpora.html")?
         .render(context! {
             corpora,
-            selected_corpora,
             session => session_state,
         })?;
 
@@ -64,13 +62,16 @@ struct Params {
     add_corpus: Option<String>,
     remove_corpus: Option<String>,
     add_all_corpora: Option<String>,
+    clear_selection: Option<String>,
 }
 
-async fn filter(
+async fn update(
     mut session: WritableSession,
     State(app_state): State<Arc<GlobalAppState>>,
     Form(payload): Form<Params>,
-) -> Result<Response> {
+) -> Result<impl IntoResponse> {
+    let mut session_state = SessionState::from(&session);
+
     let corpora = corpora::list(app_state.as_ref()).await?;
     let mut filtered_corpora: Vec<_> = corpora
         .iter()
@@ -79,11 +80,10 @@ async fn filter(
         .collect();
     filtered_corpora.sort_by_key(|k| k.to_lowercase());
 
-    let mut session_state = SessionState::from(&session);
-
     if let Some(add_corpus) = payload.add_corpus {
         session_state.selected_corpora.insert(add_corpus);
     }
+
     if let Some(remove_corpus) = payload.remove_corpus {
         session_state.selected_corpora.remove(&remove_corpus);
     }
@@ -94,13 +94,18 @@ async fn filter(
         }
     }
 
+    if payload.clear_selection == Some("true".to_string()) {
+        // Unselect all corpora
+        session_state.selected_corpora.clear();
+    }
+
+    // Update the session
     session.insert(STATE_KEY, session_state.clone())?;
 
-    let selected_corpora = session_state.selected_corpora.clone();
-    let corpora: Vec<_> = filtered_corpora
+    let corpora: Vec<Corpus> = filtered_corpora
         .into_iter()
         .map(|name| Corpus {
-            selected: selected_corpora.contains(&name),
+            selected: session_state.selected_corpora.contains(&name),
             name,
         })
         .collect();
@@ -112,10 +117,9 @@ async fn filter(
             corpora,
             filter => payload.filter,
             session => session_state,
-            selected_corpora,
         })?;
 
-    Ok((StatusCode::OK, html).into_response())
+    Ok(Html(html))
 }
 
 #[cfg(test)]
