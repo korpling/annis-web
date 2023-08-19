@@ -218,6 +218,17 @@ async fn add_all_filtered_corpora() {
     add_all_button.click().await.unwrap();
 
     // The 3 corpora should be added to the selection
+    let selected_counter = Locator::Css("#annis-navbar >* span.tag");
+    assert_eq!(
+        "3",
+        env.webdriver
+            .find(selected_counter)
+            .await
+            .unwrap()
+            .text()
+            .await
+            .unwrap()
+    );
     let tag_selector = Locator::Css("#corpus-selector >* span.tag");
     let tags = env.webdriver.find_all(tag_selector).await.unwrap();
     assert_eq!(3, tags.len());
@@ -236,7 +247,16 @@ async fn add_all_filtered_corpora() {
     clear_all_button.click().await.unwrap();
     let tags = env.webdriver.find_all(tag_selector).await.unwrap();
     assert_eq!(0, tags.len());
-
+    assert_eq!(
+        "0",
+        env.webdriver
+            .find(selected_counter)
+            .await
+            .unwrap()
+            .text()
+            .await
+            .unwrap()
+    );
     env.close().await;
 }
 
