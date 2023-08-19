@@ -49,7 +49,7 @@ async fn show_page(
     Query(params): Query<FormParams>,
     State(state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let session_state: SessionState = session.get("state").unwrap_or_default();
+    let session_state = SessionState::from(&session);
 
     let example = if let Some(query) = params.query {
         create_example_output(query, &state, &session_state).await
@@ -73,7 +73,7 @@ async fn create_job(
     State(app_state): State<Arc<GlobalAppState>>,
     Form(params): Form<FormParams>,
 ) -> Result<impl IntoResponse> {
-    let session_state: SessionState = session.get("state").unwrap_or_default();
+    let session_state = SessionState::from(&session);
 
     // Only allow one background job per session
     let session_id = session.id();

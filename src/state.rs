@@ -1,3 +1,4 @@
+use axum_sessions::extractors::{ReadableSession, WritableSession};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 use tempfile::NamedTempFile;
@@ -6,9 +7,23 @@ use url::Url;
 
 use crate::Result;
 
+pub const STATE_KEY: &str = "state";
+
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct SessionState {
     pub selected_corpora: BTreeSet<String>,
+}
+
+impl From<&ReadableSession> for SessionState {
+    fn from(value: &ReadableSession) -> Self {
+        value.get(STATE_KEY).unwrap_or_default()
+    }
+}
+
+impl From<&WritableSession> for SessionState {
+    fn from(value: &WritableSession) -> Self {
+        value.get(STATE_KEY).unwrap_or_default()
+    }
 }
 
 #[derive(Debug)]

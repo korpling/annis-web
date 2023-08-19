@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}
+  About
+{% endblock title %}
+{% block content %}
+  <h1 class="title">About ANNIS</h1>
+  <div class="content">
+    <p>
+      ANNIS is an open source, versatile web browser-based search and visualization architecture for complex multilevel linguistic corpora with diverse types of annotation.
+    </p>
+    <ul>
+      <li>Version: {{ version }}</li>
+      <li>
+        Homepage: <a href="https://github.com/thomaskrause/annis-web">https://github.com/thomaskrause/annis-web</a>
+      </li>
+    </ul>
+  </div>
+  <h2 class="title is-4">What is the difference to the original ANNIS version 4?</h2>
+  <p class="content">
+    Since Vaadin 8 is end-of-life, we have to rethink the whole application stack of the ANNIS frontend. Updating to Vaadin 23 is practically a complete rewrite, so we should be open about which Programming Languages and Frameworks we use. Especially, porting the different visualizers might become a larger struggle.
+    This projekt is meant to create prototypes with a Rust-based framework and technologies and to evaluate the feasibiltiy. While Vaadin 7/8 was around as Open Source for a long time, we should be even more conservative when choosing the new technology, so it will work for a long time.
+  </p>
+{% endblock content %}

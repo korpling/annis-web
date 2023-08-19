@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     client::corpora,
-    state::{GlobalAppState, SessionState},
+    state::{GlobalAppState, SessionState, STATE_KEY},
     Result,
 };
 
@@ -33,7 +33,7 @@ async fn show(
     session: WritableSession,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let session_state: SessionState = session.get("state").unwrap_or_default();
+    let session_state = SessionState::from(&session);
 
     let selected_corpora = session_state.selected_corpora.clone();
 
@@ -79,7 +79,7 @@ async fn filter(
         .collect();
     filtered_corpora.sort_by_key(|k| k.to_lowercase());
 
-    let mut session_state: SessionState = session.get("state").unwrap_or_default();
+    let mut session_state = SessionState::from(&session);
 
     if let Some(add_corpus) = payload.add_corpus {
         session_state.selected_corpora.insert(add_corpus);
@@ -94,7 +94,7 @@ async fn filter(
         }
     }
 
-    session.insert("state", session_state.clone())?;
+    session.insert(STATE_KEY, session_state.clone())?;
 
     let selected_corpora = session_state.selected_corpora.clone();
     let corpora: Vec<_> = filtered_corpora

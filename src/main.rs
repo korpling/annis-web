@@ -21,7 +21,6 @@ use std::{net::SocketAddr, path::PathBuf, str::FromStr, sync::Arc, time::Duratio
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 use url::Url;
-use views::{corpora, export};
 
 static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/static");
 static TEMPLATES_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates");
@@ -79,14 +78,16 @@ async fn app(
         global_state.frontend_prefix.as_str(),
     )?;
 
-    let corpus_routes = corpora::create_routes()?;
-    let export_routes = export::create_routes()?;
+    let corpus_routes = views::corpora::create_routes()?;
+    let export_routes = views::export::create_routes()?;
+    let about_routes = views::about::create_routes()?;
 
     let routes = Router::new()
         .route("/", get(|| async { Redirect::temporary("corpora") }))
         .route("/static/*path", get(static_file))
         .nest("/corpora", corpus_routes)
         .nest("/export", export_routes)
+        .nest("/about", about_routes)
         .with_state(Arc::new(global_state));
 
     if let Some(session_file) = session_file {
