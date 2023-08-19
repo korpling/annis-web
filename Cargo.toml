@@ -31,13 +31,12 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 transient-btree-index = "0.5.0"
 url = "2.3"
-uuid = { version = "1.4.1", features = ["v4"] }
 
 [dev-dependencies]
 dirs = "5"
-env_logger = "0.10.0"
+env_logger = "0.10"
 fantoccini = "0.19"
-hyper = { version = "0.14", features = ["full"] }
+hyper = { version = "0.14", default-features=false }
 mockito = "1"
 pretty_assertions = "1"
 scraper = "0.16"
@@ -47,5 +46,9 @@ tower = { version = "0.4", features = ["util"] }
 
 [profile.dev.package.graphannis]
 opt-level = 3
+
 [profile.dev.package.graphannis-core]
 opt-level = 3
+
+[package.metadata.cargo-machete]
+ignored = ["env_logger"]
