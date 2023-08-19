@@ -8,8 +8,8 @@ use axum::{
     body::{self, Empty, Full},
     extract::Path,
     http::{header, HeaderValue, Response, StatusCode},
-    response::IntoResponse,
-    routing::{delete, get, post},
+    response::{IntoResponse, Redirect},
+    routing::get,
     Router,
 };
 use axum_sessions::{async_session::MemoryStore, SessionLayer};
@@ -21,6 +21,7 @@ use std::{net::SocketAddr, path::PathBuf, str::FromStr, sync::Arc, time::Duratio
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 use url::Url;
+use views::{corpora, export};
 
 static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/static");
 static TEMPLATES_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates");
@@ -78,15 +79,14 @@ async fn app(
         global_state.frontend_prefix.as_str(),
     )?;
 
-    let result = Router::new()
-        .route("/", get(views::corpora::get))
-        .route("/", post(views::corpora::post))
-        .route("/export", get(views::export::show_page))
-        .route("/export/job", post(views::export::create_job))
-        .route("/export/job", get(views::export::job_status))
-        .route("/export/file", get(views::export::download_file))
-        .route("/export/job", delete(views::export::cancel_job))
+    let corpus_routes = corpora::create_routes()?;
+    let export_routes = export::create_routes()?;
+
+    let routes = Router::new()
+        .route("/", get(|| async { Redirect::temporary("corpora") }))
         .route("/static/*path", get(static_file))
+        .nest("/corpora", corpus_routes)
+        .nest("/export", export_routes)
         .with_state(Arc::new(global_state));
 
     if let Some(session_file) = session_file {
@@ -99,13 +99,13 @@ async fn app(
             store,
             "ginoh3ya5eiLi1nohph0equ6KiwicooweeNgovoojeQuaejaixiequah6eenoo2k".as_bytes(),
         );
-        Ok(result.layer(session_layer))
+        Ok(routes.layer(session_layer))
     } else {
         let store = MemoryStore::new();
         let mut secret = [0_u8; 128];
         rand::thread_rng().fill(&mut secret);
         let session_layer = SessionLayer::new(store, &secret).with_secure(false);
-        Ok(result.layer(session_layer))
+        Ok(routes.layer(session_layer))
     }
 }
 

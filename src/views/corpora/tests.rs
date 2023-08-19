@@ -18,7 +18,10 @@ async fn list_corpora() {
         .with_body(r#"["TueBa-D/Z.6.0", "pcc2", "pcc11", "AnyPcCorpus", "demo.dialog"]"#)
         .create();
     {
-        env.webdriver.goto(&env.frontend_addr).await.unwrap();
+        env.webdriver
+            .goto(&format!("{}/corpora", &env.frontend_addr))
+            .await
+            .unwrap();
 
         env.webdriver
             .wait()
@@ -105,7 +108,10 @@ async fn filter_corpus_name() {
         .with_body(r#"["TueBa-D/Z.6.0", "pcc2", "pcc11", "AnyPcCorpus", "demo.dialog"]"#)
         .create();
 
-    env.webdriver.goto(&env.frontend_addr).await.unwrap();
+    env.webdriver
+        .goto(&format!("{}/corpora", &env.frontend_addr))
+        .await
+        .unwrap();
     let input = env
         .webdriver
         .find(Locator::XPath(
@@ -195,7 +201,12 @@ async fn service_down() {
         .unwrap();
 
         let response = app
-            .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
+            .oneshot(
+                Request::builder()
+                    .uri("/corpora")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
             .await
             .unwrap();
 

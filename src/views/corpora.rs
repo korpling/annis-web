@@ -5,7 +5,8 @@ use axum::{
     http::StatusCode,
     response::Html,
     response::{IntoResponse, Response},
-    Form,
+    routing::{get, post},
+    Form, Router,
 };
 use axum_sessions::extractors::WritableSession;
 use minijinja::context;
@@ -17,13 +18,18 @@ use crate::{
     Result,
 };
 
+pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
+    let result = Router::new().route("/", get(show)).route("/", post(filter));
+    Ok(result)
+}
+
 #[derive(Serialize)]
 struct Corpus {
     name: String,
     selected: bool,
 }
 
-pub async fn get(
+async fn show(
     session: WritableSession,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
@@ -53,14 +59,14 @@ pub async fn get(
 }
 
 #[derive(Deserialize, Debug)]
-pub struct Params {
+struct Params {
     filter: String,
     add_corpus: Option<String>,
     remove_corpus: Option<String>,
     add_all_corpora: Option<String>,
 }
 
-pub async fn post(
+async fn filter(
     mut session: WritableSession,
     State(app_state): State<Arc<GlobalAppState>>,
     Form(payload): Form<Params>,

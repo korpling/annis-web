@@ -12,7 +12,8 @@ use axum::{
     extract::{Query, State},
     http::header,
     response::{Html, IntoResponse},
-    Form,
+    routing::{delete, get, post},
+    Form, Router,
 };
 use axum_sessions::extractors::ReadableSession;
 use graphannis::corpusstorage::{QueryLanguage, ResultOrder};
@@ -28,12 +29,22 @@ const DEFAULT_EXAMPLE: &str = r#"match number,1 node name,1 tiger::lemma,1 tiger
 2,pcc2/11299#tok_2,der,Nom.Pl.*,ART
 3,pcc2/11299#tok_3,jugendliche,Nom.Pl.*,NN"#;
 
+pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
+    let result = Router::new()
+        .route("/", get(show_page))
+        .route("/job", post(create_job))
+        .route("/job", get(job_status))
+        .route("/job", delete(cancel_job))
+        .route("/file", get(download_file));
+    Ok(result)
+}
+
 #[derive(Deserialize, Debug)]
-pub struct FormParams {
+struct FormParams {
     query: Option<String>,
 }
 
-pub async fn show_page(
+async fn show_page(
     session: ReadableSession,
     Query(params): Query<FormParams>,
     State(state): State<Arc<GlobalAppState>>,
@@ -56,7 +67,8 @@ pub async fn show_page(
 
     Ok(Html(result))
 }
-pub async fn create_job(
+
+async fn create_job(
     session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
     Form(params): Form<FormParams>,
@@ -102,7 +114,7 @@ pub async fn create_job(
     Ok(Html(result))
 }
 
-pub async fn job_status(
+async fn job_status(
     session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
@@ -116,7 +128,7 @@ pub async fn job_status(
     Ok(Html(result))
 }
 
-pub async fn cancel_job(
+async fn cancel_job(
     session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
@@ -134,7 +146,7 @@ pub async fn cancel_job(
     Ok(Html(result))
 }
 
-pub async fn download_file(
+async fn download_file(
     session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
