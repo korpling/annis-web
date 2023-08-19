@@ -6,9 +6,6 @@
   <h1 class="title">Corpora</h1>
   <form id="corpus-selector"
         class="columns"
-        method="post"
-        action="{{ url_prefix }}corpora"
-        hx-boost="true"
         hx-target="#corpus-selector"
         hx-select="#corpus-selector"
         hx-swap="outerHTML">
@@ -20,13 +17,19 @@
       {% else %}
         <div class="field">
           <div class="control">
-            <button class="button" name="clear_selection" value="true">Clear selection</button>
+            <button hx-post="{{ url_prefix }}corpora"
+                    class="button"
+                    name="clear_selection"
+                    value="true">Clear selection</button>
           </div>
         </div>
         <div class="tags notification">
           {% for c in session.selected_corpora %}
             <span class="tag is-medium is-primary">{{ c }}
-              <button class="delete is-small" name="remove_corpus" value="{{ c }}"></button>
+              <button hx-post="{{ url_prefix }}corpora"
+                      class="delete is-small"
+                      name="remove_corpus"
+                      value="{{ c }}"></button>
             </span>
           {% endfor %}
         </div>
@@ -42,10 +45,11 @@
                  name="filter"
                  value="{{ filter }}"
                  placeholder="Filter by corpus name"
+                 autocomplete="off"
                  hx-post="{{ url_prefix }}corpora"
                  hx-trigger="keyup changed delay:500ms"
-                 hx-target="#corpus-selector"
-                 hx-select="#corpus-selector"
+                 hx-target="#available-corpora"
+                 hx-select="#available-corpora"
                  hx-swap="outerHTML"
                  id="corpus-filter">
         </div>
@@ -61,7 +65,10 @@
             <thead>
               <tr>
                 <td>
-                  <button class="button is-small" name="add_all_corpora" value="true">Add all</button>
+                  <button hx-post="{{ url_prefix }}corpora"
+                          class="button is-small"
+                          name="add_all_corpora"
+                          value="true">Add all</button>
                 </td>
                 <td>Corpus name</td>
               </tr>
@@ -70,7 +77,12 @@
               {% for c in corpora %}
                 <tr>
                   <td>
-                    {% if not c.selected %}<button name="add_corpus" value="{{ c.name }}" class="button is-small">Add</button>{% endif %}
+                    {% if not c.selected %}
+                      <button hx-post="{{ url_prefix }}corpora"
+                              name="add_corpus"
+                              value="{{ c.name }}"
+                              class="button is-small">Add</button>
+                    {% endif %}
                   </td>
                   <td class="corpus-name">{{ c.name }}</td>
                 </tr>

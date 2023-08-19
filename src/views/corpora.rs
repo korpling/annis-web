@@ -51,6 +51,7 @@ async fn show(
         .render(context! {
             corpora,
             session => session_state,
+            filter => "",
         })?;
 
     Ok(Html(html))
