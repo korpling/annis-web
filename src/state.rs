@@ -1,4 +1,5 @@
 use axum_sessions::extractors::{ReadableSession, WritableSession};
+use oauth2::{CsrfToken, PkceCodeVerifier};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 use tempfile::NamedTempFile;
@@ -58,8 +59,9 @@ impl ExportJob {
 pub struct GlobalAppState {
     pub service_url: Url,
     pub frontend_prefix: Url,
-    pub background_jobs: dashmap::DashMap<String, ExportJob>,
     pub templates: minijinja::Environment<'static>,
+    pub background_jobs: dashmap::DashMap<String, ExportJob>,
+    pub auth_requests: dashmap::DashMap<String, PkceCodeVerifier>,
 }
 
 impl GlobalAppState {
@@ -73,6 +75,7 @@ impl GlobalAppState {
             frontend_prefix: Url::parse("http://localhost:3000/")?,
             background_jobs: dashmap::DashMap::new(),
             templates: minijinja::Environment::new(),
+            auth_requests: dashmap::DashMap::new(),
         };
         Ok(result)
     }

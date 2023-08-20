@@ -5,6 +5,7 @@ use axum::{
     response::{Html, IntoResponse},
 };
 use minijinja::context;
+use oauth2::{basic::BasicErrorResponseType, StandardErrorResponse};
 use reqwest::Url;
 use serde::Deserialize;
 use thiserror::Error;
@@ -120,6 +121,14 @@ pub enum AppError {
     DownloadFileNotFound,
     #[error(transparent)]
     MiniJinja(#[from] minijinja::Error),
+    #[error(transparent)]
+    RequestTokenError(
+        #[from]
+        oauth2::RequestTokenError<
+            oauth2::reqwest::Error<reqwest::Error>,
+            StandardErrorResponse<BasicErrorResponseType>,
+        >,
+    ),
 }
 
 impl IntoResponse for AppError {

@@ -3,5 +3,11 @@
   Login
 {% endblock title %}
 {% block content %}
-  <div class="notification is-warning">Not implemented yet</div>
+  {% if error is defined %}
+    <div class="notification is-error">{{ error }}</div>
+  {% elif token is defined %}
+    <div class="notification is-info">{{ token }}</div>
+  {% else %}
+    <div class="notification is-warning">Not implemented yet</div>
+  {% endif %}
 {% endblock content %}

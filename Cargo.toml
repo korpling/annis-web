@@ -18,6 +18,7 @@ graphannis-core = "2"
 include_dir = "0.7"
 mime_guess = "2"
 minijinja = { version = "1.0.6", features = ["builtins", "loader"] }
+oauth2 = "4.4.1"
 percent-encoding = "2.2.0"
 rand = "0.8"
 reqwest = { version = "0.11", features = ["json", "stream"] }
