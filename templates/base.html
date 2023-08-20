@@ -35,7 +35,7 @@
           {% if (session.selected_corpora|length) == 0 %}
             {% set corpus_class = "is-warning" %}
           {% else %}
-            {% set corpus_class = "is-info" %}
+            {% set corpus_class = "is-primary" %}
           {% endif %}
           <a class="navbar-item" href="{{ url_prefix }}corpora">Corpora  <span class="ml-1 tag is-small {{ corpus_class }}"
         title='{{ session.selected_corpora|join(", ") }}'>{{ session.selected_corpora|length }}</span></a>
