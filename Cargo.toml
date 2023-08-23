@@ -16,6 +16,7 @@ futures = "0.3"
 graphannis = "2"
 graphannis-core = "2"
 include_dir = "0.7"
+jsonwebtoken = "8.3.0"
 mime_guess = "2"
 minijinja = { version = "1.0.6", features = ["builtins", "loader"] }
 oauth2 = "4.4.1"

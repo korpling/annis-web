@@ -44,9 +44,16 @@
         </div>
         <div class="navbar-end">
           <div class="navbar-item">
-            <div class="buttons">
-              <a class="button is-light"  href="{{ url_prefix }}login"">Log in</a>
-            </div>
+            {% if session.login.claims is defined %}
+              <span class="navbar-item">Logged in as "{{ session.login.claims.preferred_username | default(session.login.claims.sub) }}"</span>
+              <div class="buttons">
+                <a class="button is-light"  href="{{ url_prefix }}oauth/logout"">Log Out</a>
+              </div>
+            {% else %}
+              <div class="buttons">
+                <a class="button is-light"  href="{{ url_prefix }}oauth/login"">Log in</a>
+              </div>
+            {% endif %}
           </div>
         </div>
       </div>

@@ -1,4 +1,7 @@
-use crate::tests::{get_html, start_end2end_servers};
+use crate::{
+    config::CliConfig,
+    tests::{get_html, start_end2end_servers},
+};
 use axum::{
     body::Body,
     http::{Request, StatusCode},
@@ -272,7 +275,7 @@ async fn service_down() {
         let app = crate::app(
             &SocketAddr::from(([127, 0, 0, 1], 3000)),
             Some(&service_mock.url()),
-            None,
+            &CliConfig::default(),
         )
         .await
         .unwrap();

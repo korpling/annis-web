@@ -129,6 +129,10 @@ pub enum AppError {
             StandardErrorResponse<BasicErrorResponseType>,
         >,
     ),
+    #[error(transparent)]
+    JWT(#[from] jsonwebtoken::errors::Error),
+    #[error("No JWT type (HS256 or RS256) configured")]
+    NoJwtTypeConfigured,
 }
 
 impl IntoResponse for AppError {

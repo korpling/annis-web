@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}
+  Login
+{% endblock title %}
+{% block content %}
+  {% if error is defined %}
+    <div class="notification is-error">{{ error }}</div>
+  {% elif session.login.claims is defined and session.login.claims.sub is defined %}
+    <div class="notification is-info">Logged in as user "{{ session.login.claims.preferred_username }}"</div>
+  {% else %}
+    <div class="notification is-info">Logged out</div>
+  {% endif %}
+{% endblock content %}

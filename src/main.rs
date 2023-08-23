@@ -1,8 +1,11 @@
+mod auth;
 pub mod client;
+mod config;
 pub mod converter;
 pub mod errors;
-pub mod state;
+mod state;
 mod views;
+
 use async_sqlx_session::SqliteSessionStore;
 use axum::{
     body::{self, Empty, Full},
@@ -14,10 +17,11 @@ use axum::{
 };
 use axum_sessions::{async_session::MemoryStore, SessionLayer};
 use clap::Parser;
+use config::CliConfig;
 use include_dir::{include_dir, Dir};
 use rand::prelude::*;
 use state::GlobalAppState;
-use std::{net::SocketAddr, path::PathBuf, str::FromStr, sync::Arc, time::Duration};
+use std::{net::SocketAddr, str::FromStr, sync::Arc, time::Duration};
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 use url::Url;
@@ -62,16 +66,13 @@ fn create_templates(env: &mut minijinja::Environment, frontend_prefix: &str) -> 
     Ok(())
 }
 
-async fn app(
-    addr: &SocketAddr,
-    service_url: Option<&str>,
-    session_file: Option<&std::path::Path>,
-) -> Result<Router> {
+async fn app(addr: &SocketAddr, service_url: Option<&str>, config: &CliConfig) -> Result<Router> {
     let mut global_state = GlobalAppState::new()?;
     global_state.frontend_prefix = Url::parse(&format!("http://{}", addr))?;
     if let Some(service_url) = service_url {
         global_state.service_url = Url::parse(service_url)?;
     }
+    global_state.jwt_type = config.jwt_type()?;
 
     create_templates(
         &mut global_state.templates,
@@ -84,10 +85,10 @@ async fn app(
         .nest("/corpora", views::corpora::create_routes()?)
         .nest("/export", views::export::create_routes()?)
         .nest("/about", views::about::create_routes()?)
-        .nest("/login", views::login::create_routes()?)
+        .nest("/oauth", views::oauth::create_routes()?)
         .with_state(Arc::new(global_state));
 
-    if let Some(session_file) = session_file {
+    if let Some(session_file) = &config.session_file {
         let store =
             SqliteSessionStore::new(&format!("sqlite://{}", session_file.to_string_lossy()))
                 .await?;
@@ -102,20 +103,9 @@ async fn app(
         let store = MemoryStore::new();
         let mut secret = [0_u8; 128];
         rand::thread_rng().fill(&mut secret);
-        let session_layer = SessionLayer::new(store, &secret).with_secure(false);
+        let session_layer = SessionLayer::new(store, &secret);
         Ok(routes.layer(session_layer))
     }
-}
-
-#[derive(Parser)]
-#[command(author, version, about, long_about = None)]
-struct Cli {
-    /// Port to listen to
-    #[arg(long, short, default_value_t = 3000)]
-    port: u16,
-    /// If set, the SQLite database file to store sessions in
-    #[arg(long)]
-    session_file: Option<PathBuf>,
 }
 
 #[tokio::main]
@@ -124,11 +114,11 @@ async fn main() {
         .with_env_filter(EnvFilter::from_str("sqlx::query=warn,graphannis_core=warn,info").unwrap())
         .init();
 
-    let cli = Cli::parse();
+    let cli = CliConfig::parse();
 
     let addr = SocketAddr::from(([127, 0, 0, 1], cli.port));
 
-    match app(&addr, None, cli.session_file.as_deref()).await {
+    match app(&addr, None, &cli).await {
         Ok(router) => {
             info!("Starting server with address http://{addr}", addr = addr);
             let server = axum::Server::bind(&addr).serve(router.into_make_service());

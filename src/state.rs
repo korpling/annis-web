@@ -1,19 +1,20 @@
 use axum_sessions::extractors::{ReadableSession, WritableSession};
-use oauth2::{CsrfToken, PkceCodeVerifier};
+use jsonwebtoken::DecodingKey;
+use oauth2::PkceCodeVerifier;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 use tempfile::NamedTempFile;
 use tokio::{sync::mpsc::Receiver, task::JoinHandle};
 use url::Url;
 
-use crate::Result;
+use crate::{auth::LoginInfo, Result};
 
 pub const STATE_KEY: &str = "state";
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct SessionState {
     pub selected_corpora: BTreeSet<String>,
-    pub api_token: Option<String>,
+    pub login: Option<LoginInfo>,
 }
 
 impl From<&ReadableSession> for SessionState {
@@ -55,13 +56,19 @@ impl ExportJob {
     }
 }
 
-#[derive(Debug)]
+pub enum JwtType {
+    None,
+    HS256(DecodingKey),
+    RS256(DecodingKey),
+}
+
 pub struct GlobalAppState {
     pub service_url: Url,
     pub frontend_prefix: Url,
     pub templates: minijinja::Environment<'static>,
     pub background_jobs: dashmap::DashMap<String, ExportJob>,
     pub auth_requests: dashmap::DashMap<String, PkceCodeVerifier>,
+    pub jwt_type: JwtType,
 }
 
 impl GlobalAppState {
@@ -76,6 +83,7 @@ impl GlobalAppState {
             background_jobs: dashmap::DashMap::new(),
             templates: minijinja::Environment::new(),
             auth_requests: dashmap::DashMap::new(),
+            jwt_type: JwtType::None,
         };
         Ok(result)
     }

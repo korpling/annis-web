@@ -15,6 +15,8 @@ use test_log::test;
 use tokio::task::JoinHandle;
 use tower::ServiceExt;
 
+use crate::config::CliConfig;
+
 pub struct TestEnvironment {
     pub webdriver: fantoccini::Client,
     pub backend: mockito::Server,
@@ -73,7 +75,7 @@ pub async fn start_end2end_servers() -> TestEnvironment {
         axum::Server::from_tcp(listener)
             .unwrap()
             .serve(
-                crate::app(&addr, Some(&service_mock_url), None)
+                crate::app(&addr, Some(&service_mock_url), &CliConfig::default())
                     .await
                     .unwrap()
                     .into_make_service(),
@@ -111,9 +113,13 @@ where
 
 #[test(tokio::test)]
 async fn existing_static_resource() {
-    let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000)), None, None)
-        .await
-        .unwrap();
+    let app = crate::app(
+        &SocketAddr::from(([127, 0, 0, 1], 3000)),
+        None,
+        &CliConfig::default(),
+    )
+    .await
+    .unwrap();
 
     let response = app
         .oneshot(
@@ -135,9 +141,13 @@ async fn existing_static_resource() {
 
 #[test(tokio::test)]
 async fn missing_static_resource() {
-    let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000)), None, None)
-        .await
-        .unwrap();
+    let app = crate::app(
+        &SocketAddr::from(([127, 0, 0, 1], 3000)),
+        None,
+        &CliConfig::default(),
+    )
+    .await
+    .unwrap();
 
     let response = app
         .oneshot(

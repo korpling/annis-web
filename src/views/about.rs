@@ -42,13 +42,17 @@ mod tests {
     use test_log::test;
     use tower::ServiceExt;
 
-    use crate::tests::get_body;
+    use crate::{tests::get_body, CliConfig};
 
     #[test(tokio::test)]
     async fn about_page_shown() {
-        let app = crate::app(&SocketAddr::from(([127, 0, 0, 1], 3000)), None, None)
-            .await
-            .unwrap();
+        let app = crate::app(
+            &SocketAddr::from(([127, 0, 0, 1], 3000)),
+            None,
+            &CliConfig::default(),
+        )
+        .await
+        .unwrap();
 
         let response = app
             .oneshot(
