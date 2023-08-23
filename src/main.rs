@@ -15,7 +15,7 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_sessions::{async_session::MemoryStore, SessionLayer};
+use axum_sessions::{async_session::MemoryStore, SameSite, SessionLayer};
 use clap::Parser;
 use config::CliConfig;
 use include_dir::{include_dir, Dir};
@@ -97,13 +97,14 @@ async fn app(addr: &SocketAddr, service_url: Option<&str>, config: &CliConfig) -
         let session_layer = SessionLayer::new(
             store,
             "ginoh3ya5eiLi1nohph0equ6KiwicooweeNgovoojeQuaejaixiequah6eenoo2k".as_bytes(),
-        );
+        )
+        .with_same_site_policy(SameSite::Lax);
         Ok(routes.layer(session_layer))
     } else {
         let store = MemoryStore::new();
         let mut secret = [0_u8; 128];
         rand::thread_rng().fill(&mut secret);
-        let session_layer = SessionLayer::new(store, &secret);
+        let session_layer = SessionLayer::new(store, &secret).with_same_site_policy(SameSite::Lax);
         Ok(routes.layer(session_layer))
     }
 }
