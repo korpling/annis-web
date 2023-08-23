@@ -96,7 +96,7 @@ async fn create_job(
                 let mut result_file = tempfile::NamedTempFile::new()?;
 
                 exporter
-                    .convert_text(&app_state_copy, None, &mut result_file)
+                    .convert_text(&session_state, &app_state_copy, None, &mut result_file)
                     .await?;
                 Ok(result_file)
             });
@@ -209,7 +209,7 @@ async fn create_example_output(
         let mut example_string_buffer = Vec::new();
 
         exporter
-            .convert_text(state, Some(3), &mut example_string_buffer)
+            .convert_text(&session_state, state, Some(3), &mut example_string_buffer)
             .await
             .map_err(|e| format!("{}", e))?;
         let result = String::from_utf8_lossy(&example_string_buffer).to_string();

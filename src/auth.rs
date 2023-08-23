@@ -42,6 +42,10 @@ impl LoginInfo {
         };
         Ok(result)
     }
+
+    pub fn api_token(&self) -> &str {
+        self.oauth_token.access_token().secret()
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

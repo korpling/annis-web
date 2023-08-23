@@ -1,3 +1,4 @@
+use axum::http::HeaderValue;
 use axum_sessions::extractors::{ReadableSession, WritableSession};
 use jsonwebtoken::DecodingKey;
 use oauth2::PkceCodeVerifier;
@@ -26,6 +27,21 @@ impl From<&ReadableSession> for SessionState {
 impl From<&WritableSession> for SessionState {
     fn from(value: &WritableSession) -> Self {
         value.get(STATE_KEY).unwrap_or_default()
+    }
+}
+
+impl SessionState {
+    pub fn create_client(&self) -> Result<reqwest::Client> {
+        let mut default_headers = reqwest::header::HeaderMap::new();
+
+        if let Some(login) = &self.login {
+            let value = HeaderValue::from_str(&format!("Bearer {}", login.api_token()))?;
+            default_headers.insert(reqwest::header::AUTHORIZATION, value);
+        }
+
+        let builder = reqwest::ClientBuilder::new().default_headers(default_headers);
+
+        Ok(builder.build()?)
     }
 }
 
