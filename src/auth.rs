@@ -1,11 +1,7 @@
 use oauth2::{basic::BasicTokenType, EmptyExtraTokenFields, StandardTokenResponse, TokenResponse};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    errors::AppError,
-    state::{GlobalAppState, JwtType},
-    Result,
-};
+use crate::{errors::AppError, state::JwtType, Result};
 
 pub type AnnisTokenResponse = StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>;
 
@@ -16,9 +12,9 @@ pub struct LoginInfo {
 }
 
 impl LoginInfo {
-    pub fn new(oauth_token: AnnisTokenResponse, global_state: &GlobalAppState) -> Result<Self> {
+    pub fn new(oauth_token: AnnisTokenResponse, jwt_type: &JwtType) -> Result<Self> {
         // Validate and decode the JWT token
-        let (validation, key) = match &global_state.jwt_type {
+        let (validation, key) = match jwt_type {
             JwtType::None => {
                 return Err(AppError::NoJwtTypeConfigured);
             }
@@ -52,9 +48,6 @@ impl LoginInfo {
 pub struct Claims {
     pub sub: String,
     pub preferred_username: String,
-    /// Expiration date as unix timestamp in seconds since epoch and UTC
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub exp: Option<i64>,
     #[serde(
         default,
         rename = "https://corpus-tools.org/annis/groups",

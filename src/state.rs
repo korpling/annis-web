@@ -72,6 +72,7 @@ impl ExportJob {
     }
 }
 
+#[derive(Clone)]
 pub enum JwtType {
     None,
     HS256(DecodingKey),

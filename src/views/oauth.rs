@@ -1,6 +1,6 @@
 use crate::{
-    auth::LoginInfo,
-    state::{GlobalAppState, SessionState, STATE_KEY},
+    auth::{AnnisTokenResponse, LoginInfo},
+    state::{GlobalAppState, JwtType, SessionState, STATE_KEY},
     Result,
 };
 use axum::{
@@ -11,13 +11,14 @@ use axum::{
 };
 use axum_sessions::extractors::WritableSession;
 use minijinja::context;
-use oauth2::basic::BasicClient;
-use oauth2::reqwest::async_http_client;
+use oauth2::{basic::BasicClient, TokenResponse};
+use oauth2::{reqwest::async_http_client, RefreshToken};
 use oauth2::{
     AuthUrl, AuthorizationCode, ClientId, CsrfToken, PkceCodeChallenge, RedirectUrl, TokenUrl,
 };
 use serde::Deserialize;
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
+use tokio::time::Instant;
 
 pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
     let result = Router::new()
@@ -30,6 +31,7 @@ pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
 
 fn create_client(app_state: &GlobalAppState) -> Result<BasicClient> {
     let redirect_url = format!("{}/oauth/callback", app_state.frontend_prefix.to_string());
+    // TODO allow configuring the Oauth2 endpoint, e.g. from a well-known URI
     let client = BasicClient::new(
         ClientId::new("annis".to_string()),
         None,
@@ -46,12 +48,10 @@ async fn redirect_to_login(
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
     let client = create_client(&app_state)?;
-
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
     let (auth_url, csrf_token) = client
         .authorize_url(CsrfToken::new_random)
-        // Set the PKCE code challenge.
         .set_pkce_challenge(pkce_challenge)
         .url();
 
@@ -83,6 +83,50 @@ struct CallBackParams {
     code: Option<String>,
 }
 
+async fn refresh_token_action(
+    refresh_instant: Instant,
+    refresh_token: RefreshToken,
+    client: BasicClient,
+    mut session: WritableSession,
+    jwt_type: JwtType,
+) -> Result<()> {
+    tokio::time::sleep_until(refresh_instant).await;
+    let new_token = client
+        .exchange_refresh_token(&refresh_token)
+        .request_async(async_http_client)
+        .await?;
+    let mut session_state = SessionState::from(&session);
+    session_state.login = Some(LoginInfo::new(new_token, &jwt_type)?);
+    session.insert(STATE_KEY, session_state)?;
+    Ok(())
+}
+
+fn schedule_refresh_token(
+    token: &AnnisTokenResponse,
+    client: BasicClient,
+    session: WritableSession,
+    token_request_time: Instant,
+    jwt_type: JwtType,
+) {
+    if let (Some(expires_in), Some(refresh_token)) =
+        (token.expires_in(), token.refresh_token().cloned())
+    {
+        let refresh_offset = expires_in
+            .checked_sub(Duration::from_secs(10))
+            .unwrap_or(expires_in);
+        let refresh_instant = token_request_time.checked_add(refresh_offset);
+        if let Some(refresh_instant) = refresh_instant {
+            tokio::spawn(refresh_token_action(
+                refresh_instant,
+                refresh_token,
+                client,
+                session,
+                jwt_type,
+            ));
+        }
+    }
+}
+
 async fn login_callback(
     mut session: WritableSession,
     State(app_state): State<Arc<GlobalAppState>>,
@@ -99,20 +143,31 @@ async fn login_callback(
         let client = create_client(&app_state)?;
 
         if let Some((_, pkce_verifier)) = app_state.auth_requests.remove(&state) {
+            let token_request_time = Instant::now();
             let token = client
                 .exchange_code(AuthorizationCode::new(params.code.unwrap_or_default()))
-                // Set the PKCE code verifier.
                 .set_pkce_verifier(pkce_verifier)
                 .request_async(async_http_client)
                 .await?;
 
-            session_state.login = Some(LoginInfo::new(token, &app_state)?);
+            // Add the token to the session
+            session_state.login = Some(LoginInfo::new(token.clone(), &app_state.jwt_type)?);
 
             let html = template.render(context! {
                 session => session_state,
             })?;
 
             session.insert(STATE_KEY, session_state)?;
+
+            // Schedule a task that refreshes the token before it expires
+            schedule_refresh_token(
+                &token,
+                client,
+                session,
+                token_request_time,
+                app_state.jwt_type.clone(),
+            );
+
             return Ok(Html(html));
         }
     }
