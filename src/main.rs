@@ -79,6 +79,8 @@ async fn app(addr: &SocketAddr, service_url: Option<&str>, config: &CliConfig) -
         global_state.frontend_prefix.as_str(),
     )?;
 
+    let global_state = Arc::new(global_state);
+
     let routes = Router::new()
         .route("/", get(|| async { Redirect::temporary("corpora") }))
         .route("/static/*path", get(static_file))
@@ -86,7 +88,7 @@ async fn app(addr: &SocketAddr, service_url: Option<&str>, config: &CliConfig) -
         .nest("/export", views::export::create_routes()?)
         .nest("/about", views::about::create_routes()?)
         .nest("/oauth", views::oauth::create_routes()?)
-        .with_state(Arc::new(global_state));
+        .with_state(global_state.clone());
 
     if let Some(session_file) = &config.session_file {
         let store =
@@ -94,13 +96,23 @@ async fn app(addr: &SocketAddr, service_url: Option<&str>, config: &CliConfig) -
                 .await?;
         store.migrate().await?;
         store.spawn_cleanup_task(Duration::from_secs(60 * 60));
+
         let session_layer = SessionLayer::new(
-            store,
+            store.clone(),
             "ginoh3ya5eiLi1nohph0equ6KiwicooweeNgovoojeQuaejaixiequah6eenoo2k".as_bytes(),
         )
         .with_same_site_policy(SameSite::Lax);
+
+        tokio::task::spawn(async move {
+            loop {
+                tokio::time::sleep(Duration::from_secs(60)).await;
+                global_state.cleanup(&store).await;
+            }
+        });
+
         Ok(routes.layer(session_layer))
     } else {
+        // TODO remove memory storage option and replace it with a temporary file.
         let store = MemoryStore::new();
         let mut secret = [0_u8; 128];
         rand::thread_rng().fill(&mut secret);

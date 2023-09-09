@@ -158,7 +158,7 @@ impl IntoResponse for AppError {
                     message,
                     status_code => status.as_u16(),
                     canonical_reason => status.canonical_reason().unwrap_or_default(),
-                    // TODO: how can we find the actual prefix without having access to the session?
+                    // TODO how can we find the actual prefix without having access to the session?
                     url_prefix=> "/".to_string(),
                     session => SessionState::default(),
                 })

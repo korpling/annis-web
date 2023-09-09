@@ -1,9 +1,12 @@
 use axum::http::HeaderValue;
-use axum_sessions::extractors::{ReadableSession, WritableSession};
+use axum_sessions::{
+    async_session::SessionStore,
+    extractors::{ReadableSession, WritableSession},
+};
 use jsonwebtoken::DecodingKey;
 use oauth2::PkceCodeVerifier;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashSet};
 use tempfile::NamedTempFile;
 use tokio::{sync::mpsc::Receiver, task::JoinHandle};
 use url::Url;
@@ -90,12 +93,12 @@ pub struct GlobalAppState {
 
 impl GlobalAppState {
     pub fn new() -> Result<Self> {
-        // TODO: get this parameter a configuration
+        // TODO get this parameter a configuration
         let service_url = "http://localhost:5711/v1/";
 
         let result = Self {
             service_url: Url::parse(service_url)?,
-            // TODO: make this configurable
+            // TODO make this configurable
             frontend_prefix: Url::parse("http://localhost:3000/")?,
             background_jobs: dashmap::DashMap::new(),
             templates: minijinja::Environment::new(),
@@ -103,5 +106,41 @@ impl GlobalAppState {
             jwt_type: JwtType::None,
         };
         Ok(result)
+    }
+
+    /// Cleans up all ressources coupled to sessions that are expired or non-existing.
+    pub async fn cleanup<S: SessionStore>(&self, session_store: &S) {
+        let mut keys_to_delete = HashSet::new();
+
+        let auth_request_keys: Vec<_> =
+            self.auth_requests.iter().map(|x| x.key().clone()).collect();
+        let background_job_keys: Vec<_> = self
+            .background_jobs
+            .iter()
+            .map(|x| x.key().clone())
+            .collect();
+
+        let mut all_keys = HashSet::new();
+        all_keys.extend(auth_request_keys);
+        all_keys.extend(background_job_keys);
+
+        for k in all_keys {
+            // If there is an error retrieving the session, the session does not
+            // exist or is expired, mark this session ID for deletion.
+            if let Ok(Some(session)) = session_store.load_session(k.to_string()).await {
+                if session.is_expired() || session.is_destroyed() {
+                    keys_to_delete.insert(k);
+                }
+            } else {
+                keys_to_delete.insert(k);
+            }
+        }
+
+        for k in keys_to_delete {
+            self.auth_requests.remove(&k);
+            self.background_jobs.remove(&k);
+        }
+
+        // TODO Cleanup global states with expired sessions
     }
 }
