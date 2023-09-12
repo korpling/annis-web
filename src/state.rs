@@ -18,7 +18,6 @@ pub const STATE_KEY: &str = "state";
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct SessionState {
     pub selected_corpora: BTreeSet<String>,
-    pub login: Option<LoginInfo>,
 }
 
 impl From<&ReadableSession> for SessionState {
@@ -30,21 +29,6 @@ impl From<&ReadableSession> for SessionState {
 impl From<&WritableSession> for SessionState {
     fn from(value: &WritableSession) -> Self {
         value.get(STATE_KEY).unwrap_or_default()
-    }
-}
-
-impl SessionState {
-    pub fn create_client(&self) -> Result<reqwest::Client> {
-        let mut default_headers = reqwest::header::HeaderMap::new();
-
-        if let Some(login) = &self.login {
-            let value = HeaderValue::from_str(&format!("Bearer {}", login.api_token()))?;
-            default_headers.insert(reqwest::header::AUTHORIZATION, value);
-        }
-
-        let builder = reqwest::ClientBuilder::new().default_headers(default_headers);
-
-        Ok(builder.build()?)
     }
 }
 
@@ -88,6 +72,7 @@ pub struct GlobalAppState {
     pub templates: minijinja::Environment<'static>,
     pub background_jobs: dashmap::DashMap<String, ExportJob>,
     pub auth_requests: dashmap::DashMap<String, PkceCodeVerifier>,
+    pub login_info: dashmap::DashMap<String, LoginInfo>,
     pub jwt_type: JwtType,
 }
 
@@ -103,9 +88,23 @@ impl GlobalAppState {
             background_jobs: dashmap::DashMap::new(),
             templates: minijinja::Environment::new(),
             auth_requests: dashmap::DashMap::new(),
+            login_info: dashmap::DashMap::new(),
             jwt_type: JwtType::None,
         };
         Ok(result)
+    }
+
+    pub fn create_client(&self, session_id: &str) -> Result<reqwest::Client> {
+        let mut default_headers = reqwest::header::HeaderMap::new();
+
+        if let Some(login) = &self.login_info.get(session_id) {
+            let value = HeaderValue::from_str(&format!("Bearer {}", login.api_token()))?;
+            default_headers.insert(reqwest::header::AUTHORIZATION, value);
+        }
+
+        let builder = reqwest::ClientBuilder::new().default_headers(default_headers);
+
+        Ok(builder.build()?)
     }
 
     /// Cleans up all ressources coupled to sessions that are expired or non-existing.
@@ -119,10 +118,12 @@ impl GlobalAppState {
             .iter()
             .map(|x| x.key().clone())
             .collect();
+        let login_info_keys: Vec<_> = self.login_info.iter().map(|x| x.key().clone()).collect();
 
         let mut all_keys = HashSet::new();
         all_keys.extend(auth_request_keys);
         all_keys.extend(background_job_keys);
+        all_keys.extend(login_info_keys);
 
         for k in all_keys {
             // If there is an error retrieving the session, the session does not
@@ -139,8 +140,11 @@ impl GlobalAppState {
         for k in keys_to_delete {
             self.auth_requests.remove(&k);
             self.background_jobs.remove(&k);
+            self.login_info.remove(&k);
         }
-
-        // TODO Cleanup global states with expired sessions
     }
+}
+
+pub fn get_session_by_id<S: SessionStore>(id: &str, session_store: S) {
+    todo!("Implement getting the session for some specialized SessionStore types")
 }

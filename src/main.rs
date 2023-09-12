@@ -1,8 +1,9 @@
 mod auth;
-pub mod client;
+pub(crate) mod client;
 mod config;
-pub mod converter;
-pub mod errors;
+pub(crate) mod converter;
+pub(crate) mod errors;
+pub(crate) mod sessions;
 mod state;
 mod views;
 
@@ -22,6 +23,7 @@ use include_dir::{include_dir, Dir};
 use rand::prelude::*;
 use state::GlobalAppState;
 use std::{net::SocketAddr, str::FromStr, sync::Arc, time::Duration};
+use tempfile::NamedTempFile;
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 use url::Url;

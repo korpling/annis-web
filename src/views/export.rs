@@ -52,7 +52,7 @@ async fn show_page(
     let session_state = SessionState::from(&session);
 
     let example = if let Some(query) = params.query {
-        create_example_output(query, &state, &session_state).await
+        create_example_output(query, &state, &session).await
     } else {
         Ok(DEFAULT_EXAMPLE.to_string())
     };
@@ -76,7 +76,7 @@ async fn create_job(
     let session_state = SessionState::from(&session);
 
     // Only allow one background job per session
-    let session_id = session.id();
+    let session_id = session.id().to_string();
     app_state
         .background_jobs
         .entry(session_id.to_string())
@@ -96,7 +96,7 @@ async fn create_job(
                 let mut result_file = tempfile::NamedTempFile::new()?;
 
                 exporter
-                    .convert_text(&session_state, &app_state_copy, None, &mut result_file)
+                    .convert_text(&session_id, &app_state_copy, None, &mut result_file)
                     .await?;
                 Ok(result_file)
             });
@@ -194,8 +194,9 @@ fn current_job(session: &ReadableSession, app_state: &GlobalAppState) -> JobStat
 async fn create_example_output(
     query: String,
     state: &GlobalAppState,
-    session_state: &SessionState,
+    session: &ReadableSession,
 ) -> std::result::Result<String, String> {
+    let session_state = SessionState::from(session);
     let example_query = FindQuery {
         query,
         corpora: session_state.selected_corpora.iter().cloned().collect(),
@@ -209,7 +210,7 @@ async fn create_example_output(
         let mut example_string_buffer = Vec::new();
 
         exporter
-            .convert_text(&session_state, state, Some(3), &mut example_string_buffer)
+            .convert_text(session.id(), state, Some(3), &mut example_string_buffer)
             .await
             .map_err(|e| format!("{}", e))?;
         let result = String::from_utf8_lossy(&example_string_buffer).to_string();

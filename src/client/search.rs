@@ -1,4 +1,5 @@
 use axum::http::StatusCode;
+use axum_sessions::extractors::ReadableSession;
 use futures::TryStreamExt;
 use graphannis::corpusstorage::{QueryLanguage, ResultOrder};
 use serde::Serialize;
@@ -27,10 +28,10 @@ pub struct FindQuery {
 pub async fn find(
     query: &FindQuery,
     state: &GlobalAppState,
-    session: &SessionState,
+    session_id: &str,
 ) -> Result<BtreeIndex<u64, Vec<String>>> {
     let url = state.service_url.join("search/find")?;
-    let client = session.create_client()?;
+    let client = state.create_client(session_id)?;
 
     let request = client
         .request(reqwest::Method::POST, url.clone())

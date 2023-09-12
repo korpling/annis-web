@@ -9,7 +9,7 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_sessions::extractors::WritableSession;
+use axum_sessions::extractors::{ReadableSession, WritableSession};
 use minijinja::context;
 use oauth2::{basic::BasicClient, TokenResponse};
 use oauth2::{reqwest::async_http_client, RefreshToken};
@@ -63,16 +63,14 @@ async fn redirect_to_login(
 }
 
 async fn logout(
-    mut session: WritableSession,
+    session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let mut session_state = SessionState::from(&session);
-
-    session_state.login = None;
-    session.insert(STATE_KEY, session_state.clone())?;
+    app_state.login_info.remove(session.id());
 
     let template = app_state.templates.get_template("oauth.html")?;
-    let html = template.render(context! {session => session_state})?;
+
+    let html = template.render(context! {session => SessionState::from(&session)})?;
     Ok(Html(html))
 }
 
@@ -87,7 +85,7 @@ async fn refresh_token_action(
     refresh_instant: Instant,
     refresh_token: RefreshToken,
     client: BasicClient,
-    mut session: WritableSession,
+    session_id: String,
     jwt_type: JwtType,
 ) -> Result<()> {
     tokio::time::sleep_until(refresh_instant).await;
@@ -95,16 +93,13 @@ async fn refresh_token_action(
         .exchange_refresh_token(&refresh_token)
         .request_async(async_http_client)
         .await?;
-    let mut session_state = SessionState::from(&session);
-    session_state.login = Some(LoginInfo::new(new_token, &jwt_type)?);
-    session.insert(STATE_KEY, session_state)?;
-    Ok(())
+    todo!("Set the new token in the global state")
 }
 
 fn schedule_refresh_token(
     token: &AnnisTokenResponse,
     client: BasicClient,
-    session: WritableSession,
+    session_id: &str,
     token_request_time: Instant,
     jwt_type: JwtType,
 ) {
@@ -115,12 +110,13 @@ fn schedule_refresh_token(
             .checked_sub(Duration::from_secs(10))
             .unwrap_or(expires_in);
         let refresh_instant = token_request_time.checked_add(refresh_offset);
+        let session_id = session_id.to_string();
         if let Some(refresh_instant) = refresh_instant {
             tokio::spawn(refresh_token_action(
                 refresh_instant,
                 refresh_token,
                 client,
-                session,
+                session_id,
                 jwt_type,
             ));
         }
@@ -150,8 +146,7 @@ async fn login_callback(
                 .request_async(async_http_client)
                 .await?;
 
-            // Add the token to the session
-            session_state.login = Some(LoginInfo::new(token.clone(), &app_state.jwt_type)?);
+            todo!("Add the token to the global state");
 
             let html = template.render(context! {
                 session => session_state,
@@ -163,7 +158,7 @@ async fn login_callback(
             schedule_refresh_token(
                 &token,
                 client,
-                session,
+                session.id(),
                 token_request_time,
                 app_state.jwt_type.clone(),
             );

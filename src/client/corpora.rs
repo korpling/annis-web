@@ -1,3 +1,4 @@
+use axum_sessions::extractors::ReadableSession;
 use graphannis::AnnotationGraph;
 use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 use serde::Serialize;
@@ -9,8 +10,8 @@ use crate::{
 };
 
 /// Get a sorted list of all corpus names
-pub async fn list(session: &SessionState, state: &GlobalAppState) -> Result<Vec<String>> {
-    let client = session.create_client()?;
+pub async fn list(session_id: &str, state: &GlobalAppState) -> Result<Vec<String>> {
+    let client = state.create_client(session_id)?;
     let request = client.get(state.service_url.join("corpora")?).build()?;
     let mut corpora: Vec<String> = client.execute(request).await?.json().await?;
     corpora.sort_by_key(|k| k.to_lowercase());
@@ -30,7 +31,7 @@ const QUERY: &AsciiSet = &CONTROLS.add(b' ').add(b'"').add(b'#').add(b'<').add(b
 
 /// Get the subgraph for a given match
 pub async fn subgraph(
-    session: &SessionState,
+    session_id: &str,
     corpus: &str,
     node_ids: Vec<String>,
     segmentation: Option<String>,
@@ -42,7 +43,7 @@ pub async fn subgraph(
         "corpora/{}/subgraph",
         utf8_percent_encode(corpus, QUERY)
     ))?;
-    let client = session.create_client()?;
+    let client = state.create_client(session_id)?;
 
     let body = SubgraphRequest {
         node_ids,
