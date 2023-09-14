@@ -35,11 +35,8 @@ impl LoginInfo {
                 key.clone(),
             ),
         };
-        let claims = jsonwebtoken::decode::<Claims>(
-            &oauth_token.access_token().secret(),
-            &key,
-            &validation,
-        )?;
+        let claims =
+            jsonwebtoken::decode::<Claims>(oauth_token.access_token().secret(), &key, &validation)?;
         let result = LoginInfo {
             oauth_token,
             claims: claims.claims,
@@ -66,11 +63,8 @@ impl LoginInfo {
                 key.clone(),
             ),
         };
-        let claims = jsonwebtoken::decode::<Claims>(
-            &oauth_token.access_token().secret(),
-            &key,
-            &validation,
-        )?;
+        let claims =
+            jsonwebtoken::decode::<Claims>(oauth_token.access_token().secret(), &key, &validation)?;
         self.claims = claims.claims;
         self.oauth_token = oauth_token;
         Ok(())

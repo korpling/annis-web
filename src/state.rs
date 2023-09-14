@@ -119,7 +119,7 @@ impl GlobalAppState {
                 {
                     // Check if the new expiration date is actually longer before replacing it
                     if &old_expiry < new_expiry {
-                        l.user_session_expiry = Some(new_expiry.clone());
+                        l.user_session_expiry = Some(*new_expiry);
                     }
                 } else {
                     // Use the new expiration date

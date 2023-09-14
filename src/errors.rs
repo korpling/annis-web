@@ -98,7 +98,7 @@ pub enum AppError {
     #[error("{0}")]
     BackendBadRequest(BadRequestError),
     #[error(transparent)]
-    CSV(#[from] csv::Error),
+    Csv(#[from] csv::Error),
     #[error(transparent)]
     GraphAnnisCore(#[from] graphannis_core::errors::GraphAnnisCoreError),
     #[error(transparent)]
@@ -130,7 +130,7 @@ pub enum AppError {
         >,
     ),
     #[error(transparent)]
-    JWT(#[from] jsonwebtoken::errors::Error),
+    Jwt(#[from] jsonwebtoken::errors::Error),
     #[error("No JWT type (HS256 or RS256) configured")]
     NoJwtTypeConfigured,
 }

@@ -31,7 +31,7 @@ pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
 }
 
 fn create_client(app_state: &GlobalAppState) -> Result<BasicClient> {
-    let redirect_url = format!("{}/oauth/callback", app_state.frontend_prefix.to_string());
+    let redirect_url = format!("{}/oauth/callback", app_state.frontend_prefix);
     // TODO allow configuring the Oauth2 endpoint, e.g. from a well-known URI
     let client = BasicClient::new(
         ClientId::new("annis".to_string()),
