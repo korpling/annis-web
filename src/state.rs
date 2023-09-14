@@ -1,5 +1,8 @@
 use axum::http::HeaderValue;
-use axum_sessions::extractors::{ReadableSession, WritableSession};
+use axum_sessions::{
+    async_session::Session,
+    extractors::{ReadableSession, WritableSession},
+};
 use chrono::Utc;
 use jsonwebtoken::DecodingKey;
 use oauth2::PkceCodeVerifier;
@@ -65,6 +68,21 @@ pub enum JwtType {
     RS256(DecodingKey),
 }
 
+#[derive(Clone)]
+pub enum SessionArg {
+    Session(Session),
+    Id(String),
+}
+
+impl SessionArg {
+    pub fn id(&self) -> &str {
+        match self {
+            SessionArg::Session(s) => s.id(),
+            SessionArg::Id(id) => id,
+        }
+    }
+}
+
 pub struct GlobalAppState {
     pub service_url: Url,
     pub frontend_prefix: Url,
@@ -93,10 +111,32 @@ impl GlobalAppState {
         Ok(result)
     }
 
-    pub fn create_client(&self, session_id: &str) -> Result<reqwest::Client> {
+    pub fn create_client(&self, session: &SessionArg) -> Result<reqwest::Client> {
+        if let SessionArg::Session(session) = session {
+            self.login_info.alter(session.id(), |_, mut l| {
+                if let (Some(old_expiry), Some(new_expiry)) =
+                    (l.user_session_expiry, session.expiry())
+                {
+                    // Check if the new expiration date is actually longer before replacing it
+                    if &old_expiry < new_expiry {
+                        l.user_session_expiry = Some(new_expiry.clone());
+                    }
+                } else {
+                    // Use the new expiration date
+                    l.user_session_expiry = session.expiry().cloned();
+                }
+                l
+            });
+            self.login_info
+                .entry(session.id().to_string())
+                .and_modify(|l| {
+                    l.user_session_expiry = session.expiry().cloned();
+                });
+        }
+
         let mut default_headers = reqwest::header::HeaderMap::new();
 
-        if let Some(login) = &self.login_info.get(session_id) {
+        if let Some(login) = &self.login_info.get(session.id()) {
             let value = HeaderValue::from_str(&format!("Bearer {}", login.api_token()))?;
             default_headers.insert(reqwest::header::AUTHORIZATION, value);
         }

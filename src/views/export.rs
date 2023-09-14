@@ -4,7 +4,7 @@ use crate::{
     client::search::FindQuery,
     converter::CSVExporter,
     errors::AppError,
-    state::{ExportJob, GlobalAppState, SessionState},
+    state::{ExportJob, GlobalAppState, SessionArg, SessionState},
     Result,
 };
 use axum::{
@@ -15,7 +15,7 @@ use axum::{
     routing::{delete, get, post},
     Form, Router,
 };
-use axum_sessions::extractors::ReadableSession;
+use axum_sessions::{async_session::Session, extractors::ReadableSession};
 use graphannis::corpusstorage::{QueryLanguage, ResultOrder};
 use minijinja::context;
 use serde::{Deserialize, Serialize};
@@ -76,10 +76,10 @@ async fn create_job(
     let session_state = SessionState::from(&session);
 
     // Only allow one background job per session
-    let session_id = session.id().to_string();
+    let session_arg = SessionArg::Id(session.id().to_string());
     app_state
         .background_jobs
-        .entry(session_id.to_string())
+        .entry(session_arg.id().to_string())
         .or_insert_with(|| {
             // Create a background job that performs the export
             let find_query = FindQuery {
@@ -96,7 +96,7 @@ async fn create_job(
                 let mut result_file = tempfile::NamedTempFile::new()?;
 
                 exporter
-                    .convert_text(&session_id, &app_state_copy, None, &mut result_file)
+                    .convert_text(session_arg, &app_state_copy, None, &mut result_file)
                     .await?;
                 Ok(result_file)
             });
@@ -204,13 +204,19 @@ async fn create_example_output(
         limit: None,
         order: ResultOrder::NotSorted,
     };
+    let session: &Session = session;
 
     if !example_query.corpora.is_empty() && !example_query.query.is_empty() {
         let mut exporter = CSVExporter::new(example_query, None);
         let mut example_string_buffer = Vec::new();
 
         exporter
-            .convert_text(session.id(), state, Some(3), &mut example_string_buffer)
+            .convert_text(
+                SessionArg::Session(session.to_owned()),
+                state,
+                Some(3),
+                &mut example_string_buffer,
+            )
             .await
             .map_err(|e| format!("{}", e))?;
         let result = String::from_utf8_lossy(&example_string_buffer).to_string();

@@ -10,7 +10,7 @@ use transient_btree_index::{BtreeConfig, BtreeIndex};
 
 use crate::{
     errors::{AppError, BadRequestError},
-    state::GlobalAppState,
+    state::{GlobalAppState, SessionArg},
     Result,
 };
 
@@ -25,12 +25,12 @@ pub struct FindQuery {
 
 /// Find all matches for a given query
 pub async fn find(
+    session: &SessionArg,
     query: &FindQuery,
     state: &GlobalAppState,
-    session_id: &str,
 ) -> Result<BtreeIndex<u64, Vec<String>>> {
     let url = state.service_url.join("search/find")?;
-    let client = state.create_client(session_id)?;
+    let client = state.create_client(session)?;
 
     let request = client
         .request(reqwest::Method::POST, url.clone())
