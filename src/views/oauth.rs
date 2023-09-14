@@ -1,7 +1,7 @@
 use crate::{
     auth::{AnnisTokenResponse, LoginInfo},
     errors::AppError,
-    state::{GlobalAppState, SessionState, STATE_KEY},
+    state::{GlobalAppState, SessionState},
     Result,
 };
 use axum::{
@@ -10,7 +10,7 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_sessions::extractors::WritableSession;
+use axum_sessions::extractors::ReadableSession;
 use minijinja::context;
 use oauth2::{basic::BasicClient, TokenResponse};
 use oauth2::{reqwest::async_http_client, RefreshToken};
@@ -52,18 +52,15 @@ async fn redirect_to_login(
 }
 
 async fn logout(
-    mut session: WritableSession,
+    session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let mut session_state = SessionState::from(&session);
+    let session_state = SessionState::from(&session);
 
     app_state.login_info.remove(session.id());
-    session_state.user_name = None;
     let template = app_state.templates.get_template("oauth.html")?;
 
     let html = template.render(context! {session => session_state})?;
-
-    session.insert(STATE_KEY, session_state)?;
 
     Ok(Html(html))
 }
@@ -148,11 +145,11 @@ fn schedule_refresh_token(
 }
 
 async fn login_callback(
-    mut session: WritableSession,
+    session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
     Query(params): Query<CallBackParams>,
 ) -> Result<impl IntoResponse> {
-    let mut session_state = SessionState::from(&session);
+    let session_state = SessionState::from(&session);
 
     let template = app_state.templates.get_template("oauth.html")?;
 
@@ -174,7 +171,6 @@ async fn login_callback(
                 .await?;
 
             let login_info = LoginInfo::new(token.clone(), &session)?;
-            session_state.user_name = login_info.user_id()?;
 
             app_state
                 .login_info
@@ -183,8 +179,6 @@ async fn login_callback(
             let html = template.render(context! {
                 session => session_state,
             })?;
-
-            session.insert(STATE_KEY, session_state)?;
 
             // Schedule a task that refreshes the token before it expires
             schedule_refresh_token(

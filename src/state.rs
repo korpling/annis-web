@@ -4,9 +4,11 @@ use axum_sessions::{
     extractors::{ReadableSession, WritableSession},
 };
 use chrono::Utc;
+use dashmap::DashMap;
+use minijinja::Value;
 use oauth2::{basic::BasicClient, PkceCodeVerifier};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
+use std::{collections::BTreeSet, sync::Arc};
 use tempfile::NamedTempFile;
 use tokio::{sync::mpsc::Receiver, task::JoinHandle};
 use url::Url;
@@ -18,19 +20,22 @@ pub const STATE_KEY: &str = "state";
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct SessionState {
     pub selected_corpora: BTreeSet<String>,
-    pub user_name: Option<String>,
-    pub login_configured: bool,
+    pub session_id: String,
 }
 
 impl From<&ReadableSession> for SessionState {
     fn from(value: &ReadableSession) -> Self {
-        value.get(STATE_KEY).unwrap_or_default()
+        let mut result: SessionState = value.get(STATE_KEY).unwrap_or_default();
+        result.session_id = value.id().to_string();
+        result
     }
 }
 
 impl From<&WritableSession> for SessionState {
     fn from(value: &WritableSession) -> Self {
-        value.get(STATE_KEY).unwrap_or_default()
+        let mut result: SessionState = value.get(STATE_KEY).unwrap_or_default();
+        result.session_id = value.id().to_string();
+        result
     }
 }
 
@@ -80,9 +85,9 @@ pub struct GlobalAppState {
     pub service_url: Url,
     pub templates: minijinja::Environment<'static>,
     pub oauth2_client: Option<BasicClient>,
-    pub background_jobs: dashmap::DashMap<String, ExportJob>,
-    pub auth_requests: dashmap::DashMap<String, PkceCodeVerifier>,
-    pub login_info: dashmap::DashMap<String, LoginInfo>,
+    pub background_jobs: DashMap<String, ExportJob>,
+    pub auth_requests: DashMap<String, PkceCodeVerifier>,
+    pub login_info: Arc<DashMap<String, LoginInfo>>,
 }
 
 impl GlobalAppState {
@@ -93,7 +98,7 @@ impl GlobalAppState {
 
         // Define any global variables
         templates.add_global("url_prefix", config.frontend_prefix.to_string());
-        templates.add_global("login_enabled", oauth2_client.is_some());
+        templates.add_global("login_configured", oauth2_client.is_some());
 
         // Load templates by name from the included templates folder
         templates.set_loader(|name| {
@@ -104,12 +109,28 @@ impl GlobalAppState {
             }
         });
 
+        let login_info: DashMap<String, LoginInfo> = DashMap::new();
+        let login_info = Arc::new(login_info);
+
+        // Add a function for the template that allows to easily extract the username
+        let login_info_for_template = login_info.clone();
+        templates.add_function("username", move |session: Value| -> Value {
+            if let Ok(session_id) = session.get_attr("session_id") {
+                if let Some(l) = login_info_for_template.get(&session_id.to_string()) {
+                    if let Ok(Some(username)) = l.user_id() {
+                        return Value::from(username);
+                    }
+                }
+            }
+            Value::UNDEFINED
+        });
+
         let result = Self {
             service_url: Url::parse(&config.service_url)?,
-            background_jobs: dashmap::DashMap::new(),
+            background_jobs: DashMap::new(),
             templates,
-            auth_requests: dashmap::DashMap::new(),
-            login_info: dashmap::DashMap::new(),
+            auth_requests: DashMap::new(),
+            login_info,
             oauth2_client,
         };
         Ok(result)

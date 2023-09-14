@@ -3,11 +3,13 @@
   Login
 {% endblock title %}
 {% block content %}
-  {% if error is defined %}
-    <div class="notification is-error">{{ error }}</div>
-  {% elif session.user_name is none %}
-    <div class="notification is-info">Logged out</div>
-  {% else %}
-    <div class="notification is-info">Logged in as user "{{ session.user_name }}"</div>
-  {% endif %}
+  {% with current_username = username(session) %}
+    {% if error is defined %}
+      <div class="notification is-error">{{ error }}</div>
+    {% elif current_username is defined %}
+      <div class="notification is-info">Logged in as user "{{ current_username }}"</div>
+    {% else %}
+      <div class="notification is-info">Logged out</div>
+    {% endif %}
+  {% endwith %}
 {% endblock content %}
