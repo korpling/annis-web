@@ -200,19 +200,20 @@ async fn login_callback(
 mod tests {
 
     use hyper::{Body, Request, StatusCode};
+    use scraper::Selector;
     use test_log::test;
     use tower::ServiceExt;
 
-    use crate::{config::CliConfig, tests::get_body};
+    use crate::{config::CliConfig, tests::get_html};
 
     #[test(tokio::test)]
-    async fn about_page_shown() {
-        let app = crate::app(None, &CliConfig::default()).await.unwrap();
+    async fn non_configured_deactivates_login() {
+        let app = crate::app(&CliConfig::default()).await.unwrap();
 
         let response = app
             .oneshot(
                 Request::builder()
-                    .uri("/login")
+                    .uri("/about")
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -220,7 +221,40 @@ mod tests {
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
-        let body = get_body(response).await;
-        assert!(body.contains("Not implemented yet"));
+        let body = get_html(response).await;
+        let login_button: Vec<_> = body
+            .select(
+                &Selector::parse("div.navbar-end div.navbar-item div.buttons a.button").unwrap(),
+            )
+            .collect();
+        assert_eq!(0, login_button.len());
+    }
+
+    #[test(tokio::test)]
+    async fn login_button_shown() {
+        let mut config = CliConfig::default();
+        config.oauth2_auth_url = Some("http://localhost:8080/auth".to_string());
+        config.oauth2_token_url = Some("http://localhost:8080/token".to_string());
+        let app = crate::app(&config).await.unwrap();
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/about")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = get_html(response).await;
+        let login_button: Vec<_> = body
+            .select(
+                &Selector::parse("div.navbar-end div.navbar-item div.buttons a.button").unwrap(),
+            )
+            .collect();
+        assert_eq!(1, login_button.len());
+        assert_eq!("Log in", login_button[0].inner_html());
     }
 }

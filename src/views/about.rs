@@ -45,7 +45,7 @@ mod tests {
 
     #[test(tokio::test)]
     async fn about_page_shown() {
-        let app = crate::app(None, &CliConfig::default()).await.unwrap();
+        let app = crate::app(&CliConfig::default()).await.unwrap();
 
         let response = app
             .oneshot(

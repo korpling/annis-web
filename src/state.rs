@@ -125,8 +125,14 @@ impl GlobalAppState {
             Value::UNDEFINED
         });
 
+        let service_url = if config.service_url.is_empty() {
+            Url::parse("http://127.0.0.1:5711")?
+        } else {
+            Url::parse(&config.service_url)?
+        };
+
         let result = Self {
-            service_url: Url::parse(&config.service_url)?,
+            service_url,
             background_jobs: DashMap::new(),
             templates,
             auth_requests: DashMap::new(),

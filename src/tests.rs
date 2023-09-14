@@ -17,6 +17,7 @@ use tower::ServiceExt;
 
 use crate::config::CliConfig;
 
+#[derive(Debug)]
 pub struct TestEnvironment {
     pub webdriver: fantoccini::Client,
     pub backend: mockito::Server,
@@ -62,24 +63,23 @@ pub async fn start_end2end_servers() -> TestEnvironment {
 
     let webdriver = ClientBuilder::native()
         .capabilities(browser_capabilities)
-        .connect("http://localhost:4444")
+        .connect("http://127.0.0.1:4444")
         .await
         .expect("failed to connect to WebDriver");
-
-    let listener = TcpListener::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).unwrap();
+    webdriver.set_window_size(1280, 800).await.unwrap();
+    let listener = TcpListener::bind("127.0.0.1:0".parse::<SocketAddr>().unwrap()).unwrap();
     let addr = listener.local_addr().unwrap();
 
     let service_mock_url = service_mock.url();
 
+    let mut config = CliConfig::default();
+    config.service_url = service_mock_url;
+    config.frontend_prefix = format!("http://{addr}/");
+
     let http_server = tokio::spawn(async move {
         axum::Server::from_tcp(listener)
             .unwrap()
-            .serve(
-                crate::app(Some(&service_mock_url), &CliConfig::default())
-                    .await
-                    .unwrap()
-                    .into_make_service(),
-            )
+            .serve(crate::app(&config).await.unwrap().into_make_service())
             .await
             .unwrap();
     });
@@ -113,7 +113,7 @@ where
 
 #[test(tokio::test)]
 async fn existing_static_resource() {
-    let app = crate::app(None, &CliConfig::default()).await.unwrap();
+    let app = crate::app(&CliConfig::default()).await.unwrap();
 
     let response = app
         .oneshot(
@@ -135,7 +135,7 @@ async fn existing_static_resource() {
 
 #[test(tokio::test)]
 async fn missing_static_resource() {
-    let app = crate::app(None, &CliConfig::default()).await.unwrap();
+    let app = crate::app(&CliConfig::default()).await.unwrap();
 
     let response = app
         .oneshot(

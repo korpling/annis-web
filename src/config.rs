@@ -1,9 +1,9 @@
 use crate::Result;
 use clap::Parser;
 use oauth2::{basic::BasicClient, AuthUrl, ClientId, RedirectUrl, TokenUrl};
-use std::path::PathBuf;
+use std::{ffi::OsString, path::PathBuf};
 
-#[derive(Parser, Default)]
+#[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct CliConfig {
     /// Port to listen to.
@@ -28,6 +28,13 @@ pub struct CliConfig {
     /// URL of the OAuth 2.0 authorization server's token endpoint.
     #[arg(long, env = "ANNIS_OAUTH2_TOKEN_URL")]
     pub oauth2_token_url: Option<String>,
+}
+
+impl Default for CliConfig {
+    fn default() -> Self {
+        let empty_arguments: Vec<OsString> = Vec::default();
+        Parser::parse_from(empty_arguments.into_iter())
+    }
 }
 
 impl CliConfig {

@@ -23,7 +23,6 @@ use state::GlobalAppState;
 use std::{net::SocketAddr, str::FromStr, sync::Arc, time::Duration};
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
-use url::Url;
 
 static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/static");
 static TEMPLATES_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates");
@@ -49,11 +48,8 @@ async fn static_file(Path(path): Path<String>) -> Result<impl IntoResponse> {
     Ok(response)
 }
 
-async fn app(service_url: Option<&str>, config: &CliConfig) -> Result<Router> {
-    let mut global_state = GlobalAppState::new(config)?;
-    if let Some(service_url) = service_url {
-        global_state.service_url = Url::parse(service_url)?;
-    }
+async fn app(config: &CliConfig) -> Result<Router> {
+    let global_state = GlobalAppState::new(config)?;
 
     let global_state = Arc::new(global_state);
 
@@ -101,7 +97,7 @@ async fn main() {
     let cli = CliConfig::parse();
 
     let addr = SocketAddr::from(([127, 0, 0, 1], cli.port));
-    match app(None, &cli).await {
+    match app(&cli).await {
         Ok(router) => {
             info!("Starting server with address http://{addr}", addr = addr);
             let server = axum::Server::bind(&addr).serve(router.into_make_service());

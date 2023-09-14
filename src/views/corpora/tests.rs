@@ -272,9 +272,9 @@ async fn service_down() {
         .with_status(500)
         .create();
     {
-        let app = crate::app(Some(&service_mock.url()), &CliConfig::default())
-            .await
-            .unwrap();
+        let mut config = CliConfig::default();
+        config.service_url = service_mock.url();
+        let app = crate::app(&config).await.unwrap();
 
         let response = app
             .oneshot(
