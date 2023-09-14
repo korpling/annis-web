@@ -19,7 +19,7 @@ use oauth2::{
 use serde::Deserialize;
 use std::{sync::Arc, time::Duration};
 use tokio::time::Instant;
-use tracing::warn;
+use tracing::{debug, warn};
 
 pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
     let result = Router::new()
@@ -94,25 +94,41 @@ async fn refresh_token_action(
     session_id: String,
     app_state: Arc<GlobalAppState>,
 ) -> Result<()> {
+    debug!(
+        "Waiting to refresh token in background for session {}",
+        &session_id
+    );
     tokio::time::sleep_until(refresh_instant).await;
 
+    let token_request_time = Instant::now();
     let new_token = client
         .exchange_refresh_token(&refresh_token)
         .request_async(async_http_client)
         .await?;
 
+    debug!("Refreshed client token for session {}", &session_id);
+
     // Re-use the user session expiration date of the previous login info. The user
     // session experiation should be updated whenever the user actually accesses
     // our server. If they stop to access it, we should not attempt to renew the
     // access token in the background.
-    app_state
-        .login_info
-        .entry(session_id.clone())
-        .and_modify(|login_info| {
-            if let Err(e) = login_info.renew_token(new_token, &app_state.jwt_type) {
+    if let Some(mut login_info) = app_state.login_info.get_mut(&session_id) {
+        match login_info.renew_token(new_token.clone(), &app_state.jwt_type) {
+            Ok(_) => {
+                // Schedule a new token refresh if the for when the new token expires
+                schedule_refresh_token(
+                    &new_token,
+                    client,
+                    &session_id,
+                    token_request_time,
+                    app_state.clone(),
+                )
+            }
+            Err(e) => {
                 warn!("Could not renew-token for session {session_id}: {e}");
-            };
-        });
+            }
+        }
+    }
     Ok(())
 }
 
