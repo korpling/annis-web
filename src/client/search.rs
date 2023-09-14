@@ -1,5 +1,4 @@
 use axum::http::StatusCode;
-use axum_sessions::extractors::ReadableSession;
 use futures::TryStreamExt;
 use graphannis::corpusstorage::{QueryLanguage, ResultOrder};
 use serde::Serialize;
@@ -11,7 +10,7 @@ use transient_btree_index::{BtreeConfig, BtreeIndex};
 
 use crate::{
     errors::{AppError, BadRequestError},
-    state::{GlobalAppState, SessionState},
+    state::GlobalAppState,
     Result,
 };
 

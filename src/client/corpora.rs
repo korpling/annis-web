@@ -1,13 +1,8 @@
-use axum_sessions::extractors::ReadableSession;
 use graphannis::AnnotationGraph;
 use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 use serde::Serialize;
 
-use crate::{
-    errors::AppError,
-    state::{GlobalAppState, SessionState},
-    Result,
-};
+use crate::{errors::AppError, state::GlobalAppState, Result};
 
 /// Get a sorted list of all corpus names
 pub async fn list(session_id: &str, state: &GlobalAppState) -> Result<Vec<String>> {

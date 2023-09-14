@@ -1,6 +1,6 @@
 use crate::{
     auth::{AnnisTokenResponse, LoginInfo},
-    state::{GlobalAppState, JwtType, SessionState, STATE_KEY},
+    state::{GlobalAppState, SessionState, STATE_KEY},
     Result,
 };
 use axum::{
@@ -9,7 +9,7 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_sessions::extractors::{ReadableSession, WritableSession};
+use axum_sessions::extractors::WritableSession;
 use minijinja::context;
 use oauth2::{basic::BasicClient, TokenResponse};
 use oauth2::{reqwest::async_http_client, RefreshToken};
@@ -19,6 +19,7 @@ use oauth2::{
 use serde::Deserialize;
 use std::{sync::Arc, time::Duration};
 use tokio::time::Instant;
+use tracing::warn;
 
 pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
     let result = Router::new()
@@ -63,14 +64,19 @@ async fn redirect_to_login(
 }
 
 async fn logout(
-    session: ReadableSession,
+    mut session: WritableSession,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    app_state.login_info.remove(session.id());
+    let mut session_state = SessionState::from(&session);
 
+    app_state.login_info.remove(session.id());
+    session_state.user_name = None;
     let template = app_state.templates.get_template("oauth.html")?;
 
-    let html = template.render(context! {session => SessionState::from(&session)})?;
+    let html = template.render(context! {session => session_state})?;
+
+    session.insert(STATE_KEY, session_state)?;
+
     Ok(Html(html))
 }
 
@@ -86,14 +92,28 @@ async fn refresh_token_action(
     refresh_token: RefreshToken,
     client: BasicClient,
     session_id: String,
-    jwt_type: JwtType,
+    app_state: Arc<GlobalAppState>,
 ) -> Result<()> {
     tokio::time::sleep_until(refresh_instant).await;
+
     let new_token = client
         .exchange_refresh_token(&refresh_token)
         .request_async(async_http_client)
         .await?;
-    todo!("Set the new token in the global state")
+
+    // Re-use the user session expiration date of the previous login info. The user
+    // session experiation should be updated whenever the user actually accesses
+    // our server. If they stop to access it, we should not attempt to renew the
+    // access token in the background.
+    app_state
+        .login_info
+        .entry(session_id.clone())
+        .and_modify(|login_info| {
+            if let Err(e) = login_info.renew_token(new_token, &app_state.jwt_type) {
+                warn!("Could not renew-token for session {session_id}: {e}");
+            };
+        });
+    Ok(())
 }
 
 fn schedule_refresh_token(
@@ -101,7 +121,7 @@ fn schedule_refresh_token(
     client: BasicClient,
     session_id: &str,
     token_request_time: Instant,
-    jwt_type: JwtType,
+    app_state: Arc<GlobalAppState>,
 ) {
     if let (Some(expires_in), Some(refresh_token)) =
         (token.expires_in(), token.refresh_token().cloned())
@@ -117,7 +137,7 @@ fn schedule_refresh_token(
                 refresh_token,
                 client,
                 session_id,
-                jwt_type,
+                app_state,
             ));
         }
     }
@@ -146,7 +166,12 @@ async fn login_callback(
                 .request_async(async_http_client)
                 .await?;
 
-            todo!("Add the token to the global state");
+            let login_info = LoginInfo::new(token.clone(), &app_state.jwt_type, &session)?;
+            session_state.user_name = Some(login_info.claims.preferred_username.clone());
+
+            app_state
+                .login_info
+                .insert(session.id().to_string(), login_info);
 
             let html = template.render(context! {
                 session => session_state,
@@ -160,7 +185,7 @@ async fn login_callback(
                 client,
                 session.id(),
                 token_request_time,
-                app_state.jwt_type.clone(),
+                app_state.clone(),
             );
 
             return Ok(Html(html));

@@ -1,12 +1,10 @@
 use axum::http::HeaderValue;
-use axum_sessions::{
-    async_session::SessionStore,
-    extractors::{ReadableSession, WritableSession},
-};
+use axum_sessions::extractors::{ReadableSession, WritableSession};
+use chrono::Utc;
 use jsonwebtoken::DecodingKey;
 use oauth2::PkceCodeVerifier;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeSet, HashSet};
+use std::collections::BTreeSet;
 use tempfile::NamedTempFile;
 use tokio::{sync::mpsc::Receiver, task::JoinHandle};
 use url::Url;
@@ -18,6 +16,7 @@ pub const STATE_KEY: &str = "state";
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct SessionState {
     pub selected_corpora: BTreeSet<String>,
+    pub user_name: Option<String>,
 }
 
 impl From<&ReadableSession> for SessionState {
@@ -107,44 +106,14 @@ impl GlobalAppState {
         Ok(builder.build()?)
     }
 
-    /// Cleans up all ressources coupled to sessions that are expired or non-existing.
-    pub async fn cleanup<S: SessionStore>(&self, session_store: &S) {
-        let mut keys_to_delete = HashSet::new();
-
-        let auth_request_keys: Vec<_> =
-            self.auth_requests.iter().map(|x| x.key().clone()).collect();
-        let background_job_keys: Vec<_> = self
-            .background_jobs
-            .iter()
-            .map(|x| x.key().clone())
-            .collect();
-        let login_info_keys: Vec<_> = self.login_info.iter().map(|x| x.key().clone()).collect();
-
-        let mut all_keys = HashSet::new();
-        all_keys.extend(auth_request_keys);
-        all_keys.extend(background_job_keys);
-        all_keys.extend(login_info_keys);
-
-        for k in all_keys {
-            // If there is an error retrieving the session, the session does not
-            // exist or is expired, mark this session ID for deletion.
-            if let Ok(Some(session)) = session_store.load_session(k.to_string()).await {
-                if session.is_expired() || session.is_destroyed() {
-                    keys_to_delete.insert(k);
-                }
+    /// Cleans up ressources coupled to sessions that are expired or non-existing.
+    pub async fn cleanup(&self) {
+        self.login_info.retain(|_session_id, login_info| {
+            if let Some(expiry) = login_info.user_session_expiry {
+                Utc::now() < expiry
             } else {
-                keys_to_delete.insert(k);
+                true
             }
-        }
-
-        for k in keys_to_delete {
-            self.auth_requests.remove(&k);
-            self.background_jobs.remove(&k);
-            self.login_info.remove(&k);
-        }
+        });
     }
-}
-
-pub fn get_session_by_id<S: SessionStore>(id: &str, session_store: S) {
-    todo!("Implement getting the session for some specialized SessionStore types")
 }

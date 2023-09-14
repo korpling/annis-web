@@ -3,7 +3,6 @@ pub(crate) mod client;
 mod config;
 pub(crate) mod converter;
 pub(crate) mod errors;
-pub(crate) mod sessions;
 mod state;
 mod views;
 
@@ -16,14 +15,12 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_sessions::{async_session::MemoryStore, SameSite, SessionLayer};
+use axum_sessions::{SameSite, SessionLayer};
 use clap::Parser;
 use config::CliConfig;
 use include_dir::{include_dir, Dir};
-use rand::prelude::*;
 use state::GlobalAppState;
 use std::{net::SocketAddr, str::FromStr, sync::Arc, time::Duration};
-use tempfile::NamedTempFile;
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 use url::Url;
@@ -92,35 +89,30 @@ async fn app(addr: &SocketAddr, service_url: Option<&str>, config: &CliConfig) -
         .nest("/oauth", views::oauth::create_routes()?)
         .with_state(global_state.clone());
 
-    if let Some(session_file) = &config.session_file {
-        let store =
-            SqliteSessionStore::new(&format!("sqlite://{}", session_file.to_string_lossy()))
-                .await?;
-        store.migrate().await?;
-        store.spawn_cleanup_task(Duration::from_secs(60 * 60));
-
-        let session_layer = SessionLayer::new(
-            store.clone(),
-            "ginoh3ya5eiLi1nohph0equ6KiwicooweeNgovoojeQuaejaixiequah6eenoo2k".as_bytes(),
-        )
-        .with_same_site_policy(SameSite::Lax);
-
-        tokio::task::spawn(async move {
-            loop {
-                tokio::time::sleep(Duration::from_secs(60)).await;
-                global_state.cleanup(&store).await;
-            }
-        });
-
-        Ok(routes.layer(session_layer))
+    let db_uri = if let Some(session_file) = &config.session_file {
+        format!("sqlite://{}", session_file.to_string_lossy())
     } else {
-        // TODO remove memory storage option and replace it with a temporary file.
-        let store = MemoryStore::new();
-        let mut secret = [0_u8; 128];
-        rand::thread_rng().fill(&mut secret);
-        let session_layer = SessionLayer::new(store, &secret).with_same_site_policy(SameSite::Lax);
-        Ok(routes.layer(session_layer))
-    }
+        // Fallback to a temporary in-memory Sqlite databse
+        "sqlite:memory".to_string()
+    };
+    let store = SqliteSessionStore::new(&db_uri).await?;
+    store.migrate().await?;
+    store.spawn_cleanup_task(Duration::from_secs(60 * 60));
+
+    let session_layer = SessionLayer::new(
+        store.clone(),
+        "ginoh3ya5eiLi1nohph0equ6KiwicooweeNgovoojeQuaejaixiequah6eenoo2k".as_bytes(),
+    )
+    .with_same_site_policy(SameSite::Lax);
+
+    tokio::task::spawn(async move {
+        loop {
+            tokio::time::sleep(Duration::from_secs(60)).await;
+            global_state.cleanup().await;
+        }
+    });
+
+    Ok(routes.layer(session_layer))
 }
 
 #[tokio::main]

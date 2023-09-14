@@ -5,9 +5,9 @@
 {% block content %}
   {% if error is defined %}
     <div class="notification is-error">{{ error }}</div>
-  {% elif session.login.claims is defined and session.login.claims.sub is defined %}
-    <div class="notification is-info">Logged in as user "{{ session.login.claims.preferred_username }}"</div>
-  {% else %}
+  {% elif session.user_name is none %}
     <div class="notification is-info">Logged out</div>
+  {% else %}
+    <div class="notification is-info">Logged in as user "{{ session.user_name }}"</div>
   {% endif %}
 {% endblock content %}

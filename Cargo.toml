@@ -9,6 +9,7 @@ version = "0.1.0"
 async-sqlx-session = { version = "0.4.0", features = ["sqlite", "async_std"] }
 axum = { version = "0.6.1", features = ["headers"] }
 axum-sessions = "0.5"
+chrono = "0.4.30"
 clap = { version = "4.3.21", features = ["derive"] }
 csv = "1.1"
 dashmap = "5.5.0"
