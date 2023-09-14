@@ -49,32 +49,11 @@ async fn static_file(Path(path): Path<String>) -> Result<impl IntoResponse> {
     Ok(response)
 }
 
-fn create_templates(env: &mut minijinja::Environment, frontend_prefix: &str) -> Result<()> {
-    // Define any global variables
-    env.add_global("url_prefix", frontend_prefix);
-
-    // Load templates by name from the included templates folder
-    env.set_loader(|name| {
-        if let Some(file) = TEMPLATES_DIR.get_file(name) {
-            Ok(file.contents_utf8().map(|s| s.to_string()))
-        } else {
-            Ok(None)
-        }
-    });
-
-    Ok(())
-}
-
 async fn app(service_url: Option<&str>, config: &CliConfig) -> Result<Router> {
     let mut global_state = GlobalAppState::new(config)?;
     if let Some(service_url) = service_url {
         global_state.service_url = Url::parse(service_url)?;
     }
-
-    create_templates(
-        &mut global_state.templates,
-        global_state.frontend_prefix.as_str(),
-    )?;
 
     let global_state = Arc::new(global_state);
 
@@ -122,7 +101,6 @@ async fn main() {
     let cli = CliConfig::parse();
 
     let addr = SocketAddr::from(([127, 0, 0, 1], cli.port));
-
     match app(None, &cli).await {
         Ok(router) => {
             info!("Starting server with address http://{addr}", addr = addr);

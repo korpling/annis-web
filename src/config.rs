@@ -1,13 +1,7 @@
 use crate::Result;
-use clap::{Parser, ValueEnum};
+use clap::Parser;
 use oauth2::{basic::BasicClient, AuthUrl, ClientId, RedirectUrl, TokenUrl};
 use std::path::PathBuf;
-
-#[derive(ValueEnum, Clone)]
-enum JWTVerificationType {
-    HS256,
-    RS256,
-}
 
 #[derive(Parser, Default)]
 #[command(author, version, about, long_about = None)]
@@ -16,10 +10,10 @@ pub struct CliConfig {
     #[arg(long, short, default_value_t = 3000)]
     pub port: u16,
     /// Externally used URL for the start page of the frontend.
-    #[arg(long, default_value = "http://localhost:3000/")]
+    #[arg(long, default_value = "http://127.0.0.1:3000/")]
     pub frontend_prefix: String,
     /// URL for the graphANNIS service used by the frontend.
-    #[arg(long, default_value = "http://localhost:5711/v1/")]
+    #[arg(long, default_value = "http://127.0.0.1:5711/v1/")]
     pub service_url: String,
 
     /// If set, the SQLite database file to store sessions in.

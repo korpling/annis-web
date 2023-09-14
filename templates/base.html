@@ -43,18 +43,20 @@
           <a class="navbar-item" href="{{ url_prefix }}about">About</a>
         </div>
         <div class="navbar-end">
-          <div class="navbar-item">
-            {% if session.user_name is none %}
-              <div class="buttons">
-                <a class="button is-light"  href="{{ url_prefix }}oauth/login"">Log in</a>
-              </div>
-            {% else %}
-              <span class="navbar-item">Logged in as "{{ session.user_name }}"</span>
-              <div class="buttons">
-                <a class="button is-light"  href="{{ url_prefix }}oauth/logout"">Log Out</a>
-              </div>
-            {% endif %}
-          </div>
+          {% if login_enabled %}
+            <div class="navbar-item">
+              {% if session.user_name is none %}
+                <div class="buttons">
+                  <a class="button is-light"  href="{{ url_prefix }}oauth/login"">Log in</a>
+                </div>
+              {% else %}
+                <span class="navbar-item">Logged in as "{{ session.user_name }}"</span>
+                <div class="buttons">
+                  <a class="button is-light"  href="{{ url_prefix }}oauth/logout"">Log Out</a>
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
         </div>
       </div>
     </nav>

@@ -11,7 +11,7 @@ use tempfile::NamedTempFile;
 use tokio::{sync::mpsc::Receiver, task::JoinHandle};
 use url::Url;
 
-use crate::{auth::LoginInfo, config::CliConfig, Result};
+use crate::{auth::LoginInfo, config::CliConfig, Result, TEMPLATES_DIR};
 
 pub const STATE_KEY: &str = "state";
 
@@ -19,6 +19,7 @@ pub const STATE_KEY: &str = "state";
 pub struct SessionState {
     pub selected_corpora: BTreeSet<String>,
     pub user_name: Option<String>,
+    pub login_configured: bool,
 }
 
 impl From<&ReadableSession> for SessionState {
@@ -77,7 +78,6 @@ impl SessionArg {
 
 pub struct GlobalAppState {
     pub service_url: Url,
-    pub frontend_prefix: Url,
     pub templates: minijinja::Environment<'static>,
     pub oauth2_client: Option<BasicClient>,
     pub background_jobs: dashmap::DashMap<String, ExportJob>,
@@ -87,14 +87,30 @@ pub struct GlobalAppState {
 
 impl GlobalAppState {
     pub fn new(config: &CliConfig) -> Result<Self> {
+        let oauth2_client = config.create_oauth2_basic_client()?;
+
+        let mut templates = minijinja::Environment::new();
+
+        // Define any global variables
+        templates.add_global("url_prefix", config.frontend_prefix.to_string());
+        templates.add_global("login_enabled", oauth2_client.is_some());
+
+        // Load templates by name from the included templates folder
+        templates.set_loader(|name| {
+            if let Some(file) = TEMPLATES_DIR.get_file(name) {
+                Ok(file.contents_utf8().map(|s| s.to_string()))
+            } else {
+                Ok(None)
+            }
+        });
+
         let result = Self {
             service_url: Url::parse(&config.service_url)?,
-            frontend_prefix: Url::parse(&config.frontend_prefix)?,
             background_jobs: dashmap::DashMap::new(),
-            templates: minijinja::Environment::new(),
+            templates,
             auth_requests: dashmap::DashMap::new(),
             login_info: dashmap::DashMap::new(),
-            oauth2_client: config.create_oauth2_basic_client()?,
+            oauth2_client,
         };
         Ok(result)
     }
