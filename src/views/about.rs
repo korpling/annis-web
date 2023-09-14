@@ -36,7 +36,6 @@ async fn show(
 
 #[cfg(test)]
 mod tests {
-    use std::net::SocketAddr;
 
     use hyper::{Body, Request, StatusCode};
     use test_log::test;
@@ -46,13 +45,7 @@ mod tests {
 
     #[test(tokio::test)]
     async fn about_page_shown() {
-        let app = crate::app(
-            &SocketAddr::from(([127, 0, 0, 1], 3000)),
-            None,
-            &CliConfig::default(),
-        )
-        .await
-        .unwrap();
+        let app = crate::app(None, &CliConfig::default()).await.unwrap();
 
         let response = app
             .oneshot(

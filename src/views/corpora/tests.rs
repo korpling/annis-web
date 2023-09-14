@@ -9,7 +9,7 @@ use axum::{
 use fantoccini::Locator;
 use mockito::Server;
 use scraper::Selector;
-use std::{net::SocketAddr, time::Duration};
+use std::time::Duration;
 use test_log::test;
 use tower::ServiceExt;
 
@@ -272,13 +272,9 @@ async fn service_down() {
         .with_status(500)
         .create();
     {
-        let app = crate::app(
-            &SocketAddr::from(([127, 0, 0, 1], 3000)),
-            Some(&service_mock.url()),
-            &CliConfig::default(),
-        )
-        .await
-        .unwrap();
+        let app = crate::app(Some(&service_mock.url()), &CliConfig::default())
+            .await
+            .unwrap();
 
         let response = app
             .oneshot(

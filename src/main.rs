@@ -65,9 +65,8 @@ fn create_templates(env: &mut minijinja::Environment, frontend_prefix: &str) -> 
     Ok(())
 }
 
-async fn app(addr: &SocketAddr, service_url: Option<&str>, config: &CliConfig) -> Result<Router> {
-    let mut global_state = GlobalAppState::new()?;
-    global_state.frontend_prefix = Url::parse(&format!("http://{}", addr))?;
+async fn app(service_url: Option<&str>, config: &CliConfig) -> Result<Router> {
+    let mut global_state = GlobalAppState::new(config)?;
     if let Some(service_url) = service_url {
         global_state.service_url = Url::parse(service_url)?;
     }
@@ -92,7 +91,7 @@ async fn app(addr: &SocketAddr, service_url: Option<&str>, config: &CliConfig) -
         format!("sqlite://{}", session_file.to_string_lossy())
     } else {
         // Fallback to a temporary in-memory Sqlite databse
-        "sqlite:memory".to_string()
+        "sqlite::memory:".to_string()
     };
     let store = SqliteSessionStore::new(&db_uri).await?;
     store.migrate().await?;
@@ -124,7 +123,7 @@ async fn main() {
 
     let addr = SocketAddr::from(([127, 0, 0, 1], cli.port));
 
-    match app(&addr, None, &cli).await {
+    match app(None, &cli).await {
         Ok(router) => {
             info!("Starting server with address http://{addr}", addr = addr);
             let server = axum::Server::bind(&addr).serve(router.into_make_service());

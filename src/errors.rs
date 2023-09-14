@@ -133,6 +133,8 @@ pub enum AppError {
     JwtMissingPayload,
     #[error(transparent)]
     Base64DecodeError(#[from] base64::DecodeError),
+    #[error("OAuth2 server not fully configured.")]
+    Oauth2ServerConfigMissing,
 }
 
 impl IntoResponse for AppError {

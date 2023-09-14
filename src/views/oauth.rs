@@ -1,5 +1,6 @@
 use crate::{
     auth::{AnnisTokenResponse, LoginInfo},
+    errors::AppError,
     state::{GlobalAppState, SessionState, STATE_KEY},
     Result,
 };
@@ -13,9 +14,7 @@ use axum_sessions::extractors::WritableSession;
 use minijinja::context;
 use oauth2::{basic::BasicClient, TokenResponse};
 use oauth2::{reqwest::async_http_client, RefreshToken};
-use oauth2::{
-    AuthUrl, AuthorizationCode, ClientId, CsrfToken, PkceCodeChallenge, RedirectUrl, TokenUrl,
-};
+use oauth2::{AuthorizationCode, CsrfToken, PkceCodeChallenge};
 use serde::Deserialize;
 use std::{sync::Arc, time::Duration};
 use tokio::time::Instant;
@@ -30,25 +29,14 @@ pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
     Ok(result)
 }
 
-fn create_client(app_state: &GlobalAppState) -> Result<BasicClient> {
-    let redirect_url = format!("{}/oauth/callback", app_state.frontend_prefix);
-    // TODO allow configuring the Oauth2 endpoint, e.g. from a well-known URI
-    let client = BasicClient::new(
-        ClientId::new("annis".to_string()),
-        None,
-        AuthUrl::new("http://0.0.0.0:8080/realms/ANNIS/protocol/openid-connect/auth".to_string())?,
-        Some(TokenUrl::new(
-            "http://0.0.0.0:8080/realms/ANNIS/protocol/openid-connect/token".to_string(),
-        )?),
-    )
-    .set_redirect_uri(RedirectUrl::new(redirect_url)?);
-    Ok(client)
-}
-
 async fn redirect_to_login(
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let client = create_client(&app_state)?;
+    let client = app_state
+        .oauth2_client
+        .as_ref()
+        .ok_or(AppError::Oauth2ServerConfigMissing)?;
+
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
     let (auth_url, csrf_token) = client
@@ -172,7 +160,10 @@ async fn login_callback(
         let html = template.render(context! {error, session => session_state})?;
         return Ok(Html(html));
     } else if let Some(state) = params.state {
-        let client = create_client(&app_state)?;
+        let client = app_state
+            .oauth2_client
+            .as_ref()
+            .ok_or(AppError::Oauth2ServerConfigMissing)?;
 
         if let Some((_, pkce_verifier)) = app_state.auth_requests.remove(&state) {
             let token_request_time = Instant::now();
@@ -198,7 +189,7 @@ async fn login_callback(
             // Schedule a task that refreshes the token before it expires
             schedule_refresh_token(
                 &token,
-                client,
+                client.clone(),
                 session.id(),
                 token_request_time,
                 app_state.clone(),
@@ -213,7 +204,6 @@ async fn login_callback(
 
 #[cfg(test)]
 mod tests {
-    use std::net::SocketAddr;
 
     use hyper::{Body, Request, StatusCode};
     use test_log::test;
@@ -223,13 +213,7 @@ mod tests {
 
     #[test(tokio::test)]
     async fn about_page_shown() {
-        let app = crate::app(
-            &SocketAddr::from(([127, 0, 0, 1], 3000)),
-            None,
-            &CliConfig::default(),
-        )
-        .await
-        .unwrap();
+        let app = crate::app(None, &CliConfig::default()).await.unwrap();
 
         let response = app
             .oneshot(

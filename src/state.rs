@@ -4,14 +4,14 @@ use axum_sessions::{
     extractors::{ReadableSession, WritableSession},
 };
 use chrono::Utc;
-use oauth2::PkceCodeVerifier;
+use oauth2::{basic::BasicClient, PkceCodeVerifier};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 use tempfile::NamedTempFile;
 use tokio::{sync::mpsc::Receiver, task::JoinHandle};
 use url::Url;
 
-use crate::{auth::LoginInfo, Result};
+use crate::{auth::LoginInfo, config::CliConfig, Result};
 
 pub const STATE_KEY: &str = "state";
 
@@ -79,24 +79,22 @@ pub struct GlobalAppState {
     pub service_url: Url,
     pub frontend_prefix: Url,
     pub templates: minijinja::Environment<'static>,
+    pub oauth2_client: Option<BasicClient>,
     pub background_jobs: dashmap::DashMap<String, ExportJob>,
     pub auth_requests: dashmap::DashMap<String, PkceCodeVerifier>,
     pub login_info: dashmap::DashMap<String, LoginInfo>,
 }
 
 impl GlobalAppState {
-    pub fn new() -> Result<Self> {
-        // TODO get this parameter a configuration
-        let service_url = "http://localhost:5711/v1/";
-
+    pub fn new(config: &CliConfig) -> Result<Self> {
         let result = Self {
-            service_url: Url::parse(service_url)?,
-            // TODO make this configurable
-            frontend_prefix: Url::parse("http://localhost:3000/")?,
+            service_url: Url::parse(&config.service_url)?,
+            frontend_prefix: Url::parse(&config.frontend_prefix)?,
             background_jobs: dashmap::DashMap::new(),
             templates: minijinja::Environment::new(),
             auth_requests: dashmap::DashMap::new(),
             login_info: dashmap::DashMap::new(),
+            oauth2_client: config.create_oauth2_basic_client()?,
         };
         Ok(result)
     }
