@@ -101,7 +101,6 @@ dependencies = [
  "oauth2",
  "percent-encoding",
  "pretty_assertions",
- "rand 0.8.5",
  "reqwest",
  "scraper",
  "serde",
