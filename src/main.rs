@@ -71,7 +71,6 @@ async fn app(addr: &SocketAddr, service_url: Option<&str>, config: &CliConfig) -
     if let Some(service_url) = service_url {
         global_state.service_url = Url::parse(service_url)?;
     }
-    global_state.jwt_type = config.jwt_type()?;
 
     create_templates(
         &mut global_state.templates,

@@ -129,10 +129,10 @@ pub enum AppError {
             StandardErrorResponse<BasicErrorResponseType>,
         >,
     ),
+    #[error("JWT token did not contain any payload")]
+    JwtMissingPayload,
     #[error(transparent)]
-    Jwt(#[from] jsonwebtoken::errors::Error),
-    #[error("No JWT type (HS256 or RS256) configured")]
-    NoJwtTypeConfigured,
+    Base64DecodeError(#[from] base64::DecodeError),
 }
 
 impl IntoResponse for AppError {

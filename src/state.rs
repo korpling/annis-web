@@ -4,7 +4,6 @@ use axum_sessions::{
     extractors::{ReadableSession, WritableSession},
 };
 use chrono::Utc;
-use jsonwebtoken::DecodingKey;
 use oauth2::PkceCodeVerifier;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
@@ -62,13 +61,6 @@ impl ExportJob {
 }
 
 #[derive(Clone)]
-pub enum JwtType {
-    None,
-    HS256(DecodingKey),
-    RS256(DecodingKey),
-}
-
-#[derive(Clone)]
 pub enum SessionArg {
     Session(Session),
     Id(String),
@@ -90,7 +82,6 @@ pub struct GlobalAppState {
     pub background_jobs: dashmap::DashMap<String, ExportJob>,
     pub auth_requests: dashmap::DashMap<String, PkceCodeVerifier>,
     pub login_info: dashmap::DashMap<String, LoginInfo>,
-    pub jwt_type: JwtType,
 }
 
 impl GlobalAppState {
@@ -106,7 +97,6 @@ impl GlobalAppState {
             templates: minijinja::Environment::new(),
             auth_requests: dashmap::DashMap::new(),
             login_info: dashmap::DashMap::new(),
-            jwt_type: JwtType::None,
         };
         Ok(result)
     }

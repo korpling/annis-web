@@ -113,7 +113,7 @@ async fn refresh_token_action(
     // our server. If they stop to access it, we should not attempt to renew the
     // access token in the background.
     if let Some(mut login_info) = app_state.login_info.get_mut(&session_id) {
-        match login_info.renew_token(new_token.clone(), &app_state.jwt_type) {
+        match login_info.renew_token(new_token.clone()) {
             Ok(_) => {
                 // Schedule a new token refresh if the for when the new token expires
                 schedule_refresh_token(
@@ -182,8 +182,8 @@ async fn login_callback(
                 .request_async(async_http_client)
                 .await?;
 
-            let login_info = LoginInfo::new(token.clone(), &app_state.jwt_type, &session)?;
-            session_state.user_name = Some(login_info.claims.preferred_username.clone());
+            let login_info = LoginInfo::new(token.clone(), &session)?;
+            session_state.user_name = login_info.user_id()?;
 
             app_state
                 .login_info
