@@ -1,3 +1,4 @@
-third-party-licenses.html linguist-generated=true
-bulma-annis/bulma-0.9.4/ linguist-generated=true
-static/ linguist-generated=true
+bulma-annis/bulma-0.9.4/** linguist-vendored
+static/annis.*.css* linguist-generated
+static/*.js linguist-vendored
+static/fonts/** linguist-vendored
