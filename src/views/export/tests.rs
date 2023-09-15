@@ -188,3 +188,61 @@ async fn export_download() {
 
     env.close().await;
 }
+
+#[test(tokio::test)]
+async fn syntax_error() {
+    let mut env = start_end2end_servers().await;
+
+    select_corpus_and_goto_export(&mut env).await;
+
+    let find_mock_with_error = env
+        .backend
+        .mock("POST", "/search/find")
+        .with_header("content-type", "application/json")
+        .with_body(
+            r#"{
+                "AQLSyntaxError": {
+                    "desc": "Invalid token detected.",
+                    "location": {
+                        "start": {
+                            "line": 1,
+                            "column": 5
+                        },
+                        "end": {
+                            "line": 1,
+                            "column": 5
+                        }
+                    }
+                }
+            }"#,
+        )
+        .with_status(400)
+        .create();
+
+    let textarea = env
+        .webdriver
+        .find(Locator::XPath("//textarea"))
+        .await
+        .unwrap();
+    textarea.click().await.unwrap();
+    textarea.send_keys("tok=\"").await.unwrap();
+
+    // Wait until the error message is shown (this will take same time since there is a delay when sending the keys)
+    let error_locator = Locator::Css("#export-example-output > div.is-danger");
+    env.webdriver
+        .wait()
+        .at_most(Duration::from_secs(5))
+        .for_element(error_locator)
+        .await
+        .unwrap();
+
+    let error_div = env.webdriver.find(error_locator).await.unwrap();
+    assert_eq!(
+        error_div.text().await.unwrap(),
+        "Syntax error in query: [1:5] Invalid token detected."
+    );
+
+    find_mock_with_error.expect(1).assert();
+
+    env.close().await;
+}

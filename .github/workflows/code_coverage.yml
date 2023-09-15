@@ -72,6 +72,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           lcov-file: "./target/coverage/tests.lcov"
           base-lcov-file: "./tests.lcov"
-          minimum-ratio: -0.05 # Fails Github action once code coverage is decreasing too much
+          minimum-ratio: -0.05
           send-summary-comment: true
           show-annotations: "warning" # Possible options warning|error
