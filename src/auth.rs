@@ -1,4 +1,3 @@
-use axum_sessions::async_session::Session;
 use base64::Engine;
 use chrono::{DateTime, Utc};
 use oauth2::{basic::BasicTokenType, EmptyExtraTokenFields, StandardTokenResponse, TokenResponse};
@@ -38,10 +37,13 @@ fn parse_unverified_username(token: &str) -> Result<Option<String>> {
 }
 
 impl LoginInfo {
-    pub fn new(oauth_token: AnnisTokenResponse, session: &Session) -> Result<Self> {
+    pub fn new(
+        oauth_token: AnnisTokenResponse,
+        user_session_expiry: Option<DateTime<Utc>>,
+    ) -> Result<Self> {
         let result = LoginInfo {
             oauth_token,
-            user_session_expiry: session.expiry().cloned(),
+            user_session_expiry,
         };
         Ok(result)
     }

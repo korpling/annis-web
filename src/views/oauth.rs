@@ -39,6 +39,9 @@ async fn redirect_to_login(
 
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
+    dbg!(&pkce_challenge);
+    dbg!(&pkce_verifier);
+
     let (auth_url, csrf_token) = client
         .authorize_url(CsrfToken::new_random)
         .set_pkce_challenge(pkce_challenge)
@@ -168,9 +171,11 @@ async fn login_callback(
                 .exchange_code(AuthorizationCode::new(params.code.unwrap_or_default()))
                 .set_pkce_verifier(pkce_verifier)
                 .request_async(async_http_client)
-                .await?;
+                .await;
+            dbg!(&token);
+            let token = token?;
 
-            let login_info = LoginInfo::new(token.clone(), &session)?;
+            let login_info = LoginInfo::new(token.clone(), session.expiry().cloned())?;
 
             app_state
                 .login_info
