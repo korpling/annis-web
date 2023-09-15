@@ -1,25 +1,24 @@
 use crate::{
-    auth::{AnnisTokenResponse, LoginInfo},
+    auth::{schedule_refresh_token, LoginInfo},
     errors::AppError,
     state::{GlobalAppState, SessionState},
     Result,
 };
 use axum::{
     extract::{Query, State},
+    http::StatusCode,
     response::{Html, IntoResponse, Redirect},
     routing::get,
     Router,
 };
 use axum_sessions::extractors::ReadableSession;
-use hyper::StatusCode;
+
 use minijinja::context;
-use oauth2::{basic::BasicClient, TokenResponse};
-use oauth2::{reqwest::async_http_client, RefreshToken};
+use oauth2::reqwest::async_http_client;
 use oauth2::{AuthorizationCode, CsrfToken, PkceCodeChallenge};
 use serde::Deserialize;
 use std::{sync::Arc, time::Duration};
 use tokio::time::Instant;
-use tracing::{debug, warn};
 
 pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
     let result = Router::new()
@@ -76,78 +75,6 @@ struct CallBackParams {
     code: Option<String>,
 }
 
-async fn refresh_token_action(
-    refresh_instant: Instant,
-    refresh_token: RefreshToken,
-    client: BasicClient,
-    session_id: String,
-    app_state: Arc<GlobalAppState>,
-) -> Result<()> {
-    debug!(
-        "Waiting to refresh token in background for session {}",
-        &session_id
-    );
-    tokio::time::sleep_until(refresh_instant).await;
-
-    let token_request_time = Instant::now();
-    let new_token = client
-        .exchange_refresh_token(&refresh_token)
-        .request_async(async_http_client)
-        .await?;
-
-    debug!("Refreshed client token for session {}", &session_id);
-
-    // Re-use the user session expiration date of the previous login info. The user
-    // session experiation should be updated whenever the user actually accesses
-    // our server. If they stop to access it, we should not attempt to renew the
-    // access token in the background.
-    if let Some(mut login_info) = app_state.login_info.get_mut(&session_id) {
-        match login_info.renew_token(new_token.clone()) {
-            Ok(_) => {
-                // Schedule a new token refresh if the for when the new token expires
-                schedule_refresh_token(
-                    &new_token,
-                    client,
-                    &session_id,
-                    token_request_time,
-                    app_state.clone(),
-                )
-            }
-            Err(e) => {
-                warn!("Could not renew-token for session {session_id}: {e}");
-            }
-        }
-    }
-    Ok(())
-}
-
-fn schedule_refresh_token(
-    token: &AnnisTokenResponse,
-    client: BasicClient,
-    session_id: &str,
-    token_request_time: Instant,
-    app_state: Arc<GlobalAppState>,
-) {
-    if let (Some(expires_in), Some(refresh_token)) =
-        (token.expires_in(), token.refresh_token().cloned())
-    {
-        let refresh_offset = expires_in
-            .checked_sub(Duration::from_secs(10))
-            .unwrap_or(expires_in);
-        let refresh_instant = token_request_time.checked_add(refresh_offset);
-        let session_id = session_id.to_string();
-        if let Some(refresh_instant) = refresh_instant {
-            tokio::spawn(refresh_token_action(
-                refresh_instant,
-                refresh_token,
-                client,
-                session_id,
-                app_state,
-            ));
-        }
-    }
-}
-
 async fn login_callback(
     session: ReadableSession,
     State(app_state): State<Arc<GlobalAppState>>,
@@ -198,6 +125,7 @@ async fn login_callback(
                 session.id(),
                 token_request_time,
                 app_state.clone(),
+                Duration::from_secs(10),
             );
 
             return Ok((StatusCode::OK, Html(html)));
