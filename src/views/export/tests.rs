@@ -136,6 +136,7 @@ async fn export_cancel() {
     // The start export button should appear again
     env.webdriver
         .wait()
+        .at_most(Duration::from_secs(10))
         .for_element(start_button_locator)
         .await
         .unwrap();

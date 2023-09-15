@@ -228,9 +228,17 @@ async fn add_all_filtered_corpora() {
         ))
         .await
         .unwrap();
+    env.webdriver
+        .wait()
+        .at_most(Duration::from_secs(5))
+        .for_element(Locator::XPath(
+            "//*[@id='corpus-selector']//div[count(span)=3]",
+        ))
+        .await
+        .unwrap();
     let tag_selector = Locator::Css("#corpus-selector >* span.tag");
     let tags = env.webdriver.find_all(tag_selector).await.unwrap();
-    assert_eq!(3, tags.len());
+    assert_eq!(tags.len(), 3);
     assert_eq!("AnyPcCorpus", tags[0].text().await.unwrap());
     assert_eq!("pcc11", tags[1].text().await.unwrap());
     assert_eq!("pcc2", tags[2].text().await.unwrap());
@@ -244,6 +252,15 @@ async fn add_all_filtered_corpora() {
         .await
         .unwrap();
     clear_all_button.click().await.unwrap();
+    env.webdriver
+        .wait()
+        .at_most(Duration::from_secs(5))
+        .for_element(Locator::XPath(
+            "//*[@id='corpus-selector']//div[count(span)=0]",
+        ))
+        .await
+        .unwrap();
+
     let tags = env.webdriver.find_all(tag_selector).await.unwrap();
     assert_eq!(0, tags.len());
     env.webdriver
