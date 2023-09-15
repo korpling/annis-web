@@ -214,7 +214,7 @@ mod tests {
 
         // Wait at least the expiration time and make sure the token was
         // requested from the mock server
-        tokio::time::sleep(Duration::from_secs(1)).await;
+        tokio::time::sleep(Duration::from_secs_f32(1.5)).await;
         mock_token_request.assert();
         // The token stored in the state must be updated
         let login_info = app_state.login_info.get(session_id).unwrap();

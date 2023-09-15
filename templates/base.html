@@ -37,7 +37,9 @@
           {% else %}
             {% set corpus_class = "is-primary" %}
           {% endif %}
-          <a class="navbar-item" href="{{ url_prefix }}corpora">Corpora  <span class="ml-1 tag is-small {{ corpus_class }}"
+          <a id="annis-corpora-navbar-item"
+             class="navbar-item"
+             href="{{ url_prefix }}corpora">Corpora  <span class="ml-1 tag is-small {{ corpus_class }}"
         title='{{ session.selected_corpora|join(", ") }}'>{{ session.selected_corpora|length }}</span></a>
           <a class="navbar-item" href="{{ url_prefix }}export">Export</a>
           <a class="navbar-item" href="{{ url_prefix }}about">About</a>

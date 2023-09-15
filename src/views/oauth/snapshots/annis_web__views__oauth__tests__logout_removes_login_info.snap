@@ -40,7 +40,9 @@ expression: body
           
             
           
-          <a class="navbar-item" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;corpora">Corpora  <span class="ml-1 tag is-small is-warning"
+          <a id="annis-corpora-navbar-item"
+             class="navbar-item"
+             href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;corpora">Corpora  <span class="ml-1 tag is-small is-warning"
         title=''>0</span></a>
           <a class="navbar-item" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;export">Export</a>
           <a class="navbar-item" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;about">About</a>
