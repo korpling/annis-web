@@ -209,6 +209,7 @@ async fn add_all_filtered_corpora() {
         ))
         .await
         .unwrap();
+    tokio::time::sleep(Duration::from_millis(500)).await;
     // Add all filtered corpora to the selection
     let add_all_button = env
         .webdriver
