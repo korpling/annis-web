@@ -27,3 +27,19 @@ jobs:
         run: cargo check --no-default-features
       - name: Check with clippy with all features enabled
         run: cargo clippy --all-features -- -D warnings
+  test_linux:
+    name: Execute automated tests on Ubuntu Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rust-lang/setup-rust-toolchain@v1.4.4
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@v2.2.1
+      - uses: nanasess/setup-chromedriver@v2
+      - name: Start chromedriver for tests
+        run: |
+          export DISPLAY=:99
+          chromedriver --port=4444 &
+          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
+      - run: cargo test --all-features --verbose

@@ -6,10 +6,12 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-sqlx-session = { version = "0.4.0", features = ["sqlite", "async_std"] }
-axum = { version = "0.6.1", features = ["headers"] }
+async-sqlx-session = {version = "0.4.0", features = ["sqlite", "async_std"]}
+axum = {version = "0.6.1", features = ["headers"]}
 axum-sessions = "0.5"
-clap = { version = "4.3.21", features = ["derive"] }
+base64 = "0.21.4"
+chrono = "0.4.30"
+clap = {version = "4.3.21", features = ["derive", "env"]}
 csv = "1.1"
 dashmap = "5.5.0"
 futures = "0.3"
@@ -17,38 +19,40 @@ graphannis = "2"
 graphannis-core = "2"
 include_dir = "0.7"
 mime_guess = "2"
-minijinja = { version = "1.0.6", features = ["builtins", "loader"] }
+minijinja = {version = "1.0.6", features = ["builtins", "loader"]}
+oauth2 = "4.4.1"
 percent-encoding = "2.2.0"
-rand = "0.8"
-reqwest = { version = "0.11", features = ["json", "stream"] }
+reqwest = {version = "0.11", features = ["json", "stream"]}
 serde = "1"
+serde_json = "1"
 sqlx-core = "0.5"
 tempfile = "3"
 thiserror = "1"
-tokio = { version = "1.17.0", features = ["rt-multi-thread", "macros"] }
+tokio = {version = "1.17.0", features = ["rt-multi-thread", "macros"]}
 tokio-util = "0.7.4"
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber = {version = "0.3", features = ["env-filter"]}
 transient-btree-index = "0.5.0"
 url = "2.3"
 
 [dev-dependencies]
+cookie = {version="0.17.0", features=["signed"]}
 dirs = "5"
 env_logger = "0.10"
 fantoccini = "0.19"
-hyper = { version = "0.14", default-features=false }
+hyper = {version = "0.14", default-features = false}
+insta = "1.31.0"
 mockito = "1"
 pretty_assertions = "1"
 scraper = "0.16"
 serde_json = "1"
 test-log = "0.2"
-tower = { version = "0.4", features = ["util"] }
+tower = {version = "0.4", features = ["util"]}
 
-[profile.dev.package.graphannis]
-opt-level = 3
-
-[profile.dev.package.graphannis-core]
-opt-level = 3
+[profile.dev.package]
+graphannis.opt-level = 3
+graphannis-core.opt-level  = 3
+insta.opt-level = 3
 
 [package.metadata.cargo-machete]
 ignored = ["env_logger"]

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}
+  Login
+{% endblock title %}
+{% block content %}
+  {% with current_username = username(session) %}
+    {% if error is defined %}
+      <div class="notification is-error">{{ error }}</div>
+    {% elif current_username is defined %}
+      <div class="notification is-info">Logged in as user "{{ current_username }}"</div>
+    {% else %}
+      <div class="notification is-info">Logged out</div>
+    {% endif %}
+  {% endwith %}
+{% endblock content %}

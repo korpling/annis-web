@@ -1,4 +1,7 @@
-use crate::tests::{get_html, start_end2end_servers};
+use crate::{
+    config::CliConfig,
+    tests::{get_html, start_end2end_servers},
+};
 use axum::{
     body::Body,
     http::{Request, StatusCode},
@@ -6,7 +9,7 @@ use axum::{
 use fantoccini::Locator;
 use mockito::Server;
 use scraper::Selector;
-use std::{net::SocketAddr, time::Duration};
+use std::time::Duration;
 use test_log::test;
 use tower::ServiceExt;
 
@@ -218,17 +221,14 @@ async fn add_all_filtered_corpora() {
     add_all_button.click().await.unwrap();
 
     // The 3 corpora should be added to the selection
-    let selected_counter = Locator::Css("#annis-navbar >* span.tag");
-    assert_eq!(
-        "3",
-        env.webdriver
-            .find(selected_counter)
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap()
-    );
+    env.webdriver
+        .wait()
+        .at_most(Duration::from_secs(5))
+        .for_element(Locator::XPath(
+            "//*[@id='annis-corpora-navbar-item']/span[text()='3']",
+        ))
+        .await
+        .unwrap();
     let tag_selector = Locator::Css("#corpus-selector >* span.tag");
     let tags = env.webdriver.find_all(tag_selector).await.unwrap();
     assert_eq!(3, tags.len());
@@ -247,16 +247,15 @@ async fn add_all_filtered_corpora() {
     clear_all_button.click().await.unwrap();
     let tags = env.webdriver.find_all(tag_selector).await.unwrap();
     assert_eq!(0, tags.len());
-    assert_eq!(
-        "0",
-        env.webdriver
-            .find(selected_counter)
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap()
-    );
+    env.webdriver
+        .wait()
+        .at_most(Duration::from_secs(5))
+        .for_element(Locator::XPath(
+            "//*[@id='annis-corpora-navbar-item']/span[text()='0']",
+        ))
+        .await
+        .unwrap();
+
     env.close().await;
 }
 
@@ -269,13 +268,9 @@ async fn service_down() {
         .with_status(500)
         .create();
     {
-        let app = crate::app(
-            &SocketAddr::from(([127, 0, 0, 1], 3000)),
-            Some(&service_mock.url()),
-            None,
-        )
-        .await
-        .unwrap();
+        let mut config = CliConfig::default();
+        config.service_url = service_mock.url();
+        let app = crate::app(&config).await.unwrap();
 
         let response = app
             .oneshot(

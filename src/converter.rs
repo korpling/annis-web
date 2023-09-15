@@ -9,7 +9,7 @@ use crate::{
         corpora,
         search::{self, FindQuery},
     },
-    state::GlobalAppState,
+    state::{GlobalAppState, SessionArg},
     Result,
 };
 
@@ -34,6 +34,7 @@ impl CSVExporter {
 
     pub async fn convert_text<W: std::io::Write>(
         &mut self,
+        session: SessionArg,
         state: &GlobalAppState,
         limit: Option<u64>,
         output: &mut W,
@@ -42,17 +43,17 @@ impl CSVExporter {
         let mut query = self.query.clone();
         query.limit = limit;
 
-        let result = search::find(&query, state).await?;
+        let result = search::find(&session, &query, state).await?;
 
         if let Some(progress) = &self.progress {
             progress.send(FIRST_PASS_PROGRESS).await?;
         }
-        self.first_pass(&result, state).await?;
+        self.first_pass(&result, state, &session).await?;
 
         if let Some(progress) = &self.progress {
             progress.send(SECOND_PASS_PROGRESS).await?;
         }
-        self.second_pass(&result, state, output).await?;
+        self.second_pass(&result, state, &session, output).await?;
 
         if let Some(progress) = &self.progress {
             progress.send(1.0).await?;
@@ -64,6 +65,7 @@ impl CSVExporter {
         &mut self,
         matches: &BtreeIndex<u64, Vec<String>>,
         state: &GlobalAppState,
+        session: &SessionArg,
     ) -> Result<()> {
         for m in matches.range(..)? {
             let (match_nr, node_ids) = m?;
@@ -71,7 +73,8 @@ impl CSVExporter {
             if let Some(id) = node_ids.first() {
                 let (corpus, _) = id.split_once('/').unwrap_or_default();
                 // Get the subgraph for the IDs
-                let g = corpora::subgraph(corpus, node_ids.clone(), None, 1, 1, state).await?;
+                let g =
+                    corpora::subgraph(session, corpus, node_ids.clone(), None, 1, 1, state).await?;
                 // Collect annotations for the matched nodes
                 for (pos_in_match, node_name) in node_ids.iter().enumerate() {
                     if let Some(n_id) = g.get_node_id_from_name(node_name)? {
@@ -104,6 +107,7 @@ impl CSVExporter {
         &self,
         matches: &BtreeIndex<u64, Vec<String>>,
         state: &GlobalAppState,
+        session: &SessionArg,
         output: &mut W,
     ) -> Result<()>
     where
@@ -131,7 +135,8 @@ impl CSVExporter {
             if let Some(first_id) = node_ids.first() {
                 let (corpus, _) = first_id.split_once('/').unwrap_or_default();
                 // Get the subgraph for the IDs
-                let g = corpora::subgraph(corpus, node_ids.clone(), None, 1, 1, state).await?;
+                let g =
+                    corpora::subgraph(session, corpus, node_ids.clone(), None, 1, 1, state).await?;
 
                 let mut record: Vec<String> = Vec::with_capacity(node_ids.len() + 1);
                 // Output all columns for this match, first column is the match number

@@ -1,0 +1,75 @@
+---
+source: src/views/oauth/tests.rs
+expression: body
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="shortcut icon" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/icons/favicon.ico">
+    <link rel="stylesheet" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/fonts.css" />
+    <link rel="stylesheet" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/annis.min.css" />
+    <script src="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/htmx-1.9.4.min.js"></script>
+    <script src="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/hyperscript-0.9.11.min.js"></script>
+    <title>ANNIS
+      
+  Login
+
+    </title>
+  </head>
+  <body>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand">
+        <img src="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/icons/annis_192.png"
+             width="52px"
+             height="auto"
+             alt="Logo of ANNIS depicting two anis fruits"
+             class="m-1">
+        <a role="button"
+           class="navbar-burger"
+           aria-label="menu"
+           aria-expanded="false"
+           onclick="document.querySelector('#annis-navbar').classList.toggle('is-active')">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div id="annis-navbar" class="navbar-menu">
+        <div class="navbar-start">
+          
+          
+            
+          
+          <a id="annis-corpora-navbar-item"
+             class="navbar-item"
+             href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;corpora">Corpora  <span class="ml-1 tag is-small is-warning"
+        title=''>0</span></a>
+          <a class="navbar-item" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;export">Export</a>
+          <a class="navbar-item" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;about">About</a>
+        </div>
+        <div class="navbar-end">
+          
+            <div class="navbar-item">
+              
+                
+                  <div class="buttons">
+                    <a class="button is-light"  href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;oauth/login"">Log in</a>
+                  </div>
+                
+              
+            </div>
+          
+        </div>
+      </div>
+    </nav>
+    <div class="box">
+      
+  
+    
+      <div class="notification is-error">this is an error</div>
+    
+  
+
+    </div>
+  </body>
+</html>

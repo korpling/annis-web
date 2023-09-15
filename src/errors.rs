@@ -5,6 +5,7 @@ use axum::{
     response::{Html, IntoResponse},
 };
 use minijinja::context;
+use oauth2::{basic::BasicErrorResponseType, StandardErrorResponse};
 use reqwest::Url;
 use serde::Deserialize;
 use thiserror::Error;
@@ -97,7 +98,7 @@ pub enum AppError {
     #[error("{0}")]
     BackendBadRequest(BadRequestError),
     #[error(transparent)]
-    CSV(#[from] csv::Error),
+    Csv(#[from] csv::Error),
     #[error(transparent)]
     GraphAnnisCore(#[from] graphannis_core::errors::GraphAnnisCoreError),
     #[error(transparent)]
@@ -120,6 +121,20 @@ pub enum AppError {
     DownloadFileNotFound,
     #[error(transparent)]
     MiniJinja(#[from] minijinja::Error),
+    #[error(transparent)]
+    RequestTokenError(
+        #[from]
+        oauth2::RequestTokenError<
+            oauth2::reqwest::Error<reqwest::Error>,
+            StandardErrorResponse<BasicErrorResponseType>,
+        >,
+    ),
+    #[error("JWT token did not contain any payload")]
+    JwtMissingPayload,
+    #[error(transparent)]
+    Base64DecodeError(#[from] base64::DecodeError),
+    #[error("OAuth2 server not fully configured.")]
+    Oauth2ServerConfigMissing,
 }
 
 impl IntoResponse for AppError {
@@ -145,7 +160,7 @@ impl IntoResponse for AppError {
                     message,
                     status_code => status.as_u16(),
                     canonical_reason => status.canonical_reason().unwrap_or_default(),
-                    // TODO: how can we find the actual prefix without having access to the session?
+                    // TODO how can we find the actual prefix without having access to the session?
                     url_prefix=> "/".to_string(),
                     session => SessionState::default(),
                 })

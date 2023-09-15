@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     client::corpora,
-    state::{GlobalAppState, SessionState, STATE_KEY},
+    state::{GlobalAppState, SessionArg, SessionState, STATE_KEY},
     Result,
 };
 
@@ -36,7 +36,7 @@ async fn show(
 
     let selected_corpora = session_state.selected_corpora.clone();
 
-    let corpora: Vec<_> = corpora::list(app_state.as_ref())
+    let corpora: Vec<_> = corpora::list(&SessionArg::Session(session.clone()), app_state.as_ref())
         .await?
         .into_iter()
         .map(|name| Corpus {
@@ -73,7 +73,7 @@ async fn update(
 ) -> Result<impl IntoResponse> {
     let mut session_state = SessionState::from(&session);
 
-    let corpora = corpora::list(app_state.as_ref()).await?;
+    let corpora = corpora::list(&SessionArg::Session(session.clone()), app_state.as_ref()).await?;
     let mut filtered_corpora: Vec<_> = corpora
         .iter()
         .filter(|c| c.to_lowercase().contains(&payload.filter.to_lowercase()))
