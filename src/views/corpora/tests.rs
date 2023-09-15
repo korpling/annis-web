@@ -1,6 +1,6 @@
 use crate::{
     config::CliConfig,
-    tests::{get_html, start_end2end_servers},
+    tests::{get_body, start_end2end_servers},
 };
 use axum::{
     body::Body,
@@ -8,7 +8,6 @@ use axum::{
 };
 use fantoccini::Locator;
 use mockito::Server;
-use scraper::Selector;
 use std::time::Duration;
 use test_log::test;
 use tower::ServiceExt;
@@ -285,58 +284,9 @@ async fn service_down() {
         // There should be an error, that the backend service access failed
         assert_eq!(response.status(), StatusCode::BAD_GATEWAY);
 
-        let html = get_html(response).await;
+        let body = get_body(response).await;
 
-        // Two tiles should exist, one with the error description and an info
-        // box what to do about it.
-        let tile_selector = Selector::parse("article.tile.is-child").unwrap();
-        let tiles: Vec<_> = html.select(&tile_selector).collect();
-        assert_eq!(2, tiles.len());
-
-        // Check the title (with proper status code) and that the error message
-        // is displayed
-        let subtitle_selector = Selector::parse("h2.subtitle").unwrap();
-        let subtitle_error = tiles[0]
-            .select(&subtitle_selector)
-            .next()
-            .unwrap()
-            .text()
-            .next()
-            .unwrap()
-            .trim();
-        assert_eq!(
-            concat!(
-                "The code of the error is 502 (Bad Gateway) and the following ",
-                "message describes the issue in more detail:"
-            ),
-            subtitle_error
-        );
-
-        let content_selector = Selector::parse(".content").unwrap();
-        let error_message = tiles[0]
-            .select(&content_selector)
-            .next()
-            .unwrap()
-            .text()
-            .next()
-            .unwrap()
-            .trim();
-        assert_eq!(
-            "error decoding response body: EOF while parsing a value at line 1 column 0",
-            error_message
-        );
-
-        // Also check that the second tile with the helpful information is there
-        let title_selector = Selector::parse("h1.title").unwrap();
-        let info_subtitle = tiles[1]
-            .select(&title_selector)
-            .next()
-            .unwrap()
-            .text()
-            .next()
-            .unwrap()
-            .trim();
-        assert_eq!("What can you do?", info_subtitle);
+        insta::assert_snapshot!("service_down", body);
     }
     m.assert();
 }

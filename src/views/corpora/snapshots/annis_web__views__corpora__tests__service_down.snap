@@ -1,3 +1,7 @@
+---
+source: src/views/corpora/tests.rs
+expression: body
+---
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -55,10 +59,10 @@
       <div class="box is-danger">
         <h1>An unexpected error has occurred</h1>
         <div class="subtitle">
-          The error code is "{{ status_code }} ({{ canonical_reason }})" and the following message describes the issue in more detail:
+          The error code is "502 (Bad Gateway)" and the following message describes the issue in more detail:
         </div>
         <blockquote>
-          {{ message }}
+          error decoding response body: EOF while parsing a value at line 1 column 0
         </blockquote>
       </div>
       <div class="box is-info">
