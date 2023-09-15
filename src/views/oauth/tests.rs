@@ -1,12 +1,21 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
+use axum_sessions::async_session::{MemoryStore, Session, SessionStore};
+use cookie::{Cookie, CookieJar, Key};
 use hyper::{Body, Request, StatusCode};
+use oauth2::{basic::BasicTokenType, AccessToken, StandardTokenResponse};
 use scraper::Selector;
 use test_log::test;
 use tower::ServiceExt;
 use url::Url;
 
-use crate::{config::CliConfig, tests::get_html};
+use crate::{
+    auth::LoginInfo,
+    config::CliConfig,
+    state::GlobalAppState,
+    tests::{get_body, get_html},
+    FALLBACK_COOKIE_KEY,
+};
 
 #[test(tokio::test)]
 async fn login_rediction() {
@@ -52,6 +61,64 @@ async fn login_rediction() {
     assert!(query_params.contains_key("code_challenge"));
     assert!(query_params.contains_key("code_challenge_method"));
     assert!(query_params.contains_key("state"));
+}
+
+#[test(tokio::test)]
+async fn logout_removes_login_info() {
+    let mut config = CliConfig::default();
+    config.oauth2_auth_url = Some("http://localhost:8080/auth".to_string());
+    config.oauth2_token_url = Some("http://localhost:8080/token".to_string());
+
+    // Simulate a session with a token by adding it to the session manually
+    let access_token = AccessToken::new("ABC".into());
+    let token_response = StandardTokenResponse::new(
+        access_token,
+        BasicTokenType::Bearer,
+        oauth2::EmptyExtraTokenFields {},
+    );
+
+    let session = Session::new();
+    let session_id = session.id().to_string();
+    let l = LoginInfo::new(token_response, &session).unwrap();
+
+    let state = Arc::new(GlobalAppState::new(&config).unwrap());
+    state.login_info.insert(session_id.clone(), l);
+
+    let session_store = MemoryStore::new();
+    session_store.store_session(session.clone()).await.unwrap();
+
+    // Create an app with the prepared session store
+    let app = crate::app_with_state(state.clone(), session_store)
+        .await
+        .unwrap();
+
+    // Create a session cookie, which needs to be signed with the app key
+    let mut cookie_jar = CookieJar::new();
+    let mut session_cookie = Cookie::named("sid");
+    session_cookie.set_value(session.into_cookie_value().unwrap());
+
+    cookie_jar
+        .signed_mut(&Key::from(FALLBACK_COOKIE_KEY))
+        .add_original(session_cookie);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/oauth/logout")
+                .header("Cookie", cookie_jar.get("sid").unwrap().to_string())
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    // Check the response
+    assert!(response.status().is_success());
+    let body = get_body(response).await;
+    insta::assert_snapshot!(body);
+
+    // The login info must be removed from the state
+    assert_eq!(state.login_info.contains_key(&session_id), false);
 }
 
 #[test(tokio::test)]
