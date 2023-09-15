@@ -231,12 +231,35 @@ async fn show_callback_error() {
         .unwrap();
 
     // Check the response
-    assert!(response.status().is_success());
+    assert!(response.status().is_server_error());
     let body = get_body(response).await;
     insta::assert_snapshot!("show_callback_error", body);
 
     // There should be no pending auth requests
     assert_eq!(app_state.auth_requests.len(), 0);
+}
+
+#[test(tokio::test)]
+async fn callback_without_params() {
+    let mut config = CliConfig::default();
+    config.oauth2_auth_url = Some("http://localhost:8080/auth".to_string());
+    config.oauth2_token_url = Some("http://localhost:8080/token".to_string());
+
+    let app = crate::app(&config).await.unwrap();
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/oauth/callback")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    // Check the response
+    assert!(response.status().is_client_error());
+    let body = get_body(response).await;
+    insta::assert_snapshot!("callback_without_params", body);
 }
 
 #[test(tokio::test)]

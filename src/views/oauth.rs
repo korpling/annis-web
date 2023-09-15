@@ -11,6 +11,7 @@ use axum::{
     Router,
 };
 use axum_sessions::extractors::ReadableSession;
+use hyper::StatusCode;
 use minijinja::context;
 use oauth2::{basic::BasicClient, TokenResponse};
 use oauth2::{reqwest::async_http_client, RefreshToken};
@@ -163,7 +164,7 @@ async fn login_callback(
             app_state.auth_requests.remove(&state);
         }
 
-        return Ok(Html(html));
+        return Ok((StatusCode::BAD_GATEWAY, Html(html)));
     } else if let Some(state) = params.state {
         let client = app_state
             .oauth2_client
@@ -199,11 +200,12 @@ async fn login_callback(
                 app_state.clone(),
             );
 
-            return Ok(Html(html));
+            return Ok((StatusCode::OK, Html(html)));
         }
     }
-    let html = template.render(context! {session => session_state})?;
-    Ok(Html(html))
+    let html = template
+        .render(context! {session => session_state, error => "Empty authorization request."})?;
+    Ok((StatusCode::BAD_REQUEST, Html(html)))
 }
 
 #[cfg(test)]
