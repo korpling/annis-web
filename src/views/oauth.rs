@@ -158,6 +158,11 @@ async fn login_callback(
 
     if let Some(error) = params.error {
         let html = template.render(context! {error, session => session_state})?;
+
+        if let Some(state) = params.state {
+            app_state.auth_requests.remove(&state);
+        }
+
         return Ok(Html(html));
     } else if let Some(state) = params.state {
         let client = app_state

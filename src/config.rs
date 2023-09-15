@@ -33,7 +33,7 @@ pub struct CliConfig {
 impl Default for CliConfig {
     fn default() -> Self {
         let empty_arguments: Vec<OsString> = Vec::default();
-        Parser::parse_from(empty_arguments.into_iter())
+        Parser::parse_from(empty_arguments)
     }
 }
 

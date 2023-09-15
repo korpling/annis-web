@@ -4,9 +4,7 @@ use axum_sessions::async_session::{MemoryStore, Session, SessionStore};
 use cookie::{Cookie, CookieJar, Key};
 use hyper::{Body, Request, StatusCode};
 use mockito::Server;
-use oauth2::{
-    basic::BasicTokenType, AccessToken, PkceCodeChallenge, PkceCodeVerifier, StandardTokenResponse,
-};
+use oauth2::{basic::BasicTokenType, AccessToken, PkceCodeVerifier, StandardTokenResponse};
 use scraper::Selector;
 use test_log::test;
 use tower::ServiceExt;
@@ -188,7 +186,7 @@ async fn callback_sets_login_info() {
     mock_token_request.assert();
 
     // The authentification requests has to be removed from the state
-    assert_eq!(app_state.auth_requests.contains_key(state_id), false);
+    assert_eq!(app_state.auth_requests.len(), 0);
 
     // A login info has been set for the current session
     let login_info = app_state.login_info.get(&session_id).unwrap();
@@ -206,23 +204,25 @@ async fn show_callback_error() {
     config.oauth2_token_url = Some("http://localhost:8080/token".to_string());
 
     // Create a session cookie, which needs to be signed with the app key
-    let (session_id, session_cookie, session_store) = create_dummy_session().await;
+    let (_session_id, session_cookie, session_store) = create_dummy_session().await;
 
     // Simulate that we already started an auth request
-    let state = Arc::new(GlobalAppState::new(&config).unwrap());
-    let (_pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
-    state
+    let app_state = Arc::new(GlobalAppState::new(&config).unwrap());
+    let pkce_code = "53fa4231-2902-4f98-85f7-aebe91dfdc53.fca60b04-0ad4-497a-bf19-b0b05cda5a78.a9241b37-638b-450f-8fa4-f97f9b8fb83d";
+    let state_id = "N7eDSsUS3FYBUxDAKm_jsQ";
+    let pkce_verifier = PkceCodeVerifier::new(pkce_code.into());
+    app_state
         .auth_requests
-        .insert(session_id.clone(), pkce_verifier);
+        .insert(state_id.to_string(), pkce_verifier);
 
     // Create an app with the prepared session store
-    let app = crate::app_with_state(state.clone(), session_store)
+    let app = crate::app_with_state(app_state.clone(), session_store)
         .await
         .unwrap();
     let response = app
         .oneshot(
             Request::builder()
-                .uri("/oauth/callback?error=this%20is%20an%20error")
+                .uri(format!("/oauth/callback?error=this%20is%20an%20error&state={state_id}&session_state=fca60b04-0ad4-497a-bf19-b0b05cda5a78&code={pkce_code}"))
                 .header("Cookie", session_cookie)
                 .body(Body::empty())
                 .unwrap(),
@@ -235,8 +235,8 @@ async fn show_callback_error() {
     let body = get_body(response).await;
     insta::assert_snapshot!("show_callback_error", body);
 
-    // The authentification requests has to be removed from the state
-    assert_eq!(state.auth_requests.contains_key(&session_id), false);
+    // There should be no pending auth requests
+    assert_eq!(app_state.auth_requests.len(), 0);
 }
 
 #[test(tokio::test)]
