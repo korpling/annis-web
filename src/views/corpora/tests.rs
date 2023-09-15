@@ -222,6 +222,12 @@ async fn add_all_filtered_corpora() {
 
     // The 3 corpora should be added to the selection
     let selected_counter = Locator::Css("#annis-navbar >* span.tag");
+    env.webdriver
+        .wait()
+        .at_most(Duration::from_secs(5))
+        .for_element(selected_counter)
+        .await
+        .unwrap();
     assert_eq!(
         "3",
         env.webdriver
