@@ -15,7 +15,7 @@ export CARGO_TARGET_DIR='target/coverage/'
 mkdir -p target/coverage/
 
 # Run all tests
-LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' cargo test
+LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' RUST_LOG='annis_web=debug' cargo test
 
 # Generate HTML report in target/debug/coverage/index.html
 grcov . --binary-path ./target/coverage/debug/deps/ -s . -t html --branch --ignore-not-existing --ignore 'target/*' --ignore '/*' --ignore '**/tests.rs' -o target/coverage/html/
