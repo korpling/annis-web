@@ -19,9 +19,8 @@ pub struct CSVExporter {
     progress: Option<Sender<f32>>,
 }
 
-const SINGLE_STEP_PROGRESS: f32 = 1.0 / 3.0;
-const FIRST_PASS_PROGRESS: f32 = SINGLE_STEP_PROGRESS;
-const SECOND_PASS_PROGRESS: f32 = SINGLE_STEP_PROGRESS * 2.0;
+const SINGLE_PASS_PROGRESS: f32 = 0.5;
+const AFTER_FIRST_PASS_PROGRESS: f32 = SINGLE_PASS_PROGRESS;
 
 impl CSVExporter {
     pub fn new(query: FindQuery, progress: Option<Sender<f32>>) -> Self {
@@ -45,13 +44,10 @@ impl CSVExporter {
 
         let result = search::find(&session, &query, state).await?;
 
-        if let Some(progress) = &self.progress {
-            progress.send(FIRST_PASS_PROGRESS).await?;
-        }
         self.first_pass(&result, state, &session).await?;
 
         if let Some(progress) = &self.progress {
-            progress.send(SECOND_PASS_PROGRESS).await?;
+            progress.send(AFTER_FIRST_PASS_PROGRESS).await?;
         }
         self.second_pass(&result, state, &session, output).await?;
 
@@ -94,9 +90,7 @@ impl CSVExporter {
             if match_nr % 10 == 0 {
                 if let Some(sender) = &self.progress {
                     let partial_progress = match_nr as f32 / matches.len() as f32;
-                    sender
-                        .send(FIRST_PASS_PROGRESS + (partial_progress * SINGLE_STEP_PROGRESS))
-                        .await?;
+                    sender.send(partial_progress * SINGLE_PASS_PROGRESS).await?;
                 }
             }
         }
@@ -161,7 +155,7 @@ impl CSVExporter {
                 if let Some(sender) = &self.progress {
                     let partial_progress = idx as f32 / matches.len() as f32;
                     sender
-                        .send(SECOND_PASS_PROGRESS + (partial_progress * SINGLE_STEP_PROGRESS))
+                        .send(AFTER_FIRST_PASS_PROGRESS + (partial_progress * SINGLE_PASS_PROGRESS))
                         .await?;
                 }
             }

@@ -13,14 +13,21 @@
         </div>
       {% elif job.Running is defined %}
         <div class="control is-expanded">
-          <label for="job-progress">Export is running</label>
-          <progress id="job-progress"
-                    class="progress is-info"
-                    max="1"
-                    value="{{ job.Running }}"
-                    hx-trigger="load delay:500ms"
-                    hx-get="{{ url_prefix }}export/job">
-          {{ job.Running * 100.0 }}%</progress>
+          {% if job.Running == 0 %}
+            <label for="job-progress">Export is running</label>
+            <progress id="job-progress"
+                      class="progress is-info"
+                      hx-trigger="load delay:1500ms"
+                      hx-get="{{ url_prefix }}export/job"></progress>
+          {% else %}
+            <label for="job-progress">Export is running  ({{ (job.Running * 100.0)|round(1) }}%)</label>
+            <progress id="job-progress"
+                      class="progress is-info"
+                      max="1"
+                      value="{{ job.Running }}"
+                      hx-trigger="load delay:500ms"
+                      hx-get="{{ url_prefix }}export/job">{{ (job.Running * 100.0)|round(1) }}%</progress>
+          {% endif %}
         </div>
         <div class="control">
           <button hx-delete="{{ url_prefix }}export/job" class="button">Cancel</button>
