@@ -1,5 +1,6 @@
 use std::{sync::Arc, time::Duration};
 
+use axum::http::HeaderValue;
 use base64::Engine;
 use chrono::{DateTime, Utc};
 use oauth2::{
@@ -7,7 +8,7 @@ use oauth2::{
     reqwest::async_http_client,
     EmptyExtraTokenFields, RefreshToken, StandardTokenResponse, TokenResponse,
 };
-use serde::{Deserialize, Serialize};
+use reqwest::Client;
 use tokio::time::Instant;
 use tracing::{debug, warn};
 
@@ -15,12 +16,15 @@ use crate::{errors::AppError, state::GlobalAppState, Result};
 
 pub type AnnisTokenResponse = StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct LoginInfo {
     oauth_token: AnnisTokenResponse,
 
     /// Date and time when the session attached to this login information expires.
     pub user_session_expiry: Option<DateTime<Utc>>,
+
+    /// An authentificated HTTP client
+    client: reqwest::Client,
 }
 
 fn parse_unverified_username(token: &str) -> Result<Option<String>> {
@@ -49,16 +53,39 @@ impl LoginInfo {
         oauth_token: AnnisTokenResponse,
         user_session_expiry: Option<DateTime<Utc>>,
     ) -> Result<Self> {
+        let mut default_headers = reqwest::header::HeaderMap::new();
+
+        let value =
+            HeaderValue::from_str(&format!("Bearer {}", oauth_token.access_token().secret()))?;
+        default_headers.insert(reqwest::header::AUTHORIZATION, value);
+
+        let client_builder = reqwest::ClientBuilder::new().default_headers(default_headers);
         let result = LoginInfo {
             oauth_token,
             user_session_expiry,
+            client: client_builder.build()?,
         };
         Ok(result)
     }
 
     pub fn renew_token(&mut self, oauth_token: AnnisTokenResponse) -> Result<()> {
         self.oauth_token = oauth_token;
+        // Also recreate the HTTP client, because it needs to use the new bearer token as default header
+        let mut default_headers = reqwest::header::HeaderMap::new();
+        let value = HeaderValue::from_str(&format!(
+            "Bearer {}",
+            self.oauth_token.access_token().secret()
+        ))?;
+
+        default_headers.insert(reqwest::header::AUTHORIZATION, value);
+
+        let client_builder = reqwest::ClientBuilder::new().default_headers(default_headers);
+        self.client = client_builder.build()?;
         Ok(())
+    }
+
+    pub fn get_client(&self) -> Client {
+        self.client.clone()
     }
 
     pub fn api_token(&self) -> &str {

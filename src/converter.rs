@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use tokio::sync::mpsc::Sender;
 
-use graphannis::graph::AnnoKey;
+use graphannis::{graph::AnnoKey, AnnotationGraph};
 use transient_btree_index::BtreeIndex;
 
 use crate::{
@@ -16,12 +16,12 @@ use crate::{
 pub struct CSVExporter {
     query: FindQuery,
     annotations_for_matched_nodes: BTreeMap<usize, BTreeSet<AnnoKey>>,
+    subgraphs: BTreeMap<u64, AnnotationGraph>,
     progress: Option<Sender<f32>>,
 }
 
-const SINGLE_STEP_PROGRESS: f32 = 1.0 / 3.0;
-const FIRST_PASS_PROGRESS: f32 = SINGLE_STEP_PROGRESS;
-const SECOND_PASS_PROGRESS: f32 = SINGLE_STEP_PROGRESS * 2.0;
+const SINGLE_PASS_PROGRESS: f32 = 0.5;
+const AFTER_FIRST_PASS_PROGRESS: f32 = SINGLE_PASS_PROGRESS;
 
 impl CSVExporter {
     pub fn new(query: FindQuery, progress: Option<Sender<f32>>) -> Self {
@@ -29,6 +29,7 @@ impl CSVExporter {
             query,
             annotations_for_matched_nodes: BTreeMap::new(),
             progress,
+            subgraphs: BTreeMap::new(),
         }
     }
 
@@ -45,15 +46,12 @@ impl CSVExporter {
 
         let result = search::find(&session, &query, state).await?;
 
-        if let Some(progress) = &self.progress {
-            progress.send(FIRST_PASS_PROGRESS).await?;
-        }
         self.first_pass(&result, state, &session).await?;
 
         if let Some(progress) = &self.progress {
-            progress.send(SECOND_PASS_PROGRESS).await?;
+            progress.send(AFTER_FIRST_PASS_PROGRESS).await?;
         }
-        self.second_pass(&result, state, &session, output).await?;
+        self.second_pass(&result, output).await?;
 
         if let Some(progress) = &self.progress {
             progress.send(1.0).await?;
@@ -90,13 +88,12 @@ impl CSVExporter {
                             .extend(annos);
                     }
                 }
+                self.subgraphs.insert(match_nr, g);
             }
             if match_nr % 10 == 0 {
                 if let Some(sender) = &self.progress {
                     let partial_progress = match_nr as f32 / matches.len() as f32;
-                    sender
-                        .send(FIRST_PASS_PROGRESS + (partial_progress * SINGLE_STEP_PROGRESS))
-                        .await?;
+                    sender.send(partial_progress * SINGLE_PASS_PROGRESS).await?;
                 }
             }
         }
@@ -106,8 +103,6 @@ impl CSVExporter {
     async fn second_pass<W>(
         &self,
         matches: &BtreeIndex<u64, Vec<String>>,
-        state: &GlobalAppState,
-        session: &SessionArg,
         output: &mut W,
     ) -> Result<()>
     where
@@ -132,12 +127,8 @@ impl CSVExporter {
         // Iterate over all matches
         for m in matches.range(..)? {
             let (idx, node_ids) = m?;
-            if let Some(first_id) = node_ids.first() {
-                let (corpus, _) = first_id.split_once('/').unwrap_or_default();
-                // Get the subgraph for the IDs
-                let g =
-                    corpora::subgraph(session, corpus, node_ids.clone(), None, 1, 1, state).await?;
-
+            // Get the subgraph for the IDs
+            if let Some(g) = self.subgraphs.get(&idx) {
                 let mut record: Vec<String> = Vec::with_capacity(node_ids.len() + 1);
                 // Output all columns for this match, first column is the match number
                 record.push((idx + 1).to_string());
@@ -157,11 +148,12 @@ impl CSVExporter {
                 }
                 writer.write_record(record)?;
             }
+
             if idx % 10 == 0 {
                 if let Some(sender) = &self.progress {
                     let partial_progress = idx as f32 / matches.len() as f32;
                     sender
-                        .send(SECOND_PASS_PROGRESS + (partial_progress * SINGLE_STEP_PROGRESS))
+                        .send(AFTER_FIRST_PASS_PROGRESS + (partial_progress * SINGLE_PASS_PROGRESS))
                         .await?;
                 }
             }

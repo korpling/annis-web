@@ -36,7 +36,8 @@ transient-btree-index = "0.5.0"
 url = "2.3"
 
 [dev-dependencies]
-cookie = {version="0.17.0", features=["signed"]}
+cookie = {version = "0.17.0", features = ["signed"]}
+criterion = {version = "0.5", features = ["html_reports", "async_tokio"]}
 dirs = "5"
 env_logger = "0.10"
 fantoccini = "0.19"
@@ -50,9 +51,13 @@ test-log = "0.2"
 tower = {version = "0.4", features = ["util"]}
 
 [profile.dev.package]
+graphannis-core.opt-level = 3
 graphannis.opt-level = 3
-graphannis-core.opt-level  = 3
 insta.opt-level = 3
+
+[[bench]]
+harness = false
+name = "csv_export"
 
 [package.metadata.cargo-machete]
 ignored = ["env_logger"]
