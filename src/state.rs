@@ -1,4 +1,3 @@
-use axum::http::HeaderValue;
 use axum_sessions::{
     async_session::Session,
     extractors::{ReadableSession, WritableSession},
@@ -88,6 +87,7 @@ pub struct GlobalAppState {
     pub background_jobs: DashMap<String, ExportJob>,
     pub auth_requests: DashMap<String, PkceCodeVerifier>,
     pub login_info: Arc<DashMap<String, LoginInfo>>,
+    default_client: reqwest::Client,
 }
 
 impl GlobalAppState {
@@ -130,7 +130,7 @@ impl GlobalAppState {
         } else {
             Url::parse(&config.service_url)?
         };
-
+        let default_client = reqwest::ClientBuilder::new().build()?;
         let result = Self {
             service_url,
             background_jobs: DashMap::new(),
@@ -138,12 +138,14 @@ impl GlobalAppState {
             auth_requests: DashMap::new(),
             login_info,
             oauth2_client,
+            default_client,
         };
         Ok(result)
     }
 
     pub fn create_client(&self, session: &SessionArg) -> Result<reqwest::Client> {
         if let SessionArg::Session(session) = session {
+            // Mark this login info as accessed, so we know it is not stale and should not be removed
             self.login_info.alter(session.id(), |_, mut l| {
                 if let (Some(old_expiry), Some(new_expiry)) =
                     (l.user_session_expiry, session.expiry())
@@ -158,23 +160,15 @@ impl GlobalAppState {
                 }
                 l
             });
-            self.login_info
-                .entry(session.id().to_string())
-                .and_modify(|l| {
-                    l.user_session_expiry = session.expiry().cloned();
-                });
         }
-
-        let mut default_headers = reqwest::header::HeaderMap::new();
 
         if let Some(login) = &self.login_info.get(session.id()) {
-            let value = HeaderValue::from_str(&format!("Bearer {}", login.api_token()))?;
-            default_headers.insert(reqwest::header::AUTHORIZATION, value);
+            // Return the authentifacted client
+            Ok(login.get_client())
+        } else {
+            // Fallback to the default client
+            Ok(self.default_client.clone())
         }
-
-        let builder = reqwest::ClientBuilder::new().default_headers(default_headers);
-
-        Ok(builder.build()?)
     }
 
     /// Cleans up ressources coupled to sessions that are expired or non-existing.
