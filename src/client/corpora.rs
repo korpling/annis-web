@@ -64,7 +64,7 @@ pub async fn subgraph(
             graphannis::model::AnnotationComponentType,
             _,
             _,
-        >(response_body.as_bytes(), false, |_| {})?;
+        >(response_body.as_bytes(), true, |_| {})?;
 
         Ok(g)
     } else {
