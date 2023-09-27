@@ -227,7 +227,6 @@ impl CSVExporter {
                 .into_iter()
                 .filter(|r| !self.gap_edges.contains_right(r))
                 .next();
-            dbg!(&self.gap_edges, &token);
             let token_value_key = AnnoKey {
                 ns: ANNIS_NS.into(),
                 name: "tok".into(),

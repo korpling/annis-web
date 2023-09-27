@@ -10,6 +10,7 @@ async-sqlx-session = {version = "0.4.0", features = ["sqlite", "async_std"]}
 axum = {version = "0.6.1", features = ["headers"]}
 axum-sessions = "0.5"
 base64 = "0.21.4"
+bimap = "0.6.3"
 chrono = "0.4.30"
 clap = {version = "4.3.21", features = ["derive", "env"]}
 csv = "1.1"
@@ -61,3 +62,6 @@ name = "csv_export"
 
 [package.metadata.cargo-machete]
 ignored = ["env_logger"]
+
+[patch.crates-io]
+graphannis-core = {git = 'https://github.com/korpling/graphANNIS.git'}
