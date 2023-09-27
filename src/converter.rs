@@ -1,7 +1,12 @@
-use std::collections::{BTreeMap, BTreeSet};
+use graphannis_core::{
+    annostorage::ValueSearch,
+    graph::ANNIS_NS,
+    types::{Component, NodeID},
+};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use tokio::sync::mpsc::Sender;
 
-use graphannis::{graph::AnnoKey, AnnotationGraph};
+use graphannis::{graph::AnnoKey, model::AnnotationComponentType, AnnotationGraph};
 use transient_btree_index::BtreeIndex;
 
 use crate::{
@@ -22,6 +27,7 @@ pub struct CSVExporter {
     query: FindQuery,
     config: CSVConfig,
     annotations_for_matched_nodes: BTreeMap<usize, BTreeSet<AnnoKey>>,
+    gap_edges: bimap::BiHashMap<NodeID, NodeID>,
     subgraphs: BTreeMap<u64, AnnotationGraph>,
     progress: Option<Sender<f32>>,
 }
@@ -36,6 +42,7 @@ impl CSVExporter {
             config,
             annotations_for_matched_nodes: BTreeMap::new(),
             progress,
+            gap_edges: bimap::BiHashMap::new(),
             subgraphs: BTreeMap::new(),
         }
     }
@@ -72,6 +79,11 @@ impl CSVExporter {
         state: &GlobalAppState,
         session: &SessionArg,
     ) -> Result<()> {
+        let datasource_gap_component = Component::new(
+            AnnotationComponentType::Ordering,
+            ANNIS_NS.into(),
+            "datasource-gap".into(),
+        );
         for m in matches.range(..)? {
             let (match_nr, node_ids) = m?;
             // Get the corpus from the first node
@@ -93,6 +105,16 @@ impl CSVExporter {
                             .entry(pos_in_match)
                             .or_default()
                             .extend(annos);
+                    }
+                }
+                // Remeber all datasource gaph edges
+                if let Some(gs) = g.get_graphstorage_as_ref(&datasource_gap_component) {
+                    for source in gs.source_nodes() {
+                        let source = source?;
+                        for target in gs.get_outgoing_edges(source) {
+                            let target = target?;
+                            self.gap_edges.insert(source, target);
+                        }
                     }
                 }
                 self.subgraphs.insert(match_nr, g);
@@ -119,7 +141,6 @@ impl CSVExporter {
         // Create the header from the first entry
         if matches.contains_key(&0)? {
             let mut header = Vec::default();
-            header.push("match number".to_string());
             header.push("text".to_string());
             for (m_nr, annos) in &self.annotations_for_matched_nodes {
                 header.push(format!("{} node name", m_nr + 1));
@@ -138,11 +159,9 @@ impl CSVExporter {
             // Get the subgraph for the IDs
             if let Some(g) = self.subgraphs.get(&idx) {
                 let mut record: Vec<String> = Vec::with_capacity(node_ids.len() + 1);
-                // Output all columns for this match, first column is the match number
-                record.push((idx + 1).to_string());
-                // Output the covered text
-                let text = "";
-                record.push(text.to_string());
+                // Output all columns for this match, first column is the matched text
+                let text = self.get_spannd_text(g)?;
+                record.push(text);
                 for (m_nr, annos) in &self.annotations_for_matched_nodes {
                     // Each matched nodes contains the node ID
                     record.push(node_ids[*m_nr].clone());
@@ -170,5 +189,96 @@ impl CSVExporter {
             }
         }
         Ok(())
+    }
+
+    fn get_spannd_text(&self, g: &AnnotationGraph) -> Result<String> {
+        // Get ordering component that matches the configured segmentation
+        let ordering_component = if let Some(seg) = &self.config.span_segmentation {
+            Component::new(
+                AnnotationComponentType::Ordering,
+                "default_ns".into(),
+                seg.into(),
+            )
+        } else {
+            Component::new(
+                AnnotationComponentType::Ordering,
+                ANNIS_NS.into(),
+                "".into(),
+            )
+        };
+        if let Some(ordering_gs) = g.get_graphstorage_as_ref(&ordering_component) {
+            let mut roots: HashSet<_> = HashSet::new();
+            for n in g
+                .get_node_annos()
+                .exact_anno_search(Some(ANNIS_NS), "tok", ValueSearch::Any)
+            {
+                let n = n?;
+                if ordering_gs.get_ingoing_edges(n.node).next().is_none() {
+                    roots.insert(n.node);
+                }
+            }
+
+            // Order the roots in the overall text position by using the
+            // explicit gap edges. First find the root node that has no incoming
+            // gap, than follow the ordering and gap edges and construct the
+            // text in between.
+            let mut result = String::new();
+            let mut token = roots
+                .into_iter()
+                .filter(|r| !self.gap_edges.contains_right(r))
+                .next();
+            dbg!(&self.gap_edges, &token);
+            let token_value_key = AnnoKey {
+                ns: ANNIS_NS.into(),
+                name: "tok".into(),
+            };
+            let whitespace_before_key = AnnoKey {
+                ns: ANNIS_NS.into(),
+                name: "tok-whitespace-before".into(),
+            };
+            let whitespace_after_key = AnnoKey {
+                ns: ANNIS_NS.into(),
+                name: "tok-whitespace-after".into(),
+            };
+
+            while let Some(current_token) = token {
+                if let Some(val) = g
+                    .get_node_annos()
+                    .get_value_for_item(&current_token, &whitespace_before_key)?
+                {
+                    result.push_str(&val);
+                }
+                if let Some(val) = g
+                    .get_node_annos()
+                    .get_value_for_item(&current_token, &token_value_key)?
+                {
+                    result.push_str(&val);
+                }
+
+                if let Some(val) = g
+                    .get_node_annos()
+                    .get_value_for_item(&current_token, &whitespace_after_key)?
+                {
+                    result.push_str(&val);
+                }
+
+                // Try to get the outgoing ordering edge first
+                token = if let Some(next_token) =
+                    ordering_gs.get_outgoing_edges(current_token).next()
+                {
+                    let next_token = next_token?;
+                    Some(next_token)
+                } else if let Some(next_token) = self.gap_edges.get_by_left(&current_token) {
+                    result.push_str("(...) ");
+                    Some(*next_token)
+                } else {
+                    None
+                };
+            }
+
+            Ok(result)
+        } else {
+            Ok("".into())
+        }
     }
 }

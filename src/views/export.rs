@@ -24,10 +24,10 @@ use tokio::sync::mpsc::channel;
 use tokio::task::JoinHandle;
 use tokio_util::io::ReaderStream;
 
-const DEFAULT_EXAMPLE: &str = r#"match number,1 node name,1 tiger::lemma,1 tiger::morph,1 tiger::pos
-1,pcc2/11299#tok_1,Feigenblatt,Nom.Sg.Neut,NN
-2,pcc2/11299#tok_2,der,Nom.Pl.*,ART
-3,pcc2/11299#tok_3,jugendliche,Nom.Pl.*,NN"#;
+const DEFAULT_EXAMPLE: &str = r#"match,text,1 node name,1 tiger::lemma,1 tiger::morph,1 tiger::pos
+1,Feigenblatt,pcc2/11299#tok_1,Feigenblatt,Nom.Sg.Neut,NN
+2,die,pcc2/11299#tok_2,der,Nom.Pl.*,ART
+3,Jugendlichen,pcc2/11299#tok_3,jugendliche,Nom.Pl.*,NN"#;
 
 pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
     let result = Router::new()
