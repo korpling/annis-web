@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     client::search::FindQuery,
-    converter::CSVExporter,
+    converter::{CSVConfig, CSVExporter},
     errors::AppError,
     state::{ExportJob, GlobalAppState, SessionArg, SessionState},
     Result,
@@ -89,10 +89,13 @@ async fn create_job(
                 limit: None,
                 order: ResultOrder::Normal,
             };
+            let config = CSVConfig {
+                span_segmentation: None,
+            };
             let app_state_copy = app_state.clone();
             let (sender, receiver) = channel(1);
             let handle: JoinHandle<Result<NamedTempFile>> = tokio::spawn(async move {
-                let mut exporter = CSVExporter::new(find_query, Some(sender));
+                let mut exporter = CSVExporter::new(find_query, config, Some(sender));
                 let mut result_file = tempfile::NamedTempFile::new()?;
 
                 exporter
@@ -204,10 +207,13 @@ async fn create_example_output(
         limit: None,
         order: ResultOrder::NotSorted,
     };
+    let config = CSVConfig {
+        span_segmentation: None,
+    };
     let session: &Session = session;
 
     if !example_query.corpora.is_empty() && !example_query.query.is_empty() {
-        let mut exporter = CSVExporter::new(example_query, None);
+        let mut exporter = CSVExporter::new(example_query, config, None);
         let mut example_string_buffer = Vec::new();
 
         exporter

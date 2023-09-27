@@ -1,7 +1,7 @@
 use annis_web::{
     client::search::FindQuery,
     config::CliConfig,
-    converter::CSVExporter,
+    converter::{CSVConfig, CSVExporter},
     state::{GlobalAppState, SessionArg},
 };
 use criterion::{criterion_group, criterion_main, Criterion};
@@ -41,9 +41,13 @@ tiger::pos::pcc2/4282#tok_73 tiger::pos::pcc2/4282#tok_74
                 limit: None,
                 order: ResultOrder::Normal,
             };
+            let config = CSVConfig {
+                span_segmentation: None,
+            };
             let session_arg = SessionArg::Id(String::default());
             let mut string_buffer = Vec::new();
-            let mut exporter = CSVExporter::new(query, None);
+
+            let mut exporter = CSVExporter::new(query, config, None);
             exporter
                 .convert_text(session_arg, &state, None, &mut string_buffer)
                 .await

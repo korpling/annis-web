@@ -13,8 +13,14 @@ use crate::{
     Result,
 };
 
+#[derive(Debug)]
+pub struct CSVConfig {
+    pub span_segmentation: Option<String>,
+}
+
 pub struct CSVExporter {
     query: FindQuery,
+    config: CSVConfig,
     annotations_for_matched_nodes: BTreeMap<usize, BTreeSet<AnnoKey>>,
     subgraphs: BTreeMap<u64, AnnotationGraph>,
     progress: Option<Sender<f32>>,
@@ -24,9 +30,10 @@ const SINGLE_PASS_PROGRESS: f32 = 0.5;
 const AFTER_FIRST_PASS_PROGRESS: f32 = SINGLE_PASS_PROGRESS;
 
 impl CSVExporter {
-    pub fn new(query: FindQuery, progress: Option<Sender<f32>>) -> Self {
+    pub fn new(query: FindQuery, config: CSVConfig, progress: Option<Sender<f32>>) -> Self {
         Self {
             query,
+            config,
             annotations_for_matched_nodes: BTreeMap::new(),
             progress,
             subgraphs: BTreeMap::new(),
