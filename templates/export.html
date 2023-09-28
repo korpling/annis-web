@@ -13,7 +13,7 @@
     </p>
     <form>
       <div class="field is-horizontal">
-        <div class="field-label is-normal">
+        <div class="field-label">
           <label class="label">Query</label>
         </div>
         <div class="field-body">
@@ -29,6 +29,48 @@
                         hx-select="#export-example-output"
                         hx-swap="outerHTML"></textarea>
             </div>
+            <p class="help">
+              Query used to execute the search. See the
+              <a href="https://korpling.github.io/ANNIS/4.10/user-guide/aql/">documentation</a>
+              for more inforation on the ANNIS Query Language (AQL),
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">Text export options</label>
+        </div>
+        <div class="field-body">
+          <div class="field is-grouped">
+            <div class="control">
+              <label class="label">based on</label>
+              <select>
+                <option value="">Token</option>
+                <option value="dipl">dipl</option>
+              </select>
+            </div>
+            <div class="control">
+              <label class="label">left context</label>
+              <select>
+                <option value="0">0</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+              </select>
+            </div>
+            <div class="control">
+              <label class="label">right context</label>
+              <select>
+                <option value="0">0</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+              </select>
+            </div>
+            <p class="help">
+              Controls the "text" column of the export.
+              Choose a segmentation the text should be based on and the
+              left and right context in token to include.
+            </p>
           </div>
         </div>
       </div>
