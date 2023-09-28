@@ -42,6 +42,8 @@ pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
 #[derive(Deserialize, Debug)]
 struct FormParams {
     query: Option<String>,
+    #[serde(flatten)]
+    config: CSVConfig,
 }
 
 async fn show_page(
@@ -56,6 +58,9 @@ async fn show_page(
     } else {
         Ok(DEFAULT_EXAMPLE.to_string())
     };
+
+    let default_context_sizes = vec![0, 1, 5, 10];
+
     let result = state
         .templates
         .get_template("export.html")?
@@ -63,6 +68,8 @@ async fn show_page(
             example,
             session => session_state,
             job => current_job(&session, &state),
+            config => params.config,
+            default_context_sizes,
         })?;
 
     Ok(Html(result))
@@ -91,6 +98,8 @@ async fn create_job(
             };
             let config = CSVConfig {
                 span_segmentation: None,
+                left_context: 0,
+                right_context: 0,
             };
             let app_state_copy = app_state.clone();
             let (sender, receiver) = channel(1);
@@ -209,6 +218,8 @@ async fn create_example_output(
     };
     let config = CSVConfig {
         span_segmentation: None,
+        left_context: 0,
+        right_context: 0,
     };
     let session: &Session = session;
 

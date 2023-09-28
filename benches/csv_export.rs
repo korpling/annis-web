@@ -43,6 +43,8 @@ tiger::pos::pcc2/4282#tok_73 tiger::pos::pcc2/4282#tok_74
             };
             let config = CSVConfig {
                 span_segmentation: None,
+                left_context: 0,
+                right_context: 0,
             };
             let session_arg = SessionArg::Id(String::default());
             let mut string_buffer = Vec::new();

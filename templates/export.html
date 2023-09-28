@@ -45,25 +45,32 @@
           <div class="field is-grouped">
             <div class="control">
               <label class="label">based on</label>
-              <select>
+              <select name="span_segmentation">
                 <option value="">Token</option>
-                <option value="dipl">dipl</option>
               </select>
             </div>
             <div class="control">
               <label class="label">left context</label>
-              <select>
-                <option value="0">0</option>
-                <option value="5">5</option>
-                <option value="10">10</option>
+              <select name="left_context">
+                {% for ctx in default_context_sizes %}
+                  {% if config.left_context == ctx %}
+                    <option value="{{ ctx }}" selected>{{ ctx }}</option>
+                  {% else %}
+                    <option value="{{ ctx }}">{{ ctx }}</option>
+                  {% endif %}
+                {% endfor %}
               </select>
             </div>
             <div class="control">
               <label class="label">right context</label>
-              <select>
-                <option value="0">0</option>
-                <option value="5">5</option>
-                <option value="10">10</option>
+              <select name="right_context">
+                {% for ctx in default_context_sizes %}
+                  {% if config.right_context == ctx %}
+                    <option value="{{ ctx }}" selected>{{ ctx }}</option>
+                  {% else %}
+                    <option value="{{ ctx }}">{{ ctx }}</option>
+                  {% endif %}
+                {% endfor %}
               </select>
             </div>
             <p class="help">

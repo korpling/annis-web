@@ -3,6 +3,7 @@ use graphannis_core::{
     graph::ANNIS_NS,
     types::{Component, NodeID},
 };
+use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use tokio::sync::mpsc::Sender;
 
@@ -18,9 +19,13 @@ use crate::{
     Result,
 };
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CSVConfig {
     pub span_segmentation: Option<String>,
+    #[serde(default)]
+    pub left_context: usize,
+    #[serde(default)]
+    pub right_context: usize,
 }
 
 pub struct CSVExporter {
