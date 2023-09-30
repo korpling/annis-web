@@ -19,7 +19,7 @@ use crate::{
     Result,
 };
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CSVConfig {
     pub span_segmentation: Option<String>,
     #[serde(default)]
@@ -95,8 +95,16 @@ impl CSVExporter {
             if let Some(id) = node_ids.first() {
                 let (corpus, _) = id.split_once('/').unwrap_or_default();
                 // Get the subgraph for the IDs
-                let g =
-                    corpora::subgraph(session, corpus, node_ids.clone(), None, 0, 0, state).await?;
+                let g = corpora::subgraph(
+                    session,
+                    corpus,
+                    node_ids.clone(),
+                    None,
+                    self.config.left_context,
+                    self.config.right_context,
+                    state,
+                )
+                .await?;
                 // Collect annotations for the matched nodes
                 for (pos_in_match, node_name) in node_ids.iter().enumerate() {
                     if let Some(n_id) = g.get_node_id_from_name(node_name)? {

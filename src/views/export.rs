@@ -53,8 +53,8 @@ async fn show_page(
 ) -> Result<impl IntoResponse> {
     let session_state = SessionState::from(&session);
 
-    let example = if let Some(query) = params.query {
-        create_example_output(query, &state, &session).await
+    let example = if let Some(query) = &params.query {
+        create_example_output(query, &params, &state, &session).await
     } else {
         Ok(DEFAULT_EXAMPLE.to_string())
     };
@@ -96,11 +96,7 @@ async fn create_job(
                 limit: None,
                 order: ResultOrder::Normal,
             };
-            let config = CSVConfig {
-                span_segmentation: None,
-                left_context: 0,
-                right_context: 0,
-            };
+            let config = params.config;
             let app_state_copy = app_state.clone();
             let (sender, receiver) = channel(1);
             let handle: JoinHandle<Result<NamedTempFile>> = tokio::spawn(async move {
@@ -204,23 +200,20 @@ fn current_job(session: &ReadableSession, app_state: &GlobalAppState) -> JobStat
 }
 
 async fn create_example_output(
-    query: String,
+    query: &str,
+    params: &FormParams,
     state: &GlobalAppState,
     session: &ReadableSession,
 ) -> std::result::Result<String, String> {
     let session_state = SessionState::from(session);
     let example_query = FindQuery {
-        query,
+        query: query.to_string(),
         corpora: session_state.selected_corpora.iter().cloned().collect(),
         query_language: QueryLanguage::AQL,
         limit: None,
         order: ResultOrder::NotSorted,
     };
-    let config = CSVConfig {
-        span_segmentation: None,
-        left_context: 0,
-        right_context: 0,
-    };
+    let config = params.config.clone();
     let session: &Session = session;
 
     if !example_query.corpora.is_empty() && !example_query.query.is_empty() {
