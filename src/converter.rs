@@ -4,6 +4,7 @@ use graphannis_core::{
     types::{Component, NodeID},
 };
 use serde::{Deserialize, Serialize};
+use serde_with::{serde_as, DisplayFromStr, NoneAsEmptyString};
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use tokio::sync::mpsc::Sender;
 
@@ -19,12 +20,17 @@ use crate::{
     Result,
 };
 
+#[serde_as]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CSVConfig {
+    #[serde(default)]
+    #[serde_as(as = "NoneAsEmptyString")]
     pub span_segmentation: Option<String>,
     #[serde(default)]
+    #[serde_as(as = "DisplayFromStr")]
     pub left_context: usize,
     #[serde(default)]
+    #[serde_as(as = "DisplayFromStr")]
     pub right_context: usize,
 }
 

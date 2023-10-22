@@ -12,7 +12,11 @@
       is given in a comma-separated table (CSV).
     </p>
     <form>
-      <div class="field is-horizontal">
+      <div class="field is-horizontal"
+           hx-include="closest form"
+           hx-target="#export-example-output"
+           hx-select="#export-example-output"
+           hx-swap="outerHTML">
         <div class="field-label">
           <label class="label">Query</label>
         </div>
@@ -24,10 +28,7 @@
                         class="textarea is-family-code"
                         placeholder='To search for all token use the following query: tok '
                         hx-get="{{ url_prefix }}export"
-                        hx-trigger="keyup changed delay:500ms"
-                        hx-target="#export-example-output"
-                        hx-select="#export-example-output"
-                        hx-swap="outerHTML"></textarea>
+                        hx-trigger="keyup changed delay:500ms"></textarea>
             </div>
             <p class="help">
               Query used to execute the search. See the
@@ -37,7 +38,11 @@
           </div>
         </div>
       </div>
-      <div class="field is-horizontal">
+      <div class="field is-horizontal"
+           hx-include="closest form"
+           hx-target="#export-example-output"
+           hx-select="#export-example-output"
+           hx-swap="outerHTML">
         <div class="field-label">
           <label class="label">Text export options</label>
         </div>
@@ -45,13 +50,13 @@
           <div class="field is-grouped">
             <div class="control">
               <label class="label">based on</label>
-              <select name="span_segmentation">
+              <select name="span_segmentation"  hx-get="{{ url_prefix }}export">
                 <option value="">Token</option>
               </select>
             </div>
             <div class="control">
               <label class="label">left context</label>
-              <select name="left_context">
+              <select name="left_context"  hx-get="{{ url_prefix }}export">
                 {% for ctx in default_context_sizes %}
                   {% if config.left_context == ctx %}
                     <option value="{{ ctx }}" selected>{{ ctx }}</option>
@@ -63,7 +68,7 @@
             </div>
             <div class="control">
               <label class="label">right context</label>
-              <select name="right_context">
+              <select name="right_context"  hx-get="{{ url_prefix }}export">
                 {% for ctx in default_context_sizes %}
                   {% if config.right_context == ctx %}
                     <option value="{{ ctx }}" selected>{{ ctx }}</option>
