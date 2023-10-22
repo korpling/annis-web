@@ -1,6 +1,6 @@
 use graphannis::AnnotationGraph;
 use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     errors::AppError,
@@ -73,4 +73,50 @@ pub async fn subgraph(
             url: response.url().clone(),
         })
     }
+}
+
+#[derive(Serialize)]
+struct ComponentsRequest {
+    #[serde(rename = "type")]
+    ctype: Option<String>,
+    name: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct ComponentResponse {
+    #[serde(rename = "type")]
+    _ctype: Option<String>,
+    name: String,
+    layer: String,
+}
+
+/// List all segmentions (in addition to the token layer) for a given corpus.
+pub async fn segmentations(
+    session: &SessionArg,
+    corpus: &str,
+    state: &GlobalAppState,
+) -> Result<Vec<String>> {
+    let url = state.service_url.join(&format!(
+        "corpora/{}/components",
+        utf8_percent_encode(corpus, QUERY)
+    ))?;
+    let client = state.create_client(session)?;
+
+    let query_params = ComponentsRequest {
+        ctype: Some("Ordering".to_string()),
+        name: None,
+    };
+
+    let request = client
+        .request(reqwest::Method::GET, url.clone())
+        .query(&query_params)
+        .build()?;
+
+    let ordering_components: Vec<ComponentResponse> = client.execute(request).await?.json().await?;
+    let result: Vec<String> = ordering_components
+        .into_iter()
+        .filter(|c| !c.name.is_empty() && c.layer != "annis")
+        .map(|c| c.name)
+        .collect();
+    Ok(result)
 }

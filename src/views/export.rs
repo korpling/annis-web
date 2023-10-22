@@ -1,7 +1,7 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
-    client::search::FindQuery,
+    client::{self, search::FindQuery},
     converter::{CSVConfig, CSVExporter},
     errors::AppError,
     state::{ExportJob, GlobalAppState, SessionArg, SessionState},
@@ -59,7 +59,32 @@ async fn show_page(
         Ok(DEFAULT_EXAMPLE.to_string())
     };
 
-    let default_context_sizes = vec![0, 1, 5, 10];
+    let default_context_sizes = vec![0, 1, 5, 10, 20];
+
+    // Find all segmentations that exist in all of the corpora
+    let number_collected_corpora = session_state.selected_corpora.len();
+    let mut all_segmentations: HashMap<String, usize> = HashMap::new();
+
+    for corpus in session_state.selected_corpora.iter() {
+        let corpus_segmentations =
+            client::corpora::segmentations(&SessionArg::Session(session.clone()), corpus, &state)
+                .await?;
+        for seg in corpus_segmentations {
+            let entry = all_segmentations.entry(seg).or_insert(0);
+            *entry = *entry + 1;
+        }
+    }
+
+    let segmentations: Vec<_> = all_segmentations
+        .into_iter()
+        .filter_map(|(k, v)| {
+            if v == number_collected_corpora {
+                Some(k)
+            } else {
+                None
+            }
+        })
+        .collect();
 
     let result = state
         .templates
@@ -70,6 +95,7 @@ async fn show_page(
             job => current_job(&session, &state),
             config => params.config,
             default_context_sizes,
+            segmentations,
         })?;
 
     Ok(Html(result))

@@ -52,6 +52,13 @@
               <label class="label">based on</label>
               <select name="span_segmentation"  hx-get="{{ url_prefix }}export">
                 <option value="">Token</option>
+                {% for seg in segmentations %}
+                  {% if config.span_segmentation == seg %}
+                    <option value="{{ seg }}" selected>{{ seg }}</option>
+                  {% else %}
+                    <option value="{{ seg }}">{{ seg }}</option>
+                  {% endif %}
+                {% endfor %}
               </select>
             </div>
             <div class="control">
