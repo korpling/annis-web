@@ -351,7 +351,7 @@ impl CSVExporter {
                     result.push_str(&val);
                 } else if self.config.span_segmentation.is_some() {
                     // Use a space character as default seperation character
-                    result.push_str(" ");
+                    result.push(' ');
                 }
             }
         }
