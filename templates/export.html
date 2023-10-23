@@ -48,19 +48,21 @@
         </div>
         <div class="field-body">
           <div class="field is-grouped">
-            <div class="control">
-              <label class="label">based on</label>
-              <select name="span_segmentation"  hx-get="{{ url_prefix }}export">
-                <option value="">Token</option>
-                {% for seg in segmentations %}
-                  {% if config.span_segmentation == seg %}
-                    <option value="{{ seg }}" selected>{{ seg }}</option>
-                  {% else %}
-                    <option value="{{ seg }}">{{ seg }}</option>
-                  {% endif %}
-                {% endfor %}
-              </select>
-            </div>
+            {% if segmentations | length > 1 %}
+              <div class="control">
+                <label class="label">based on</label>
+                <select name="span_segmentation"  hx-get="{{ url_prefix }}export">
+                  <option value="">Token</option>
+                  {% for seg in segmentations %}
+                    {% if config.span_segmentation == seg %}
+                      <option value="{{ seg }}" selected>{{ seg }}</option>
+                    {% else %}
+                      <option value="{{ seg }}">{{ seg }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            {% endif %}
             <div class="control">
               <label class="label">left context</label>
               <select name="left_context"  hx-get="{{ url_prefix }}export">
@@ -87,8 +89,13 @@
             </div>
             <p class="help">
               Controls the "text" column of the export.
-              Choose a segmentation the text should be based on and the
-              left and right context in token to include.
+              {% if segmentations | length > 1 %}
+                Choose a segmentation the text should be based on and the
+                left and right context in token to include.
+                The special "Token" segmentation corresponds the minimal token layer, which can correspond to timeline items in corpora that are aligned by a timeline.
+              {% else %}
+                Choose a left and right context in token to include.
+              {% endif %}
             </p>
           </div>
         </div>
