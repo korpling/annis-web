@@ -66,12 +66,14 @@ async fn show_page(
     let mut all_segmentations: HashMap<String, usize> = HashMap::new();
 
     for corpus in session_state.selected_corpora.iter() {
-        let corpus_segmentations =
+        if let Ok(corpus_segmentations) =
             client::corpora::segmentations(&SessionArg::Session(session.clone()), corpus, &state)
-                .await?;
-        for seg in corpus_segmentations {
-            let entry = all_segmentations.entry(seg).or_insert(0);
-            *entry += 1;
+                .await
+        {
+            for seg in corpus_segmentations {
+                let entry = all_segmentations.entry(seg).or_insert(0);
+                *entry += 1;
+            }
         }
     }
 

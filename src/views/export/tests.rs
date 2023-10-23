@@ -180,10 +180,10 @@ async fn export_download() {
             let file_content = std::fs::read_to_string(&expected_file_path).unwrap();
 
             assert_eq!(
-                r#"match number,1 node name,1 tiger::lemma,1 tiger::morph,1 tiger::pos,2 node name,2 tiger::lemma,2 tiger::morph,2 tiger::pos
-1,pcc2/4282#tok_73,der,Acc.Sg.Masc,ART,pcc2/4282#tok_74,Ball,Acc.Sg.Masc,NN
-2,pcc2/4282#tok_73,der,Acc.Sg.Masc,ART,pcc2/4282#tok_74,Ball,Acc.Sg.Masc,NN
-3,pcc2/4282#tok_73,der,Acc.Sg.Masc,ART,pcc2/4282#tok_74,Ball,Acc.Sg.Masc,NN
+                r#"text,1 node name,1 tiger::lemma,1 tiger::morph,1 tiger::pos,2 node name,2 tiger::lemma,2 tiger::morph,2 tiger::pos
+haben den Ball erst,pcc2/4282#tok_73,der,Acc.Sg.Masc,ART,pcc2/4282#tok_74,Ball,Acc.Sg.Masc,NN
+haben den Ball erst,pcc2/4282#tok_73,der,Acc.Sg.Masc,ART,pcc2/4282#tok_74,Ball,Acc.Sg.Masc,NN
+haben den Ball erst,pcc2/4282#tok_73,der,Acc.Sg.Masc,ART,pcc2/4282#tok_74,Ball,Acc.Sg.Masc,NN
 "#,
                 file_content
             );

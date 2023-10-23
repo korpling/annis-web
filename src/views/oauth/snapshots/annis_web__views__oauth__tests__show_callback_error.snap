@@ -10,7 +10,7 @@ expression: body
     <link rel="stylesheet" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/annis.min.css" />
     <script src="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/htmx-1.9.4.min.js"></script>
     <script src="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/hyperscript-0.9.11.min.js"></script>
-    <title>ANNIS
+    <title>ANNIS experiments:
       
   Login
 
