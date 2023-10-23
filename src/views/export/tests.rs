@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use fantoccini::{Client, Locator};
-use mockito::Mock;
+use mockito::{Matcher, Mock};
 use pretty_assertions::{assert_eq, assert_ne};
 use test_log::test;
 
@@ -10,7 +10,7 @@ use crate::{
     views::export::DEFAULT_EXAMPLE,
 };
 
-async fn select_corpus_and_goto_export(env: &mut TestEnvironment) {
+async fn select_corpus_and_goto_export_pcc(env: &mut TestEnvironment) {
     let _corpus_mock = env
         .backend
         .mock("GET", "/corpora")
@@ -20,6 +20,27 @@ async fn select_corpus_and_goto_export(env: &mut TestEnvironment) {
     env.webdriver.goto(&env.frontend_addr).await.unwrap();
     env.webdriver
         .find(Locator::XPath("//button[@value='pcc2']"))
+        .await
+        .unwrap()
+        .click()
+        .await
+        .unwrap();
+    env.webdriver
+        .goto(&format!("{}/export", &env.frontend_addr))
+        .await
+        .unwrap();
+}
+
+async fn select_corpus_and_goto_export_ridges(env: &mut TestEnvironment) {
+    let _corpus_mock = env
+        .backend
+        .mock("GET", "/corpora")
+        .with_header("content-type", "application/json")
+        .with_body(r#"["ridges"]"#)
+        .create();
+    env.webdriver.goto(&env.frontend_addr).await.unwrap();
+    env.webdriver
+        .find(Locator::XPath("//button[@value='ridges']"))
         .await
         .unwrap()
         .click()
@@ -65,7 +86,7 @@ tiger::pos::pcc2/4282#tok_73 tiger::pos::pcc2/4282#tok_74
 async fn export_preview() {
     let mut env = start_end2end_servers().await;
 
-    select_corpus_and_goto_export(&mut env).await;
+    select_corpus_and_goto_export_pcc(&mut env).await;
 
     // Switch to the export page and check that there is an initial example output
     let initial_example_output = env
@@ -111,11 +132,155 @@ async fn export_preview() {
 }
 
 #[test(tokio::test)]
+async fn change_csv_export_params_pcc() {
+    let mut env = start_end2end_servers().await;
+
+    select_corpus_and_goto_export_ridges(&mut env).await;
+
+    let _find_mock = env
+        .backend
+        .mock("POST", "/search/find")
+        .with_header("content-type", "text/plain")
+        .with_body(r#"pcc2/4282#tok_73"#)
+        .create();
+
+    let components_mock = env
+        .backend
+        .mock("GET", "/corpora/pcc2/components")
+        .match_query(Matcher::UrlEncoded("type".into(), "Ordering".into()))
+        .with_header("content-type", "text/plain")
+        .with_body(
+            r#"[{
+            "type": "Ordering",
+            "name": "",
+            layer: "annis"
+        }]"#,
+        )
+        .create();
+
+    // Change the query parameters
+    let f = env.webdriver.form(Locator::Css("form")).await.unwrap();
+    f.set_by_name("left_context", "10").await.unwrap();
+    f.set_by_name("right_context", "5").await.unwrap();
+
+    let subgraph_mock = env
+        .backend
+        .mock("POST", "/corpora/pcc2/subgraph")
+        .match_body(Matcher::PartialJsonString(
+            r#"
+            {
+                "node_ids": ["pcc2/4282#tok_73"],
+                "left": 10,
+                "right" : 5,
+            }"#
+            .into(),
+        ))
+        .with_body_from_file("tests/export-subgraph.graphml")
+        .expect(1)
+        .create();
+
+    enter_query(&env.webdriver).await;
+
+    // Wait for the updated example output
+    let updated_example_locator = Locator::XPath(
+        "//*[@id='export-example-output']/pre[contains(text(), 'haben den Ball erst')]",
+    );
+    env.webdriver
+        .wait()
+        .for_element(updated_example_locator)
+        .await
+        .unwrap();
+
+    subgraph_mock.assert();
+    components_mock.assert();
+
+    env.close().await;
+}
+
+#[test(tokio::test)]
+async fn change_csv_export_params_ridges() {
+    let mut env = start_end2end_servers().await;
+
+    select_corpus_and_goto_export_ridges(&mut env).await;
+
+    let _find_mock = env
+        .backend
+        .mock("POST", "/search/find")
+        .with_header("content-type", "text/plain")
+        .with_body(r#"ridges/4282#tok_73"#)
+        .create();
+
+    let components_mock = env
+        .backend
+        .mock("GET", "/corpora/ridges/components")
+        .match_query(Matcher::UrlEncoded("type".into(), "Ordering".into()))
+        .with_header("content-type", "text/plain")
+        .with_body(
+            r#"[{
+            "type": "Ordering",
+            "name": "",
+            layer: "annis"
+        },
+        {
+            "type": "Ordering",
+            "name": "dipl",
+            layer: "default_ns"
+        },
+        {
+            "type": "Ordering",
+            "name": "test",
+            layer: "default_ns"
+        }]"#,
+        )
+        .create();
+
+    // Change the query parameters
+    let f = env.webdriver.form(Locator::Css("form")).await.unwrap();
+    f.set_by_name("span_segmentation", "test").await.unwrap();
+    f.set_by_name("left_context", "10").await.unwrap();
+    f.set_by_name("right_context", "5").await.unwrap();
+
+    let subgraph_mock = env
+        .backend
+        .mock("POST", "/corpora/ridges/subgraph")
+        .match_body(Matcher::PartialJsonString(
+            r#"
+            {
+                "node_ids": ["ridges/4282#tok_73"],
+                "segmentation": "test",
+                "left": 10,
+                "right" : 5,
+            }"#
+            .into(),
+        ))
+        .with_body_from_file("tests/export-subgraph.graphml")
+        .expect(1)
+        .create();
+
+    enter_query(&env.webdriver).await;
+
+    // Wait for the updated example output
+    let updated_example_locator = Locator::XPath(
+        "//*[@id='export-example-output']/pre[contains(text(), 'haben den Ball erst')]",
+    );
+    env.webdriver
+        .wait()
+        .for_element(updated_example_locator)
+        .await
+        .unwrap();
+
+    subgraph_mock.assert();
+    components_mock.assert();
+
+    env.close().await;
+}
+
+#[test(tokio::test)]
 async fn export_cancel() {
     let mut env = start_end2end_servers().await;
 
     create_conversion_mocks(&mut env.backend);
-    select_corpus_and_goto_export(&mut env).await;
+    select_corpus_and_goto_export_pcc(&mut env).await;
 
     // Set query and start export
     enter_query(&env.webdriver).await;
@@ -155,7 +320,7 @@ async fn export_download() {
     let mut env = start_end2end_servers().await;
 
     create_conversion_mocks(&mut env.backend);
-    select_corpus_and_goto_export(&mut env).await;
+    select_corpus_and_goto_export_pcc(&mut env).await;
 
     // Set query and start export
     enter_query(&env.webdriver).await;
@@ -200,7 +365,7 @@ haben den Ball erst,pcc2/4282#tok_73,der,Acc.Sg.Masc,ART,pcc2/4282#tok_74,Ball,A
 async fn syntax_error() {
     let mut env = start_end2end_servers().await;
 
-    select_corpus_and_goto_export(&mut env).await;
+    select_corpus_and_goto_export_pcc(&mut env).await;
 
     let find_mock_with_error = env
         .backend
@@ -258,7 +423,7 @@ async fn syntax_error() {
 async fn backend_down() {
     let mut env = start_end2end_servers().await;
 
-    select_corpus_and_goto_export(&mut env).await;
+    select_corpus_and_goto_export_pcc(&mut env).await;
 
     let find_mock_with_error = env
         .backend
