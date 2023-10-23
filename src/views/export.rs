@@ -71,7 +71,7 @@ async fn show_page(
                 .await?;
         for seg in corpus_segmentations {
             let entry = all_segmentations.entry(seg).or_insert(0);
-            *entry = *entry + 1;
+            *entry += 1;
         }
     }
 

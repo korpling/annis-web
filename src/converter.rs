@@ -105,7 +105,7 @@ impl CSVExporter {
                     session,
                     corpus,
                     node_ids.clone(),
-                    None,
+                    self.config.span_segmentation.clone(),
                     self.config.left_context,
                     self.config.right_context,
                     state,
@@ -126,7 +126,7 @@ impl CSVExporter {
                             .extend(annos);
                     }
                 }
-                // Remeber all datasource gaph edges
+                // Remember all datasource gaph edges
                 if let Some(gs) = g.get_graphstorage_as_ref(&datasource_gap_component) {
                     for source in gs.source_nodes() {
                         let source = source?;
@@ -225,65 +225,84 @@ impl CSVExporter {
                 "".into(),
             )
         };
-        if let Some(ordering_gs) = g.get_graphstorage_as_ref(&ordering_component) {
-            let mut roots: HashSet<_> = HashSet::new();
-            for n in g
-                .get_node_annos()
-                .exact_anno_search(Some(ANNIS_NS), "tok", ValueSearch::Any)
+
+        let filtering_anno_key = self.config.span_segmentation.as_ref().map(|seg| AnnoKey {
+            name: seg.into(),
+            ns: "default_ns".into(),
+        });
+
+        let ordering_gs = g.get_graphstorage_as_ref(&ordering_component);
+
+        let mut roots: HashSet<_> = HashSet::new();
+        for n in g
+            .get_node_annos()
+            .exact_anno_search(Some(ANNIS_NS), "tok", ValueSearch::Any)
+        {
+            let n = n?;
+
+            // For segmentation search, only include the nodes that have a matching annotation
+            let has_anno = if let Some(filter) = &filtering_anno_key {
+                g.get_node_annos()
+                    .get_value_for_item(&n.node, filter)?
+                    .is_some()
+            } else {
+                true
+            };
+
+            if has_anno
+                && (ordering_gs.is_none()
+                    || ordering_gs.is_some_and(|gs| gs.get_ingoing_edges(n.node).next().is_none()))
             {
-                let n = n?;
-                if ordering_gs.get_ingoing_edges(n.node).next().is_none() {
-                    roots.insert(n.node);
-                }
+                roots.insert(n.node);
             }
+        }
 
-            // Order the roots in the overall text position by using the
-            // explicit gap edges. First find the root node that has no incoming
-            // gap, than follow the ordering and gap edges and construct the
-            // text in between.
-            let mut result = String::new();
-            let mut token = roots
-                .into_iter()
-                .filter(|r| !self.gap_edges.contains_right(r))
-                .next();
-            let token_value_key = AnnoKey {
-                ns: ANNIS_NS.into(),
-                name: "tok".into(),
-            };
-            let whitespace_before_key = AnnoKey {
-                ns: ANNIS_NS.into(),
-                name: "tok-whitespace-before".into(),
-            };
-            let whitespace_after_key = AnnoKey {
-                ns: ANNIS_NS.into(),
-                name: "tok-whitespace-after".into(),
-            };
+        // Order the roots in the overall text position by using the
+        // explicit gap edges. First find the root node that has no incoming
+        // gap, than follow the ordering and gap edges and construct the
+        // text in between.
+        let mut result = String::new();
+        let mut token = roots
+            .into_iter()
+            .find(|r| !self.gap_edges.contains_right(r));
+        let token_value_key = AnnoKey {
+            ns: ANNIS_NS.into(),
+            name: "tok".into(),
+        };
+        let whitespace_before_key = AnnoKey {
+            ns: ANNIS_NS.into(),
+            name: "tok-whitespace-before".into(),
+        };
+        let whitespace_after_key = AnnoKey {
+            ns: ANNIS_NS.into(),
+            name: "tok-whitespace-after".into(),
+        };
 
-            while let Some(current_token) = token {
+        let mut is_first_token = true;
+
+        while let Some(current_token) = token {
+            // Add prefix whitespace only for first token
+            if is_first_token {
                 if let Some(val) = g
                     .get_node_annos()
                     .get_value_for_item(&current_token, &whitespace_before_key)?
                 {
                     result.push_str(&val);
                 }
-                if let Some(val) = g
-                    .get_node_annos()
-                    .get_value_for_item(&current_token, &token_value_key)?
-                {
-                    result.push_str(&val);
-                }
+            }
 
-                if let Some(val) = g
-                    .get_node_annos()
-                    .get_value_for_item(&current_token, &whitespace_after_key)?
-                {
-                    result.push_str(&val);
-                }
+            if let Some(val) = g
+                .get_node_annos()
+                .get_value_for_item(&current_token, &token_value_key)?
+            {
+                result.push_str(&val);
+            }
 
-                // Try to get the outgoing ordering edge first
-                token = if let Some(next_token) =
-                    ordering_gs.get_outgoing_edges(current_token).next()
-                {
+            is_first_token = false;
+
+            // Try to get the outgoing ordering edge first
+            token = if let Some(ordering_gs) = ordering_gs {
+                if let Some(next_token) = ordering_gs.get_outgoing_edges(current_token).next() {
                     let next_token = next_token?;
                     Some(next_token)
                 } else if let Some(next_token) = self.gap_edges.get_by_left(&current_token) {
@@ -291,12 +310,25 @@ impl CSVExporter {
                     Some(*next_token)
                 } else {
                     None
-                };
-            }
+                }
+            } else {
+                None
+            };
 
-            Ok(result)
-        } else {
-            Ok("".into())
+            // Add postfix whitespace (but not for the last token)
+            if token.is_some() {
+                if let Some(val) = g
+                    .get_node_annos()
+                    .get_value_for_item(&current_token, &whitespace_after_key)?
+                {
+                    result.push_str(&val);
+                } else if self.config.span_segmentation.is_some() {
+                    // Use a space character as default seperation character
+                    result.push_str(" ");
+                }
+            }
         }
+
+        Ok(result)
     }
 }
