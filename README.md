@@ -11,7 +11,7 @@ The experimental is very limited in its feature set, and only supports exporting
 the results as CSV for now. Additional features, like other exporters or a
 frequency analysis will be added later.
 
-## Why do start from scratch?
+## Why starting from scratch?
 
 ANNIS 4 is based on a web-frontend library called [Vaadin
 8](https://vaadin.com/vaadin-8). Since Vaadin 8 is end-of-life and receives no
