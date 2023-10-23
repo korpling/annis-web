@@ -17,7 +17,7 @@ csv = "1.1"
 dashmap = "5.5.0"
 futures = "0.3"
 graphannis = "2"
-graphannis-core = "2"
+graphannis-core = "2.4.7"
 include_dir = "0.7"
 mime_guess = "2"
 minijinja = {version = "1.0.6", features = ["builtins", "loader"]}
@@ -64,5 +64,3 @@ name = "csv_export"
 [package.metadata.cargo-machete]
 ignored = ["env_logger"]
 
-[patch.crates-io]
-graphannis-core = {git = 'https://github.com/korpling/graphANNIS.git'}

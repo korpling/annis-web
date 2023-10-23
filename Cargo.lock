@@ -1804,8 +1804,9 @@ dependencies = [
 
 [[package]]
 name = "graphannis-core"
-version = "2.4.6"
-source = "git+https://github.com/korpling/graphANNIS.git#ececf958a2962bc51441f8be428c43439c6e7b6b"
+version = "2.4.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "061d4b074ea3459306b65c6276361133256b490cc322f2b844ccd1f266165798"
 dependencies = [
  "bincode",
  "graphannis-malloc_size_of",

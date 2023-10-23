@@ -5,10 +5,17 @@ use graphannis_core::{
 };
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr, NoneAsEmptyString};
-use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::{
+    collections::{BTreeMap, BTreeSet, HashSet},
+    sync::Arc,
+};
 use tokio::sync::mpsc::Sender;
 
-use graphannis::{graph::AnnoKey, model::AnnotationComponentType, AnnotationGraph};
+use graphannis::{
+    graph::{AnnoKey, GraphStorage},
+    model::AnnotationComponentType,
+    AnnotationGraph,
+};
 use transient_btree_index::BtreeIndex;
 
 use crate::{
@@ -232,6 +239,18 @@ impl CSVExporter {
         });
 
         let ordering_gs = g.get_graphstorage_as_ref(&ordering_component);
+        let cov_edges: Vec<Arc<dyn GraphStorage>> = g
+            .get_all_components(Some(AnnotationComponentType::Coverage), None)
+            .into_iter()
+            .filter_map(|c| g.get_graphstorage(&c))
+            .filter(|gs| {
+                if let Some(stats) = gs.get_statistics() {
+                    stats.nodes > 0
+                } else {
+                    true
+                }
+            })
+            .collect();
 
         let mut roots: HashSet<_> = HashSet::new();
         for n in g
@@ -240,13 +259,21 @@ impl CSVExporter {
         {
             let n = n?;
 
-            // For segmentation search, only include the nodes that have a matching annotation
             let has_anno = if let Some(filter) = &filtering_anno_key {
+                // For segmentation search, only include the nodes that have a matching annotation
                 g.get_node_annos()
                     .get_value_for_item(&n.node, filter)?
                     .is_some()
             } else {
-                true
+                // Check that this is an actual token and there are no outgoing coverage edges
+                let mut actual_token = true;
+                for c in cov_edges.iter() {
+                    if c.has_outgoing_edges(n.node)? {
+                        actual_token = false;
+                        break;
+                    }
+                }
+                actual_token
             };
 
             if has_anno
