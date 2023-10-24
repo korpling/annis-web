@@ -108,8 +108,9 @@ async fn export_preview() {
     enter_query(&env.webdriver).await;
 
     // Wait for the updated example output
-    let updated_example_locator =
-        Locator::XPath("//*[@id='export-example-output']/pre[contains(text(), 'tok_73')]");
+    let updated_example_locator = Locator::XPath(
+        "//*[@id='export-example-output']/pre[contains(text(), 'haben den Ball erst')]",
+    );
     env.webdriver
         .wait()
         .for_element(updated_example_locator)
@@ -348,10 +349,10 @@ async fn export_download() {
             let file_content = std::fs::read_to_string(&expected_file_path).unwrap();
 
             assert_eq!(
-                r#"text,1 node name,1 tiger::lemma,1 tiger::morph,1 tiger::pos,2 node name,2 tiger::lemma,2 tiger::morph,2 tiger::pos
-haben den Ball erst,pcc2/4282#tok_73,der,Acc.Sg.Masc,ART,pcc2/4282#tok_74,Ball,Acc.Sg.Masc,NN
-haben den Ball erst,pcc2/4282#tok_73,der,Acc.Sg.Masc,ART,pcc2/4282#tok_74,Ball,Acc.Sg.Masc,NN
-haben den Ball erst,pcc2/4282#tok_73,der,Acc.Sg.Masc,ART,pcc2/4282#tok_74,Ball,Acc.Sg.Masc,NN
+                r#"text,tiger::lemma (1),tiger::morph (1),tiger::pos (1),tiger::lemma (2),tiger::morph (2),tiger::pos (2)
+haben den Ball erst,der,Acc.Sg.Masc,ART,Ball,Acc.Sg.Masc,NN
+haben den Ball erst,der,Acc.Sg.Masc,ART,Ball,Acc.Sg.Masc,NN
+haben den Ball erst,der,Acc.Sg.Masc,ART,Ball,Acc.Sg.Masc,NN
 "#,
                 file_content
             );

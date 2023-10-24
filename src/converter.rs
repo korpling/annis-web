@@ -169,11 +169,10 @@ impl CSVExporter {
             let mut header = Vec::default();
             header.push("text".to_string());
             for (m_nr, annos) in &self.annotations_for_matched_nodes {
-                header.push(format!("{} node name", m_nr + 1));
                 for anno_key in annos {
                     let anno_qname =
                         graphannis_core::util::join_qname(&anno_key.ns, &anno_key.name);
-                    header.push(format!("{} {}", m_nr + 1, anno_qname));
+                    header.push(format!("{} ({})", anno_qname, m_nr + 1));
                 }
             }
             writer.write_record(header)?;
@@ -189,8 +188,6 @@ impl CSVExporter {
                 let text = self.get_spannd_text(g)?;
                 record.push(text);
                 for (m_nr, annos) in &self.annotations_for_matched_nodes {
-                    // Each matched nodes contains the node ID
-                    record.push(node_ids[*m_nr].clone());
                     if let Some(id) = g.get_node_id_from_name(&node_ids[*m_nr])? {
                         // Get the annotation values for this node
                         for anno_key in annos {
