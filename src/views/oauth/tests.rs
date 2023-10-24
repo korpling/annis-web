@@ -80,7 +80,7 @@ async fn create_dummy_session() -> (String, String, SqliteStore) {
     cookie_jar.add_original(session_cookie);
     (
         session_id,
-        cookie_jar.get("sid").unwrap().to_string(),
+        cookie_jar.get("tower.sid").unwrap().to_string(),
         session_store,
     )
 }
