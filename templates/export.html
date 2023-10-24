@@ -12,8 +12,12 @@
       is given in a comma-separated table (CSV).
     </p>
     <form>
-      <div class="field is-horizontal">
-        <div class="field-label is-normal">
+      <div class="field is-horizontal"
+           hx-include="closest form"
+           hx-target="#export-example-output"
+           hx-select="#export-example-output"
+           hx-swap="outerHTML">
+        <div class="field-label">
           <label class="label">Query</label>
         </div>
         <div class="field-body">
@@ -24,11 +28,75 @@
                         class="textarea is-family-code"
                         placeholder='To search for all token use the following query: tok '
                         hx-get="{{ url_prefix }}export"
-                        hx-trigger="keyup changed delay:500ms"
-                        hx-target="#export-example-output"
-                        hx-select="#export-example-output"
-                        hx-swap="outerHTML"></textarea>
+                        hx-trigger="keyup changed delay:500ms"></textarea>
             </div>
+            <p class="help">
+              Query used to execute the search. See the
+              <a href="https://korpling.github.io/ANNIS/4.10/user-guide/aql/">documentation</a>
+              for more inforation on the ANNIS Query Language (AQL),
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal"
+           hx-include="closest form"
+           hx-target="#export-example-output"
+           hx-select="#export-example-output"
+           hx-swap="outerHTML">
+        <div class="field-label">
+          <label class="label">Text export options</label>
+        </div>
+        <div class="field-body">
+          <div class="field is-grouped">
+            {% if segmentations | length > 1 %}
+              <div class="control">
+                <label class="label">based on</label>
+                <select name="span_segmentation"  hx-get="{{ url_prefix }}export">
+                  <option value="">Token</option>
+                  {% for seg in segmentations %}
+                    {% if config.span_segmentation == seg %}
+                      <option value="{{ seg }}" selected>{{ seg }}</option>
+                    {% else %}
+                      <option value="{{ seg }}">{{ seg }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            {% endif %}
+            <div class="control">
+              <label class="label">left context</label>
+              <select name="left_context"  hx-get="{{ url_prefix }}export">
+                {% for ctx in default_context_sizes %}
+                  {% if config.left_context == ctx %}
+                    <option value="{{ ctx }}" selected>{{ ctx }}</option>
+                  {% else %}
+                    <option value="{{ ctx }}">{{ ctx }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <div class="control">
+              <label class="label">right context</label>
+              <select name="right_context"  hx-get="{{ url_prefix }}export">
+                {% for ctx in default_context_sizes %}
+                  {% if config.right_context == ctx %}
+                    <option value="{{ ctx }}" selected>{{ ctx }}</option>
+                  {% else %}
+                    <option value="{{ ctx }}">{{ ctx }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <p class="help">
+              Controls the "text" column of the export.
+              {% if segmentations | length > 1 %}
+                Choose a segmentation the text should be based on and the
+                left and right context in token to include.
+                The special "Token" segmentation corresponds the minimal token layer, which can correspond to timeline items in corpora that are aligned by a timeline.
+              {% else %}
+                Choose a left and right context in token to include.
+              {% endif %}
+            </p>
           </div>
         </div>
       </div>

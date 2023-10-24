@@ -65,7 +65,7 @@ pub async fn start_end2end_servers() -> TestEnvironment {
         .capabilities(browser_capabilities)
         .connect("http://127.0.0.1:4444")
         .await
-        .expect("failed to connect to WebDriver");
+        .expect("failed to connect to WebDriver on port 4444");
     webdriver.set_window_size(1280, 800).await.unwrap();
     let listener = TcpListener::bind("127.0.0.1:0".parse::<SocketAddr>().unwrap()).unwrap();
     let addr = listener.local_addr().unwrap();

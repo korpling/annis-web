@@ -10,13 +10,14 @@ async-sqlx-session = {version = "0.4.0", features = ["sqlite", "async_std"]}
 axum = {version = "0.6.1", features = ["headers"]}
 axum-sessions = "0.5"
 base64 = "0.21.4"
+bimap = "0.6.3"
 chrono = "0.4.30"
 clap = {version = "4.3.21", features = ["derive", "env"]}
 csv = "1.1"
 dashmap = "5.5.0"
 futures = "0.3"
 graphannis = "2"
-graphannis-core = "2"
+graphannis-core = "2.4.7"
 include_dir = "0.7"
 mime_guess = "2"
 minijinja = {version = "1.0.6", features = ["builtins", "loader"]}
@@ -25,6 +26,7 @@ percent-encoding = "2.2.0"
 reqwest = {version = "0.11", features = ["json", "stream"]}
 serde = "1"
 serde_json = "1"
+serde_with = "3.4.0"
 sqlx-core = "0.5"
 tempfile = "3"
 thiserror = "1"
@@ -61,3 +63,4 @@ name = "csv_export"
 
 [package.metadata.cargo-machete]
 ignored = ["env_logger"]
+

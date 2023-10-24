@@ -1,8 +1,8 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
-    client::search::FindQuery,
-    converter::CSVExporter,
+    client::{self, search::FindQuery},
+    converter::{CSVConfig, CSVExporter},
     errors::AppError,
     state::{ExportJob, GlobalAppState, SessionArg, SessionState},
     Result,
@@ -24,10 +24,10 @@ use tokio::sync::mpsc::channel;
 use tokio::task::JoinHandle;
 use tokio_util::io::ReaderStream;
 
-const DEFAULT_EXAMPLE: &str = r#"match number,1 node name,1 tiger::lemma,1 tiger::morph,1 tiger::pos
-1,pcc2/11299#tok_1,Feigenblatt,Nom.Sg.Neut,NN
-2,pcc2/11299#tok_2,der,Nom.Pl.*,ART
-3,pcc2/11299#tok_3,jugendliche,Nom.Pl.*,NN"#;
+const DEFAULT_EXAMPLE: &str = r#"text,tiger::lemma (1),tiger::morph (1),tiger::pos (1)
+Feigenblatt,Feigenblatt,Nom.Sg.Neut,NN
+die,der,Nom.Pl.*,ART
+Jugendlichen,jugendliche,Nom.Pl.*,NN"#;
 
 pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
     let result = Router::new()
@@ -42,6 +42,8 @@ pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
 #[derive(Deserialize, Debug)]
 struct FormParams {
     query: Option<String>,
+    #[serde(flatten)]
+    config: CSVConfig,
 }
 
 async fn show_page(
@@ -51,11 +53,41 @@ async fn show_page(
 ) -> Result<impl IntoResponse> {
     let session_state = SessionState::from(&session);
 
-    let example = if let Some(query) = params.query {
-        create_example_output(query, &state, &session).await
+    let example = if let Some(query) = &params.query {
+        create_example_output(query, &params, &state, &session).await
     } else {
         Ok(DEFAULT_EXAMPLE.to_string())
     };
+
+    let default_context_sizes = vec![0, 1, 5, 10, 20];
+
+    // Find all segmentations that exist in all of the corpora
+    let number_collected_corpora = session_state.selected_corpora.len();
+    let mut all_segmentations: HashMap<String, usize> = HashMap::new();
+
+    for corpus in session_state.selected_corpora.iter() {
+        if let Ok(corpus_segmentations) =
+            client::corpora::segmentations(&SessionArg::Session(session.clone()), corpus, &state)
+                .await
+        {
+            for seg in corpus_segmentations {
+                let entry = all_segmentations.entry(seg).or_insert(0);
+                *entry += 1;
+            }
+        }
+    }
+
+    let segmentations: Vec<_> = all_segmentations
+        .into_iter()
+        .filter_map(|(k, v)| {
+            if v == number_collected_corpora {
+                Some(k)
+            } else {
+                None
+            }
+        })
+        .collect();
+
     let result = state
         .templates
         .get_template("export.html")?
@@ -63,6 +95,9 @@ async fn show_page(
             example,
             session => session_state,
             job => current_job(&session, &state),
+            config => params.config,
+            default_context_sizes,
+            segmentations,
         })?;
 
     Ok(Html(result))
@@ -89,10 +124,11 @@ async fn create_job(
                 limit: None,
                 order: ResultOrder::Normal,
             };
+            let config = params.config;
             let app_state_copy = app_state.clone();
             let (sender, receiver) = channel(1);
             let handle: JoinHandle<Result<NamedTempFile>> = tokio::spawn(async move {
-                let mut exporter = CSVExporter::new(find_query, Some(sender));
+                let mut exporter = CSVExporter::new(find_query, config, Some(sender));
                 let mut result_file = tempfile::NamedTempFile::new()?;
 
                 exporter
@@ -192,22 +228,24 @@ fn current_job(session: &ReadableSession, app_state: &GlobalAppState) -> JobStat
 }
 
 async fn create_example_output(
-    query: String,
+    query: &str,
+    params: &FormParams,
     state: &GlobalAppState,
     session: &ReadableSession,
 ) -> std::result::Result<String, String> {
     let session_state = SessionState::from(session);
     let example_query = FindQuery {
-        query,
+        query: query.to_string(),
         corpora: session_state.selected_corpora.iter().cloned().collect(),
         query_language: QueryLanguage::AQL,
         limit: None,
         order: ResultOrder::NotSorted,
     };
+    let config = params.config.clone();
     let session: &Session = session;
 
     if !example_query.corpora.is_empty() && !example_query.query.is_empty() {
-        let mut exporter = CSVExporter::new(example_query, None);
+        let mut exporter = CSVExporter::new(example_query, config, None);
         let mut example_string_buffer = Vec::new();
 
         exporter

@@ -1,7 +1,7 @@
 use annis_web::{
     client::search::FindQuery,
     config::CliConfig,
-    converter::CSVExporter,
+    converter::{CSVConfig, CSVExporter},
     state::{GlobalAppState, SessionArg},
 };
 use criterion::{criterion_group, criterion_main, Criterion};
@@ -24,7 +24,7 @@ tiger::pos::pcc2/4282#tok_73 tiger::pos::pcc2/4282#tok_74
 
     let _subgraph_mock = backend
         .mock("POST", "/corpora/pcc2/subgraph")
-        .with_body_from_file("tests/export-subgraph.graphml")
+        .with_body_from_file("tests/export-pcc2.graphml")
         .expect_at_least(3)
         .create();
 
@@ -41,9 +41,15 @@ tiger::pos::pcc2/4282#tok_73 tiger::pos::pcc2/4282#tok_74
                 limit: None,
                 order: ResultOrder::Normal,
             };
+            let config = CSVConfig {
+                span_segmentation: None,
+                left_context: 0,
+                right_context: 0,
+            };
             let session_arg = SessionArg::Id(String::default());
             let mut string_buffer = Vec::new();
-            let mut exporter = CSVExporter::new(query, None);
+
+            let mut exporter = CSVExporter::new(query, config, None);
             exporter
                 .convert_text(session_arg, &state, None, &mut string_buffer)
                 .await

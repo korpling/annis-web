@@ -1,5 +1,9 @@
 {% if example.Ok is defined %}
-  <pre class="content is-family-monospace">{{ example.Ok }}</pre>
+  {% if example.Ok|length == 0 %}
+    <div class="notification is-info">No results for this query</div>
+  {% else %}
+    <pre class="content is-family-monospace">{{ example.Ok }}</pre>
+  {% endif %}
 {% elif example.Err is defined %}
   <div class="notification is-danger">{{ example.Err }}</div>
 {% endif %}
