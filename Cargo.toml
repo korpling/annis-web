@@ -1,6 +1,9 @@
 [package]
 edition = "2021"
+homepage = "https://github.com/korpling/annis-web/"
+license = "Apache-2.0"
 name = "annis-web"
+repository = "https://github.com/korpling/annis-web/"
 version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -57,10 +60,29 @@ graphannis-core.opt-level = 3
 graphannis.opt-level = 3
 insta.opt-level = 3
 
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
 [[bench]]
 harness = false
 name = "csv_export"
 
+# Config for 'cargo dist'
+[workspace.metadata.dist]
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.3.1"
+# The preferred Rust toolchain to use in CI (rustup toolchain syntax)
+rust-toolchain-version = "1.67.1"
+# CI backends to support
+ci = ["github"]
+# The installers to generate for each app
+installers = []
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["x86_64-unknown-linux-gnu", "aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-pc-windows-msvc"]
+# Publish jobs to run in CI
+pr-run-mode = "plan"
+
 [package.metadata.cargo-machete]
 ignored = ["env_logger"]
-
