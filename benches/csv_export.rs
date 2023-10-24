@@ -24,7 +24,7 @@ tiger::pos::pcc2/4282#tok_73 tiger::pos::pcc2/4282#tok_74
 
     let _subgraph_mock = backend
         .mock("POST", "/corpora/pcc2/subgraph")
-        .with_body_from_file("tests/export-subgraph.graphml")
+        .with_body_from_file("tests/export-pcc2.graphml")
         .expect_at_least(3)
         .create();
 

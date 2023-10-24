@@ -77,7 +77,7 @@ tiger::pos::pcc2/4282#tok_73 tiger::pos::pcc2/4282#tok_74
 
     let subgraph_mock = backend
         .mock("POST", "/corpora/pcc2/subgraph")
-        .with_body_from_file("tests/export-subgraph.graphml")
+        .with_body_from_file("tests/export-pcc2.graphml")
         .expect_at_least(3)
         .create();
 
@@ -137,7 +137,7 @@ async fn export_preview() {
 async fn change_csv_export_params_pcc() {
     let mut env = start_end2end_servers().await;
 
-    select_corpus_and_goto_export_ridges(&mut env).await;
+    select_corpus_and_goto_export_pcc(&mut env).await;
 
     let _find_mock = env
         .backend
@@ -173,11 +173,11 @@ async fn change_csv_export_params_pcc() {
             {
                 "node_ids": ["pcc2/4282#tok_73"],
                 "left": 10,
-                "right" : 5,
+                "right" : 5
             }"#
             .into(),
         ))
-        .with_body_from_file("tests/export-subgraph.graphml")
+        .with_body_from_file("tests/export-pcc2.graphml")
         .expect(1)
         .create();
 
