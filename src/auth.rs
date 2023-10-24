@@ -58,7 +58,7 @@ impl LoginInfo {
         let client_builder = reqwest::ClientBuilder::new().default_headers(default_headers);
         let result = LoginInfo {
             oauth_token,
-            user_session_expiry: user_session_expiry,
+            user_session_expiry,
             client: client_builder.build()?,
         };
         Ok(result)
