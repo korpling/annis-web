@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml>
+    <key id="k0" for="node" attr.name="default_ns::abbr" attr.type="string"/>
+    <key id="k1" for="node" attr.name="annotators" attr.type="string"/>
+    <key id="k2" for="node" attr.name="author" attr.type="string"/>
+    <key id="k3" for="node" attr.name="bibl" attr.type="string"/>
+    <key id="k4" for="node" attr.name="default_ns::clean" attr.type="string"/>
+    <key id="k5" for="node" attr.name="corpus" attr.type="string"/>
+    <key id="k6" for="node" attr.name="corpuseditors" attr.type="string"/>
+    <key id="k7" for="node" attr.name="date" attr.type="string"/>
+    <key id="k8" for="node" attr.name="default_ns::dipl" attr.type="string"/>
+    <key id="k9" for="node" attr.name="annis::doc" attr.type="string"/>
+    <key id="k10" for="node" attr.name="edition_first" attr.type="string"/>
+    <key id="k11" for="node" attr.name="editor" attr.type="string"/>
+    <key id="k12" for="node" attr.name="herb_sorting" attr.type="string"/>
+    <key id="k13" for="node" attr.name="homepage" attr.type="string"/>
+    <key id="k14" for="node" attr.name="issue" attr.type="string"/>
+    <key id="k15" for="node" attr.name="default_ns::lang" attr.type="string"/>
+    <key id="k16" for="node" attr.name="lang_area" attr.type="string"/>
+    <key id="k17" for="node" attr.name="lang_type" attr.type="string"/>
+    <key id="k18" for="node" attr.name="annis::layer" attr.type="string"/>
+    <key id="k19" for="node" attr.name="default_ns::lb" attr.type="string"/>
+    <key id="k20" for="node" attr.name="default_ns::lemma" attr.type="string"/>
+    <key id="k21" for="node" attr.name="licence" attr.type="string"/>
+    <key id="k22" for="node" attr.name="lingualism" attr.type="string"/>
+    <key id="k23" for="node" attr.name="lyric_type" attr.type="string"/>
+    <key id="k24" for="node" attr.name="maintopic" attr.type="string"/>
+    <key id="k25" for="node" attr.name="annis::node_type" attr.type="string"/>
+    <key id="k26" for="node" attr.name="default_ns::norm" attr.type="string"/>
+    <key id="k27" for="node" attr.name="orig_date" attr.type="string"/>
+    <key id="k28" for="node" attr.name="orig_place" attr.type="string"/>
+    <key id="k29" for="node" attr.name="default_ns::pb" attr.type="string"/>
+    <key id="k30" for="node" attr.name="place" attr.type="string"/>
+    <key id="k31" for="node" attr.name="default_ns::pos" attr.type="string"/>
+    <key id="k32" for="node" attr.name="project" attr.type="string"/>
+    <key id="k33" for="node" attr.name="projectDesc" attr.type="string"/>
+    <key id="k34" for="node" attr.name="publisher" attr.type="string"/>
+    <key id="k35" for="node" attr.name="default_ns::quote" attr.type="string"/>
+    <key id="k36" for="node" attr.name="register" attr.type="string"/>
+    <key id="k37" for="node" attr.name="annis::relannis-version" attr.type="string"/>
+    <key id="k38" for="node" attr.name="repository" attr.type="string"/>
+    <key id="k39" for="node" attr.name="respStmt" attr.type="string"/>
+    <key id="k40" for="node" attr.name="default_ns::script" attr.type="string"/>
+    <key id="k41" for="node" attr.name="sponsor" attr.type="string"/>
+    <key id="k42" for="node" attr.name="text_type" attr.type="string"/>
+    <key id="k43" for="node" attr.name="title" attr.type="string"/>
+    <key id="k44" for="node" attr.name="annis::tok" attr.type="string"/>
+    <key id="k45" for="node" attr.name="annis::tok-whitespace-after" attr.type="string"/>
+    <key id="k46" for="node" attr.name="topic" attr.type="string"/>
+    <key id="k47" for="node" attr.name="trans_from" attr.type="string"/>
+    <key id="k48" for="node" attr.name="translator" attr.type="string"/>
+    <key id="k49" for="node" attr.name="version" attr.type="string"/>
+    <key id="k50" for="node" attr.name="wormwood" attr.type="string"/>
+    <graph edgedefault="directed" parse.order="nodesfirst" parse.nodeids="free" parse.edgeids="canonical">
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0">
+            <data key="k25">datasource</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2771_virtualSpan">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k44">waſſer</data>
+            <data key="k8">waſſer</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan30980">
+            <data key="k18">Graphical_Annotation</data>
+            <data key="k25">node</data>
+            <data key="k35">no</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22079">
+            <data key="k18">Graphical_Annotation</data>
+            <data key="k19">lb</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8018">
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k20">Baldrianwasser</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2770_virtualSpan">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k44">Baldrian</data>
+            <data key="k8">Baldrian</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2651">
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k25">node</data>
+            <data key="k31">NN</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8299_virtualSpan">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k4">Baldrian</data>
+            <data key="k44">Baldrian</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22439">
+            <data key="k18">Graphical_Annotation</data>
+            <data key="k25">node</data>
+            <data key="k29">pb</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan25288">
+            <data key="k18">default_ns</data>
+            <data key="k25">node</data>
+            <data key="k40">blackletter</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13717_virtualSpan">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k26">Baldrianwasser</data>
+            <data key="k44">Baldrianwasser</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18990">
+            <data key="k0">no</data>
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13510">
+            <data key="k15">deu</data>
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k44"> </data>
+            <data key="k45"> </data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8300_virtualSpan">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k4">wasser</data>
+            <data key="k44">wasser</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan30981">
+            <data key="k18">Graphical_Annotation</data>
+            <data key="k25">node</data>
+            <data key="k35">no</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13511">
+            <data key="k15">deu</data>
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan25289">
+            <data key="k18">default_ns</data>
+            <data key="k25">node</data>
+            <data key="k40">blackletter</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k44"> </data>
+            <data key="k45"> </data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2652">
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k25">node</data>
+            <data key="k31">PTKZU</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8019">
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k20">zu</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2772_virtualSpan">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k44">zůtrincken</data>
+            <data key="k8">zůtrincken</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13512">
+            <data key="k15">deu</data>
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13718_virtualSpan">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k26">zu</data>
+            <data key="k44">zu</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8301_virtualSpan">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k4">zutrincken</data>
+            <data key="k44">zutrincken</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18991">
+            <data key="k0">no</data>
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k44"> </data>
+            <data key="k45"> </data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8020">
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k20">trinken</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13719_virtualSpan">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k26">trinken</data>
+            <data key="k44">trinken</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18992">
+            <data key="k0">no</data>
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2653">
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k25">node</data>
+            <data key="k31">VVINF</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k44"> </data>
+            <data key="k45"> </data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2773_virtualSpan">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k44">geben</data>
+            <data key="k8">geben</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8302_virtualSpan">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k4">geben</data>
+            <data key="k44">geben</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2654">
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k25">node</data>
+            <data key="k31">VVINF</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13513">
+            <data key="k15">deu</data>
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13720_virtualSpan">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k26">geben</data>
+            <data key="k44">geben</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8021">
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k20">geben</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18993">
+            <data key="k0">no</data>
+            <data key="k18">Lexical_Annotation</data>
+            <data key="k25">node</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan30982">
+            <data key="k18">Graphical_Annotation</data>
+            <data key="k25">node</data>
+            <data key="k35">no</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan25290">
+            <data key="k18">default_ns</data>
+            <data key="k25">node</data>
+            <data key="k40">blackletter</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785">
+            <data key="k18">default_layer</data>
+            <data key="k25">node</data>
+            <data key="k44"> </data>
+            <data key="k45"> </data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg">
+            <data key="k10">NA</data>
+            <data key="k11">NA</data>
+            <data key="k12">no</data>
+            <data key="k14">NA</data>
+            <data key="k16">NA</data>
+            <data key="k17">enhg</data>
+            <data key="k2">Tarquinius Schnellenberg</data>
+            <data key="k22">monoling</data>
+            <data key="k23">NA</data>
+            <data key="k24">science</data>
+            <data key="k25">corpus</data>
+            <data key="k27">NA</data>
+            <data key="k28">NA</data>
+            <data key="k3">Schnellenberg, Tarquinius (1550) Experimenta von zwentzig Pestilentz Wurtzelen unnd Kreutter. Strassburg. </data>
+            <data key="k30">Strassburg</data>
+            <data key="k34">Rihel</data>
+            <data key="k36">herbology</data>
+            <data key="k38">http://digital.ub.uni-duesseldorf.de/vester/content/pageview/1461318</data>
+            <data key="k42">prose</data>
+            <data key="k43">Experimenta von zwentzig Pestilentz Wurtzelen unnd Kreutter : wie sie alle ... für Gifft und Pestilentz gebraucht mögen werden ... ; sampt vil andern heilsamen Tugenden unnd Würckungen, teutsche Recepta, auch der Kreutter Gestalt und Eigenschafft</data>
+            <data key="k46">BGM</data>
+            <data key="k47">NA</data>
+            <data key="k48">NA</data>
+            <data key="k49">9.0</data>
+            <data key="k50">yes</data>
+            <data key="k7">1550</data>
+            <data key="k9">Experimenta_1550_Schellenberg</data>
+        </node>
+        <node id="RIDGES_Herbology_Version9.0">
+            <data key="k1">Abed-Ali Ilham, Allamirano Diana, Andresen Silke, Ast Henriette, Beckert Valeska, Belz Malte, Benning Katrin, Berg Thomas, Binnyus Cornelia, Blum Simon, Bödecker Swenja, Christen Doreen, Colombo Camilla, Czilwik Janin, David Bianca, Dayal Mascha, de Vries Marika, Dittberner Antonia, Döhn Cora, Driemel Imke, Eberle Elisabeth, Ebert Christian, Efremova Olja, Eichhorn Gill-Maria, Enneper Stefanie, Esser Judith, Federau Beate, Fischer Catharina, Flisikowski Karolina, Friesenhan Nico, Gärtner Nerina, Gehrke Felix, Gellweiler Selina, Gerlach Annegret, Gerolf Julia, Giesel Linda, Guhr Svenja, Hartz Rahel Gajaneh, Hellmann Kyra, Hiebert Yelizaveta, Hömmen Morice, Jandt Stephanie, Jessen-Klingenberg Bodil, Ji Keqin, Kampermann Maria, Kartalis Nikolaos, Kiraga Sebastian, Köhler Laura, Kolbik Ewa Anna, Kondeyne Birka, Konik Anna, Kovàcs Kornél, Krüger Daisy, Kucenko Svetlana, Kulawik Till, Lehmann Anna-Maria, Lincke Eliese-Sophia, Lober Maria, Lorenz Robert, Lüdeling Anke, Lueders Laura, Malon Tatjana, Maniscalco Samuele, Martynova Maria, Maser Kim Kristin, McKee Laura, Metzig Manuel, Meyer Alexander, Meyer Alexander, Mohs Lisa, Müller Sandra, Müller Vizent, Murphy Andrew, Mursell Johannes, Nau Juliane, Naumann Friederike, Odebrecht Carolin, Okuda Akiko, Opitz Jonas, Otto Mareike, Papenhagen Maik, Papenhoff Angelo, Perlitz Laura, Peselmann Viktoria, Petersohn Tilo, Petrova Simona, Pfennigwerth Steffen, Polte Joachim, Raunitschka Lisa, Reetz Gina, Reichardt Valerie, Reinig Katharina, Reul Guendalina, Riesler Ina, Rosin Lena, Sachs Romy, Sachse Franz-Josef, Sapronova Anna, Sauer Simon, Schaffert Jan Christian, Schmahl Anna, Schmidt Claudia, Schütz Johannes, Sioupi Athina, Sippach Sarah, Skotovic Andrea, Sohmen Lucia, Sorokovska Irina, Spitzer Madeleine, Springmann Uwe, Stephan Kristina, Stuke Helen, Swiech Aleksandra, Szperlinski Franka, Tiemann Juliane, Tóth Anna, Tóth Réka, Tran Phuong Thao, Turtureanu Alexander, Utpatel Gertje, Uyanik Esra, Varachkina Hanna, Vock Magdalena, Vogler Mirjam, Voigt Vivian, Walak Monika, Weiß Zarah, Weißbarth Andrea, Weitkamp Linnéa Clara, Wiemann Alexandra, Wekel Juliana, Wijffels Vita Rosalie, Wolter Svenja, Zander Isabell Ines, Zuchewicz Karolina</data>
+            <data key="k13">http://korpling.org/ridges</data>
+            <data key="k21">CC-BY 3.0, Attribution 3.0 Unported Licence</data>
+            <data key="k25">corpus</data>
+            <data key="k32">RIDGES project (Register in Diachronic German Science)</data>
+            <data key="k33">RIDGES Project (Register In Diachronic German Science), funded by the Google Digital Humanities Research Award</data>
+            <data key="k37">3.3</data>
+            <data key="k38">https://www.laudatio-repository.org/</data>
+            <data key="k39">Compiled by Thomas Krause, Anke Lüdeling, Carolin Odebrecht, Catharina Fischer. </data>
+            <data key="k41">Google Inc.</data>
+            <data key="k49">9.0</data>
+            <data key="k5">RIDGES Herbology</data>
+            <data key="k6">Anke Lüdeling, Carolin Odebrecht, Thomas Krause, Gohar Schnelle, Catharina Fischer</data>
+        </node>
+        <edge id="e0" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan30980" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e1" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22079" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e2" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22079" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e3" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22079" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e4" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22079" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e5" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22079" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e6" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan30982" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e7" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan30981" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e8" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22439" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e9" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22439" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e10" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22439" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e11" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22439" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e12" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22439" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" label="Coverage/Graphical_Annotation/">
+        </edge>
+        <edge id="e13" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8020" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e14" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18993" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e15" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18990" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e16" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18990" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e17" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13512" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e18" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13512" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e19" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2652" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e20" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8019" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e21" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18992" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e22" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13511" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e23" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2654" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e24" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2651" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e25" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2651" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e26" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8021" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e27" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8018" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e28" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8018" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e29" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18991" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e30" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13513" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e31" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13510" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e32" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2653" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784" label="Coverage/Lexical_Annotation/">
+        </edge>
+        <edge id="e33" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan25288" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" label="Coverage/default_ns/">
+        </edge>
+        <edge id="e34" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan25289" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" label="Coverage/default_ns/">
+        </edge>
+        <edge id="e35" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan25290" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" label="Coverage/default_ns/">
+        </edge>
+        <edge id="e36" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8301_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e37" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8301_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e38" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13719_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e39" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2772_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e40" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2772_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e41" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8302_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e42" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8299_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e43" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13720_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e44" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2773_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e45" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2770_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e46" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13717_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e47" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13717_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e48" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8300_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e49" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13718_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e50" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2771_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" label="Coverage/VIRTUAL/timelineRelationMapping">
+        </edge>
+        <edge id="e51" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784" label="Ordering/annis/">
+        </edge>
+        <edge id="e52" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783" label="Ordering/annis/">
+        </edge>
+        <edge id="e53" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" label="Ordering/annis/">
+        </edge>
+        <edge id="e54" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" label="Ordering/annis/">
+        </edge>
+        <edge id="e55" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8301_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8302_virtualSpan" label="Ordering/default_ns/clean">
+        </edge>
+        <edge id="e56" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8299_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8300_virtualSpan" label="Ordering/default_ns/clean">
+        </edge>
+        <edge id="e57" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8300_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8301_virtualSpan" label="Ordering/default_ns/clean">
+        </edge>
+        <edge id="e58" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2770_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2771_virtualSpan" label="Ordering/default_ns/dipl">
+        </edge>
+        <edge id="e59" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2771_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2772_virtualSpan" label="Ordering/default_ns/dipl">
+        </edge>
+        <edge id="e60" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2772_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2773_virtualSpan" label="Ordering/default_ns/dipl">
+        </edge>
+        <edge id="e61" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13717_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13718_virtualSpan" label="Ordering/default_ns/norm">
+        </edge>
+        <edge id="e62" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13718_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13719_virtualSpan" label="Ordering/default_ns/norm">
+        </edge>
+        <edge id="e63" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13719_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13720_virtualSpan" label="Ordering/default_ns/norm">
+        </edge>
+        <edge id="e64" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8301_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e65" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18993" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e66" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18990" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e67" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13720_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e68" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2773_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e69" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2770_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e70" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13717_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e71" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2652" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e72" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8019" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e73" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2784" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e74" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2781" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e75" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13511" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e76" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan25290" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e77" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan30980" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e78" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8302_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e79" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8299_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e80" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18991" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e81" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13718_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e82" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2771_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e83" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2653" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e84" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8020" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e85" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2785" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e86" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2782" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e87" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13512" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e88" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan25288" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e89" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22079" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e90" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan30981" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e91" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg" target="RIDGES_Herbology_Version9.0" label="PartOf/annis/">
+        </edge>
+        <edge id="e92" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok8300_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e93" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan18992" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e94" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan22439" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e95" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok13719_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e96" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2772_virtualSpan" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e97" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2651" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e98" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan2654" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e99" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8018" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e100" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan8021" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e101" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg" label="PartOf/annis/">
+        </edge>
+        <edge id="e102" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#virtualToken2783" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e103" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13510" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e104" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan13513" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e105" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan25289" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+        <edge id="e106" source="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sSpan30982" target="RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sText0" label="PartOf/annis/">
+        </edge>
+    </graph>
+</graphml>
