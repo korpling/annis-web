@@ -18,7 +18,7 @@ pub async fn list(session: &SessionArg, state: &GlobalAppState) -> Result<Vec<St
     Ok(corpora)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 struct SubgraphRequest {
     node_ids: Vec<String>,
     segmentation: Option<String>,
@@ -82,7 +82,7 @@ struct ComponentsRequest {
     name: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct ComponentResponse {
     #[serde(rename = "type")]
     _ctype: Option<String>,

@@ -36,11 +36,13 @@ async fn select_corpus_and_goto_export_ridges(env: &mut TestEnvironment) {
         .backend
         .mock("GET", "/corpora")
         .with_header("content-type", "application/json")
-        .with_body(r#"["ridges"]"#)
+        .with_body(r#"["RIDGES_Herbology_Version9.0"]"#)
         .create();
     env.webdriver.goto(&env.frontend_addr).await.unwrap();
     env.webdriver
-        .find(Locator::XPath("//button[@value='ridges']"))
+        .find(Locator::XPath(
+            "//button[@value='RIDGES_Herbology_Version9.0']",
+        ))
         .await
         .unwrap()
         .click()
@@ -201,68 +203,70 @@ async fn change_csv_export_params_pcc() {
 async fn change_csv_export_params_ridges() {
     let mut env = start_end2end_servers().await;
 
+    let components_mock = env
+        .backend
+        .mock("GET", "/corpora/RIDGES_Herbology_Version9.0/components")
+        .match_query(Matcher::UrlEncoded("type".into(), "Ordering".into()))
+        .with_body(
+            r#"[{
+            "type": "Ordering",
+            "name": "",
+            "layer": "annis"
+        },
+        {
+            "type": "Ordering",
+            "name": "dipl",
+            "layer": "default_ns"
+        },
+        {
+            "type": "Ordering",
+            "name": "norm",
+            "layer": "default_ns"
+        }]"#,
+        )
+        .expect_at_least(1)
+        .create();
     select_corpus_and_goto_export_ridges(&mut env).await;
+
+    components_mock.assert();
+
+    // Change the query parameters
+    let f = env.webdriver.form(Locator::Css("form")).await.unwrap();
+    f.set_by_name("span_segmentation", "dipl").await.unwrap();
+    f.set_by_name("left_context", "10").await.unwrap();
+    f.set_by_name("right_context", "5").await.unwrap();
 
     let _find_mock = env
         .backend
         .mock("POST", "/search/find")
         .with_header("content-type", "text/plain")
-        .with_body(r#"ridges/4282#tok_73"#)
-        .create();
-
-    let components_mock = env
-        .backend
-        .mock("GET", "/corpora/ridges/components")
-        .match_query(Matcher::UrlEncoded("type".into(), "Ordering".into()))
-        .with_header("content-type", "text/plain")
         .with_body(
-            r#"[{
-            "type": "Ordering",
-            "name": "",
-            layer: "annis"
-        },
-        {
-            "type": "Ordering",
-            "name": "dipl",
-            layer: "default_ns"
-        },
-        {
-            "type": "Ordering",
-            "name": "test",
-            layer: "default_ns"
-        }]"#,
+            r#"RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2771_virtualSpan"#,
         )
         .create();
 
-    // Change the query parameters
-    let f = env.webdriver.form(Locator::Css("form")).await.unwrap();
-    f.set_by_name("span_segmentation", "test").await.unwrap();
-    f.set_by_name("left_context", "10").await.unwrap();
-    f.set_by_name("right_context", "5").await.unwrap();
-
     let subgraph_mock = env
         .backend
-        .mock("POST", "/corpora/ridges/subgraph")
+        .mock("POST", "/corpora/RIDGES_Herbology_Version9.0/subgraph")
         .match_body(Matcher::PartialJsonString(
             r#"
             {
-                "node_ids": ["ridges/4282#tok_73"],
-                "segmentation": "test",
+                "node_ids": ["RIDGES_Herbology_Version9.0/Experimenta_1550_Schellenberg#sTok2771_virtualSpan"],
+                "segmentation": "dipl",
                 "left": 10,
-                "right" : 5,
+                "right" : 5
             }"#
             .into(),
         ))
-        .with_body_from_file("tests/export-subgraph.graphml")
-        .expect(1)
+        .with_body_from_file("tests/ridges-subgraph.graphml")
+        .expect_at_least(1)
         .create();
 
     enter_query(&env.webdriver).await;
 
     // Wait for the updated example output
-    let updated_example_locator = Locator::XPath(
-        "//*[@id='export-example-output']/pre[contains(text(), 'haben den Ball erst')]",
-    );
+    let updated_example_locator =
+        Locator::XPath("//*[@id='export-example-output']/pre[contains(text(), 'Baldrian')]");
     env.webdriver
         .wait()
         .for_element(updated_example_locator)
@@ -270,7 +274,6 @@ async fn change_csv_export_params_ridges() {
         .unwrap();
 
     subgraph_mock.assert();
-    components_mock.assert();
 
     env.close().await;
 }
