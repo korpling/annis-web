@@ -2,7 +2,6 @@ use std::{sync::Arc, time::Duration};
 
 use axum::http::HeaderValue;
 use base64::Engine;
-use chrono::{DateTime, Utc};
 use oauth2::{
     basic::{BasicClient, BasicTokenType},
     reqwest::async_http_client,
@@ -20,8 +19,8 @@ pub type AnnisTokenResponse = StandardTokenResponse<EmptyExtraTokenFields, Basic
 pub struct LoginInfo {
     oauth_token: AnnisTokenResponse,
 
-    /// Date and time when the session attached to this login information expires.
-    pub user_session_expiry: Option<DateTime<Utc>>,
+    /// Unix time stamp when the session attached to this login information expires.
+    pub user_session_expiry: Option<i64>,
 
     /// An authentificated HTTP client
     client: reqwest::Client,
@@ -49,10 +48,7 @@ fn parse_unverified_username(token: &str) -> Result<Option<String>> {
 }
 
 impl LoginInfo {
-    pub fn new(
-        oauth_token: AnnisTokenResponse,
-        user_session_expiry: Option<DateTime<Utc>>,
-    ) -> Result<Self> {
+    pub fn new(oauth_token: AnnisTokenResponse, user_session_expiry: Option<i64>) -> Result<Self> {
         let mut default_headers = reqwest::header::HeaderMap::new();
 
         let value =
@@ -62,7 +58,7 @@ impl LoginInfo {
         let client_builder = reqwest::ClientBuilder::new().default_headers(default_headers);
         let result = LoginInfo {
             oauth_token,
-            user_session_expiry,
+            user_session_expiry: user_session_expiry,
             client: client_builder.build()?,
         };
         Ok(result)

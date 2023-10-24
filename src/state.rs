@@ -1,7 +1,3 @@
-use axum_sessions::{
-    async_session::Session,
-    extractors::{ReadableSession, WritableSession},
-};
 use chrono::Utc;
 use dashmap::DashMap;
 use minijinja::Value;
@@ -10,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::{collections::BTreeSet, sync::Arc};
 use tempfile::NamedTempFile;
 use tokio::{sync::mpsc::Receiver, task::JoinHandle};
+use tower_sessions::Session;
 use url::Url;
 
 use crate::{auth::LoginInfo, config::CliConfig, Result, TEMPLATES_DIR};
@@ -22,19 +19,13 @@ pub struct SessionState {
     pub session_id: String,
 }
 
-impl From<&ReadableSession> for SessionState {
-    fn from(value: &ReadableSession) -> Self {
-        let mut result: SessionState = value.get(STATE_KEY).unwrap_or_default();
-        result.session_id = value.id().to_string();
-        result
-    }
-}
+impl TryFrom<&Session> for SessionState {
+    type Error = crate::errors::AppError;
 
-impl From<&WritableSession> for SessionState {
-    fn from(value: &WritableSession) -> Self {
-        let mut result: SessionState = value.get(STATE_KEY).unwrap_or_default();
+    fn try_from(value: &Session) -> std::result::Result<Self, Self::Error> {
+        let mut result: SessionState = value.get(STATE_KEY)?.unwrap_or_default();
         result.session_id = value.id().to_string();
-        result
+        Ok(result)
     }
 }
 
@@ -72,10 +63,10 @@ pub enum SessionArg {
 }
 
 impl SessionArg {
-    pub fn id(&self) -> &str {
+    pub fn id(&self) -> String {
         match self {
-            SessionArg::Session(s) => s.id(),
-            SessionArg::Id(id) => id,
+            SessionArg::Session(s) => s.id().to_string(),
+            SessionArg::Id(id) => id.to_string(),
         }
     }
 }
@@ -146,23 +137,25 @@ impl GlobalAppState {
     pub fn create_client(&self, session: &SessionArg) -> Result<reqwest::Client> {
         if let SessionArg::Session(session) = session {
             // Mark this login info as accessed, so we know it is not stale and should not be removed
-            self.login_info.alter(session.id(), |_, mut l| {
-                if let (Some(old_expiry), Some(new_expiry)) =
-                    (l.user_session_expiry, session.expiry())
-                {
-                    // Check if the new expiration date is actually longer before replacing it
-                    if &old_expiry < new_expiry {
-                        l.user_session_expiry = Some(*new_expiry);
+            self.login_info
+                .alter(&session.id().to_string(), |_, mut l| {
+                    if let (Some(old_expiry), Some(new_expiry)) =
+                        (l.user_session_expiry, session.expiration_time())
+                    {
+                        // Check if the new expiration date is actually longer before replacing it
+                        if old_expiry < new_expiry.unix_timestamp() {
+                            l.user_session_expiry = Some(new_expiry.unix_timestamp());
+                        }
+                    } else {
+                        // Use the new expiration date
+                        l.user_session_expiry =
+                            session.expiration_time().map(|t| t.unix_timestamp());
                     }
-                } else {
-                    // Use the new expiration date
-                    l.user_session_expiry = session.expiry().cloned();
-                }
-                l
-            });
+                    l
+                });
         }
 
-        if let Some(login) = &self.login_info.get(session.id()) {
+        if let Some(login) = &self.login_info.get(&session.id()) {
             // Return the authentifacted client
             Ok(login.get_client())
         } else {
@@ -175,7 +168,7 @@ impl GlobalAppState {
     pub async fn cleanup(&self) {
         self.login_info.retain(|_session_id, login_info| {
             if let Some(expiry) = login_info.user_session_expiry {
-                Utc::now() < expiry
+                Utc::now().timestamp() < expiry
             } else {
                 true
             }

@@ -10,6 +10,7 @@ use reqwest::Url;
 use serde::Deserialize;
 use thiserror::Error;
 use tokio::task::JoinError;
+use tower_sessions::session::SessionError;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Deserialize)]
 pub struct LineColumn {
@@ -90,7 +91,7 @@ pub enum AppError {
     #[error(transparent)]
     Axum(#[from] axum::http::Error),
     #[error(transparent)]
-    AxumSerdeJson(#[from] axum_sessions::async_session::serde_json::Error),
+    SerdeJson(#[from] serde_json::Error),
     #[error("Got status code '{status_code}' when fetching URL '{url}' from backend.")]
     Backend { status_code: StatusCode, url: Url },
     #[error("{0}")]
@@ -127,6 +128,8 @@ pub enum AppError {
             StandardErrorResponse<BasicErrorResponseType>,
         >,
     ),
+    #[error(transparent)]
+    Session(#[from] SessionError),
     #[error("JWT token did not contain any payload")]
     JwtMissingPayload,
     #[error(transparent)]

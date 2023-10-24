@@ -10,13 +10,12 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-sqlx-session = {version = "0.4.0", features = ["sqlite", "async_std"]}
 axum = {version = "0.6.1", features = ["headers"]}
-axum-sessions = "0.5"
 base64 = "0.21.4"
 bimap = "0.6.3"
 chrono = "0.4.30"
 clap = {version = "4.3.21", features = ["derive", "env"]}
+
 csv = "1.1"
 dashmap = "5.5.0"
 futures = "0.3"
@@ -31,18 +30,21 @@ reqwest = {version = "0.11", features = ["json", "stream"]}
 serde = "1"
 serde_json = "1"
 serde_with = "3.4.0"
-sqlx-core = "0.5"
+sqlx-core = "0.7"
 tempfile = "3"
 thiserror = "1"
+time = "0.3.30"
 tokio = {version = "1.17.0", features = ["rt-multi-thread", "macros"]}
 tokio-util = "0.7.4"
+tower = {version = "0.4", features = ["util"]}
+tower-sessions = {version = "0.3.3", features = ["sqlite-store", "tokio-rt"]}
 tracing = "0.1"
 tracing-subscriber = {version = "0.3", features = ["env-filter"]}
 transient-btree-index = "0.5.0"
 url = "2.3"
 
 [dev-dependencies]
-cookie = {version = "0.17.0", features = ["signed"]}
+cookie = {version = "0.18.0", features = ["signed"]}
 criterion = {version = "0.5", features = ["html_reports", "async_tokio"]}
 dirs = "5"
 env_logger = "0.10"
@@ -54,7 +56,6 @@ pretty_assertions = "1"
 scraper = "0.16"
 serde_json = "1"
 test-log = "0.2"
-tower = {version = "0.4", features = ["util"]}
 
 [profile.dev.package]
 graphannis-core.opt-level = 3

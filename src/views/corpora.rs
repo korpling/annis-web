@@ -7,9 +7,9 @@ use axum::{
     routing::{get, post},
     Form, Router,
 };
-use axum_sessions::extractors::WritableSession;
 use minijinja::context;
 use serde::{Deserialize, Serialize};
+use tower_sessions::Session;
 
 use crate::{
     client::corpora,
@@ -29,10 +29,10 @@ struct Corpus {
 }
 
 async fn show(
-    session: WritableSession,
+    session: Session,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let session_state = SessionState::from(&session);
+    let session_state = SessionState::try_from(&session)?;
 
     let selected_corpora = session_state.selected_corpora.clone();
 
@@ -67,11 +67,11 @@ struct Params {
 }
 
 async fn update(
-    mut session: WritableSession,
+    session: Session,
     State(app_state): State<Arc<GlobalAppState>>,
     Form(payload): Form<Params>,
 ) -> Result<impl IntoResponse> {
-    let mut session_state = SessionState::from(&session);
+    let mut session_state = SessionState::try_from(&session)?;
 
     let corpora = corpora::list(&SessionArg::Session(session.clone()), app_state.as_ref()).await?;
     let mut filtered_corpora: Vec<_> = corpora

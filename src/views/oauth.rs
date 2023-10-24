@@ -11,7 +11,6 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_sessions::extractors::ReadableSession;
 
 use minijinja::context;
 use oauth2::reqwest::async_http_client;
@@ -19,6 +18,7 @@ use oauth2::{AuthorizationCode, CsrfToken, PkceCodeChallenge};
 use serde::Deserialize;
 use std::{sync::Arc, time::Duration};
 use tokio::time::Instant;
+use tower_sessions::Session;
 
 pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
     let result = Router::new()
@@ -52,12 +52,12 @@ async fn redirect_to_login(
 }
 
 async fn logout(
-    session: ReadableSession,
+    session: Session,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let session_state = SessionState::from(&session);
+    let session_state = SessionState::try_from(&session)?;
 
-    app_state.login_info.remove(session.id());
+    app_state.login_info.remove(&session.id().to_string());
     let template = app_state.templates.get_template("oauth.html")?;
 
     let html = template.render(context! {session => session_state})?;
@@ -73,11 +73,11 @@ struct CallBackParams {
 }
 
 async fn login_callback(
-    session: ReadableSession,
+    session: Session,
     State(app_state): State<Arc<GlobalAppState>>,
     Query(params): Query<CallBackParams>,
 ) -> Result<impl IntoResponse> {
-    let session_state = SessionState::from(&session);
+    let session_state = SessionState::try_from(&session)?;
 
     let template = app_state.templates.get_template("oauth.html")?;
 
@@ -104,7 +104,10 @@ async fn login_callback(
                 .await;
             let token = token?;
 
-            let login_info = LoginInfo::new(token.clone(), session.expiry().cloned())?;
+            let login_info = LoginInfo::new(
+                token.clone(),
+                session.expiration_time().map(|t| t.unix_timestamp()),
+            )?;
 
             app_state
                 .login_info
@@ -118,7 +121,7 @@ async fn login_callback(
             schedule_refresh_token(
                 &token,
                 client.clone(),
-                session.id(),
+                &session.id().to_string(),
                 token_request_time,
                 app_state.clone(),
                 Duration::from_secs(10),
