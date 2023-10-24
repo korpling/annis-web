@@ -1,4 +1,5 @@
 [package]
+description = "This is an experimental version of ANNIS corpus search frontend."
 edition = "2021"
 homepage = "https://github.com/korpling/annis-web/"
 license = "Apache-2.0"
