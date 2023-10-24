@@ -1,6 +1,9 @@
 [package]
 edition = "2021"
+homepage = "https://github.com/korpling/annis-web/"
+license = "Apache-2.0"
 name = "annis-web"
+repository = "https://github.com/korpling/annis-web/"
 version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -63,4 +66,3 @@ name = "csv_export"
 
 [package.metadata.cargo-machete]
 ignored = ["env_logger"]
-
