@@ -4,6 +4,7 @@ on: [pull_request, push]
 
 jobs:
   coverage:
+    name: Execute tests with code coverage
     runs-on: ubuntu-latest
     env:
       CARGO_TERM_COLOR: always
