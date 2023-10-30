@@ -194,6 +194,12 @@ async fn callback_sets_login_info() {
     // Check the response page
     let body = get_body(response).await;
     insta::assert_snapshot!("callback_sets_login_info", body);
+
+    // Creating an authentifactted client should work
+    let client = app_state
+        .create_client(&crate::state::SessionArg::Id(session_id))
+        .unwrap();
+    insta::assert_debug_snapshot!("client", client);
 }
 
 #[test(tokio::test)]

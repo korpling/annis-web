@@ -1,0 +1,20 @@
+---
+source: src/views/oauth/tests.rs
+expression: client
+---
+Client {
+    accepts: Accepts,
+    proxies: [
+        Proxy(
+            System(
+                {},
+            ),
+            None,
+        ),
+    ],
+    referer: true,
+    default_headers: {
+        "accept": "*/*",
+        "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0dXNlciJ9.Ad4I83jq6MsDlwFU87uVx_PaIVcmyQkV40PSI7gBJVU",
+    },
+}
