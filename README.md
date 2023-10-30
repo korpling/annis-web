@@ -31,3 +31,55 @@ work for a long time.
 - axum web framework <https://github.com/tokio-rs/axum>
 - minijinja template engine <https://github.com/mitsuhiko/minijinja>
 - Bulma <https://bulma.io/> for styling
+
+## Developing annis-web
+
+You need to install Rust to compile the project.
+We recommend installing the following Cargo subcommands for developing annis-web:
+
+- [cargo-release](https://crates.io/crates/cargo-release) for creating releases
+- [cargo-about](https://crates.io/crates/cargo-about) for re-generating the
+  third party license file
+- [cargo-watch](https://crates.io/crates/cargo-watch) allows automatic re-compilation
+- [cargo-llvm-cov](https://crates.io/crates/cargo-llvm-cov) for determining the code coverage
+- [cargo-insta](https://crates.io/crates/cargo-insta) allows to review the test snapshot files.
+
+### Running the web server
+
+When developing, you can run a webserver that is automatically re-compiled when
+any of the source files changes.
+
+```bash
+cargo watch -x 'run -- --session-file annis-frontend-sessions.db'
+```
+
+### Execute tests
+
+You will need a Chromium/Chrome browser and the matching `chromedriver` binary
+installed to execute the tests. Before running the tests, start `chromedriver`
+on port 4444.
+
+```bash
+chromedriver --port=4444
+```
+
+If the Chromium/Chrome binary is installed as a snap, you might have to change
+the temporary directory by setting the `TMPDIR` environment variable.
+
+```bash
+mkdir -p "${HOME}/tmp/"
+TMPDIR="${HOME}/tmp/" chromedriver --port=4444
+```
+
+Then run the tests in another terminal.
+
+```bash
+cargo test
+```
+
+To execute the tests and calculate the code coverage, you can use `cargo-llvm-cov`:
+
+```bash
+cargo llvm-cov --open --ignore-filename-regex 'tests?\.rs'
+```
+
