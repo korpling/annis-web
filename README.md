@@ -1,3 +1,6 @@
+[![codecov](https://codecov.io/gh/korpling/annis-web/graph/badge.svg?token=FX7LX6OA37)](https://codecov.io/gh/korpling/annis-web)
+
+
 # ANNIS frontend experiments
 
 ANNIS is an open source, versatile web browser-based search and visualization
