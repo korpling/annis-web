@@ -6,22 +6,52 @@ use oauth2::{basic::BasicClient, PkceCodeVerifier};
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeSet, sync::Arc};
 use tempfile::NamedTempFile;
+use time::OffsetDateTime;
 use tokio::{sync::mpsc::Receiver, task::JoinHandle};
-use tower_sessions::Session;
 use url::Url;
 
 use crate::{auth::LoginInfo, config::CliConfig, errors::AppError, Result, TEMPLATES_DIR};
 
-pub const STATE_KEY: &str = "state";
-
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct SessionState {
-    pub selected_corpora: BTreeSet<String>,
-    pub session_id: String,
+pub struct Session {
+    selected_corpora: BTreeSet<String>,
+    #[serde(skip)]
+    session: tower_sessions::Session,
+    session_id: String,
+}
+
+impl Session {
+    pub const SELECTED_CORPORA_KEY: &str = "selected_corpora";
+
+    fn update_session(
+        session: &tower_sessions::Session,
+        selected_corpora: &BTreeSet<String>,
+    ) -> Result<()> {
+        session.insert(Self::SELECTED_CORPORA_KEY, selected_corpora.clone())?;
+        Ok(())
+    }
+
+    pub fn set_selected_corpora(&mut self, selected_corpora: BTreeSet<String>) -> Result<()> {
+        self.selected_corpora = selected_corpora;
+        Self::update_session(&self.session, &self.selected_corpora)?;
+        Ok(())
+    }
+
+    pub fn selected_corpora(&self) -> &BTreeSet<String> {
+        &self.selected_corpora
+    }
+
+    pub fn id(&self) -> &str {
+        &self.session_id
+    }
+
+    pub fn expiration_time(&self) -> Option<OffsetDateTime> {
+        self.session.expiration_time()
+    }
 }
 
 #[async_trait]
-impl<S> FromRequestParts<S> for SessionState
+impl<S> FromRequestParts<S> for Session
 where
     S: Send + Sync,
 {
@@ -31,12 +61,18 @@ where
         req: &mut Parts,
         state: &S,
     ) -> std::result::Result<Self, Self::Rejection> {
-        let session = Session::from_request_parts(req, state).await?;
-        let mut state: SessionState = session.get(STATE_KEY)?.unwrap_or_default();
-        state.session_id = session.id().to_string();
-        session.insert(STATE_KEY, state.clone())?;
+        let session = tower_sessions::Session::from_request_parts(req, state).await?;
+        let selected_corpora: BTreeSet<String> = session
+            .get(Session::SELECTED_CORPORA_KEY)?
+            .unwrap_or_default();
 
-        Ok(state)
+        Self::update_session(&session, &selected_corpora)?;
+
+        Ok(Self {
+            session_id: session.id().to_string(),
+            session,
+            selected_corpora,
+        })
     }
 }
 

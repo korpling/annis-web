@@ -4,7 +4,7 @@ use crate::{
     client::{self, search::FindQuery},
     converter::{CSVConfig, CSVExporter},
     errors::AppError,
-    state::{ExportJob, GlobalAppState, SessionArg, SessionState},
+    state::{ExportJob, GlobalAppState, Session, SessionArg},
     Result,
 };
 use axum::{
@@ -22,7 +22,6 @@ use tempfile::NamedTempFile;
 use tokio::sync::mpsc::channel;
 use tokio::task::JoinHandle;
 use tokio_util::io::ReaderStream;
-use tower_sessions::Session;
 
 const DEFAULT_EXAMPLE: &str = r#"text,tiger::lemma (1),tiger::morph (1),tiger::pos (1)
 Feigenblatt,Feigenblatt,Nom.Sg.Neut,NN
@@ -48,12 +47,11 @@ struct FormParams {
 
 async fn show_page(
     session: Session,
-    session_state: SessionState,
     Query(params): Query<FormParams>,
     State(state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
     let example = if let Some(query) = &params.query {
-        create_example_output(query, &params, &state, &session, &session_state).await
+        create_example_output(query, &params, &state, &session).await
     } else {
         Ok(DEFAULT_EXAMPLE.to_string())
     };
@@ -61,10 +59,10 @@ async fn show_page(
     let default_context_sizes = vec![0, 1, 5, 10, 20];
 
     // Find all segmentations that exist in all of the corpora
-    let number_collected_corpora = session_state.selected_corpora.len();
+    let number_collected_corpora = session.selected_corpora().len();
     let mut all_segmentations: HashMap<String, usize> = HashMap::new();
 
-    for corpus in session_state.selected_corpora.iter() {
+    for corpus in session.selected_corpora().iter() {
         if let Ok(corpus_segmentations) =
             client::corpora::segmentations(&SessionArg::Session(session.clone()), corpus, &state)
                 .await
@@ -92,7 +90,7 @@ async fn show_page(
         .get_template("export.html")?
         .render(context! {
             example,
-            session => session_state,
+            session => session,
             job => current_job(&session, &state),
             config => params.config,
             default_context_sizes,
@@ -104,7 +102,6 @@ async fn show_page(
 
 async fn create_job(
     session: Session,
-    session_state: SessionState,
     State(app_state): State<Arc<GlobalAppState>>,
     Form(params): Form<FormParams>,
 ) -> Result<impl IntoResponse> {
@@ -117,7 +114,7 @@ async fn create_job(
             // Create a background job that performs the export
             let find_query = FindQuery {
                 query: params.query.unwrap_or_default(),
-                corpora: session_state.selected_corpora.iter().cloned().collect(),
+                corpora: session.selected_corpora().iter().cloned().collect(),
                 query_language: QueryLanguage::AQL,
                 limit: None,
                 order: ResultOrder::Normal,
@@ -230,11 +227,10 @@ async fn create_example_output(
     params: &FormParams,
     state: &GlobalAppState,
     session: &Session,
-    session_state: &SessionState,
 ) -> std::result::Result<String, String> {
     let example_query = FindQuery {
         query: query.to_string(),
-        corpora: session_state.selected_corpora.iter().cloned().collect(),
+        corpora: session.selected_corpora().iter().cloned().collect(),
         query_language: QueryLanguage::AQL,
         limit: None,
         order: ResultOrder::NotSorted,

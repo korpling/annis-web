@@ -1,5 +1,5 @@
 use crate::{
-    state::{GlobalAppState, SessionState},
+    state::{GlobalAppState, Session},
     Result,
 };
 use axum::{
@@ -17,14 +17,14 @@ pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
 }
 
 async fn show(
-    session_state: SessionState,
+    session: Session,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
     let html = app_state
         .templates
         .get_template("about.html")?
         .render(context! {
-            session => session_state,
+            session => session,
             version => env!("CARGO_PKG_VERSION"),
         })?;
 

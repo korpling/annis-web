@@ -1,7 +1,7 @@
 use crate::{
     auth::{schedule_refresh_token, LoginInfo},
     errors::AppError,
-    state::{GlobalAppState, SessionState},
+    state::{GlobalAppState, Session},
     Result,
 };
 use axum::{
@@ -18,7 +18,6 @@ use oauth2::{AuthorizationCode, CsrfToken, PkceCodeChallenge};
 use serde::Deserialize;
 use std::{sync::Arc, time::Duration};
 use tokio::time::Instant;
-use tower_sessions::Session;
 
 pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
     let result = Router::new()
@@ -53,13 +52,12 @@ async fn redirect_to_login(
 
 async fn logout(
     session: Session,
-    session_state: SessionState,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
     app_state.login_info.remove(&session.id().to_string());
     let template = app_state.templates.get_template("oauth.html")?;
 
-    let html = template.render(context! {session => session_state})?;
+    let html = template.render(context! {session => session})?;
 
     Ok(Html(html))
 }
@@ -73,14 +71,13 @@ struct CallBackParams {
 
 async fn login_callback(
     session: Session,
-    session_state: SessionState,
     State(app_state): State<Arc<GlobalAppState>>,
     Query(params): Query<CallBackParams>,
 ) -> Result<impl IntoResponse> {
     let template = app_state.templates.get_template("oauth.html")?;
 
     if let Some(error) = params.error {
-        let html = template.render(context! {error, session => session_state})?;
+        let html = template.render(context! {error, session => session})?;
 
         if let Some(state) = params.state {
             app_state.auth_requests.remove(&state);
@@ -112,7 +109,7 @@ async fn login_callback(
                 .insert(session.id().to_string(), login_info);
 
             let html = template.render(context! {
-                session => session_state,
+                session => session,
             })?;
 
             // Schedule a task that refreshes the token before it expires
@@ -128,8 +125,8 @@ async fn login_callback(
             return Ok((StatusCode::OK, Html(html)));
         }
     }
-    let html = template
-        .render(context! {session => session_state, error => "Empty authorization request."})?;
+    let html =
+        template.render(context! {session => session, error => "Empty authorization request."})?;
     Ok((StatusCode::BAD_REQUEST, Html(html)))
 }
 
