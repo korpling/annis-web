@@ -57,7 +57,8 @@ pub async fn start_end2end_servers() -> TestEnvironment {
                     "download": {
                         "default_directory": download_folder.path().to_string_lossy(),
                     },
-                }
+                },
+                "args": ["--headless"]
             }
         ),
     );
