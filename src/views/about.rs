@@ -1,5 +1,5 @@
 use crate::{
-    state::{GlobalAppState, SessionState},
+    state::{GlobalAppState, Session},
     Result,
 };
 use axum::{
@@ -8,7 +8,6 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_sessions::extractors::WritableSession;
 use minijinja::context;
 use std::sync::Arc;
 
@@ -18,16 +17,14 @@ pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
 }
 
 async fn show(
-    session: WritableSession,
+    session: Session,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let session_state = SessionState::from(&session);
-
     let html = app_state
         .templates
         .get_template("about.html")?
         .render(context! {
-            session => session_state,
+            session => session,
             version => env!("CARGO_PKG_VERSION"),
         })?;
 

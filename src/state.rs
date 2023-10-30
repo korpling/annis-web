@@ -1,7 +1,4 @@
-use axum_sessions::{
-    async_session::Session,
-    extractors::{ReadableSession, WritableSession},
-};
+use axum::{async_trait, extract::FromRequestParts, http::request::Parts};
 use chrono::Utc;
 use dashmap::DashMap;
 use minijinja::Value;
@@ -9,32 +6,73 @@ use oauth2::{basic::BasicClient, PkceCodeVerifier};
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeSet, sync::Arc};
 use tempfile::NamedTempFile;
+use time::OffsetDateTime;
 use tokio::{sync::mpsc::Receiver, task::JoinHandle};
 use url::Url;
 
-use crate::{auth::LoginInfo, config::CliConfig, Result, TEMPLATES_DIR};
-
-pub const STATE_KEY: &str = "state";
+use crate::{auth::LoginInfo, config::CliConfig, errors::AppError, Result, TEMPLATES_DIR};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct SessionState {
-    pub selected_corpora: BTreeSet<String>,
-    pub session_id: String,
+pub struct Session {
+    selected_corpora: BTreeSet<String>,
+    #[serde(skip)]
+    session: tower_sessions::Session,
+    session_id: String,
 }
 
-impl From<&ReadableSession> for SessionState {
-    fn from(value: &ReadableSession) -> Self {
-        let mut result: SessionState = value.get(STATE_KEY).unwrap_or_default();
-        result.session_id = value.id().to_string();
-        result
+impl Session {
+    pub const SELECTED_CORPORA_KEY: &str = "selected_corpora";
+
+    fn update_session(
+        session: &tower_sessions::Session,
+        selected_corpora: &BTreeSet<String>,
+    ) -> Result<()> {
+        session.insert(Self::SELECTED_CORPORA_KEY, selected_corpora.clone())?;
+        Ok(())
+    }
+
+    pub fn set_selected_corpora(&mut self, selected_corpora: BTreeSet<String>) -> Result<()> {
+        self.selected_corpora = selected_corpora;
+        Self::update_session(&self.session, &self.selected_corpora)?;
+        Ok(())
+    }
+
+    pub fn selected_corpora(&self) -> &BTreeSet<String> {
+        &self.selected_corpora
+    }
+
+    pub fn id(&self) -> &str {
+        &self.session_id
+    }
+
+    pub fn expiration_time(&self) -> Option<OffsetDateTime> {
+        self.session.expiration_time()
     }
 }
 
-impl From<&WritableSession> for SessionState {
-    fn from(value: &WritableSession) -> Self {
-        let mut result: SessionState = value.get(STATE_KEY).unwrap_or_default();
-        result.session_id = value.id().to_string();
-        result
+#[async_trait]
+impl<S> FromRequestParts<S> for Session
+where
+    S: Send + Sync,
+{
+    type Rejection = AppError;
+
+    async fn from_request_parts(
+        req: &mut Parts,
+        state: &S,
+    ) -> std::result::Result<Self, Self::Rejection> {
+        let session = tower_sessions::Session::from_request_parts(req, state).await?;
+        let selected_corpora: BTreeSet<String> = session
+            .get(Session::SELECTED_CORPORA_KEY)?
+            .unwrap_or_default();
+
+        Self::update_session(&session, &selected_corpora)?;
+
+        Ok(Self {
+            session_id: session.id().to_string(),
+            session,
+            selected_corpora,
+        })
     }
 }
 
@@ -72,10 +110,10 @@ pub enum SessionArg {
 }
 
 impl SessionArg {
-    pub fn id(&self) -> &str {
+    pub fn id(&self) -> String {
         match self {
-            SessionArg::Session(s) => s.id(),
-            SessionArg::Id(id) => id,
+            SessionArg::Session(s) => s.id().to_string(),
+            SessionArg::Id(id) => id.to_string(),
         }
     }
 }
@@ -146,23 +184,25 @@ impl GlobalAppState {
     pub fn create_client(&self, session: &SessionArg) -> Result<reqwest::Client> {
         if let SessionArg::Session(session) = session {
             // Mark this login info as accessed, so we know it is not stale and should not be removed
-            self.login_info.alter(session.id(), |_, mut l| {
-                if let (Some(old_expiry), Some(new_expiry)) =
-                    (l.user_session_expiry, session.expiry())
-                {
-                    // Check if the new expiration date is actually longer before replacing it
-                    if &old_expiry < new_expiry {
-                        l.user_session_expiry = Some(*new_expiry);
+            self.login_info
+                .alter(&session.id().to_string(), |_, mut l| {
+                    if let (Some(old_expiry), Some(new_expiry)) =
+                        (l.user_session_expiry, session.expiration_time())
+                    {
+                        // Check if the new expiration date is actually longer before replacing it
+                        if old_expiry < new_expiry.unix_timestamp() {
+                            l.user_session_expiry = Some(new_expiry.unix_timestamp());
+                        }
+                    } else {
+                        // Use the new expiration date
+                        l.user_session_expiry =
+                            session.expiration_time().map(|t| t.unix_timestamp());
                     }
-                } else {
-                    // Use the new expiration date
-                    l.user_session_expiry = session.expiry().cloned();
-                }
-                l
-            });
+                    l
+                });
         }
 
-        if let Some(login) = &self.login_info.get(session.id()) {
+        if let Some(login) = &self.login_info.get(&session.id()) {
             // Return the authentifacted client
             Ok(login.get_client())
         } else {
@@ -175,7 +215,7 @@ impl GlobalAppState {
     pub async fn cleanup(&self) {
         self.login_info.retain(|_session_id, login_info| {
             if let Some(expiry) = login_info.user_session_expiry {
-                Utc::now() < expiry
+                Utc::now().timestamp() < expiry
             } else {
                 true
             }

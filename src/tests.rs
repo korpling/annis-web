@@ -7,6 +7,7 @@ use axum::{
     body::{Body, HttpBody},
     http::{Request, Response, StatusCode},
 };
+use cookie::Cookie;
 use fantoccini::{wd::Capabilities, ClientBuilder};
 use scraper::Html;
 use serde_json::json;
@@ -56,7 +57,8 @@ pub async fn start_end2end_servers() -> TestEnvironment {
                     "download": {
                         "default_directory": download_folder.path().to_string_lossy(),
                     },
-                }
+                },
+                "args": ["--headless"]
             }
         ),
     );
@@ -148,4 +150,34 @@ async fn missing_static_resource() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::NOT_FOUND);
+}
+
+#[test(tokio::test)]
+async fn session_file_created() {
+    // Create an empty temporary folder to store the session file in
+    let parent_folder = TempDir::new().unwrap();
+    let dbfile = parent_folder.path().join("test.db");
+    let mut config = CliConfig::default();
+    config.session_file = Some(dbfile.clone());
+
+    let app = crate::app(&config).await.unwrap();
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/about")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let set_cookie_header = response.headers().get("Set-Cookie").unwrap();
+    let c = Cookie::parse(set_cookie_header.to_str().unwrap()).unwrap();
+    assert_eq!("tower.sid", c.name());
+    // The session file should have been created
+    let f = std::fs::File::open(dbfile).unwrap();
+    assert!(f.metadata().unwrap().len() > 0);
 }

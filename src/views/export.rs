@@ -4,7 +4,7 @@ use crate::{
     client::{self, search::FindQuery},
     converter::{CSVConfig, CSVExporter},
     errors::AppError,
-    state::{ExportJob, GlobalAppState, SessionArg, SessionState},
+    state::{ExportJob, GlobalAppState, Session, SessionArg},
     Result,
 };
 use axum::{
@@ -15,7 +15,6 @@ use axum::{
     routing::{delete, get, post},
     Form, Router,
 };
-use axum_sessions::{async_session::Session, extractors::ReadableSession};
 use graphannis::corpusstorage::{QueryLanguage, ResultOrder};
 use minijinja::context;
 use serde::{Deserialize, Serialize};
@@ -47,12 +46,10 @@ struct FormParams {
 }
 
 async fn show_page(
-    session: ReadableSession,
+    session: Session,
     Query(params): Query<FormParams>,
     State(state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let session_state = SessionState::from(&session);
-
     let example = if let Some(query) = &params.query {
         create_example_output(query, &params, &state, &session).await
     } else {
@@ -62,10 +59,10 @@ async fn show_page(
     let default_context_sizes = vec![0, 1, 5, 10, 20];
 
     // Find all segmentations that exist in all of the corpora
-    let number_collected_corpora = session_state.selected_corpora.len();
+    let number_collected_corpora = session.selected_corpora().len();
     let mut all_segmentations: HashMap<String, usize> = HashMap::new();
 
-    for corpus in session_state.selected_corpora.iter() {
+    for corpus in session.selected_corpora().iter() {
         if let Ok(corpus_segmentations) =
             client::corpora::segmentations(&SessionArg::Session(session.clone()), corpus, &state)
                 .await
@@ -93,7 +90,7 @@ async fn show_page(
         .get_template("export.html")?
         .render(context! {
             example,
-            session => session_state,
+            session => session,
             job => current_job(&session, &state),
             config => params.config,
             default_context_sizes,
@@ -104,12 +101,10 @@ async fn show_page(
 }
 
 async fn create_job(
-    session: ReadableSession,
+    session: Session,
     State(app_state): State<Arc<GlobalAppState>>,
     Form(params): Form<FormParams>,
 ) -> Result<impl IntoResponse> {
-    let session_state = SessionState::from(&session);
-
     // Only allow one background job per session
     let session_arg = SessionArg::Id(session.id().to_string());
     app_state
@@ -119,7 +114,7 @@ async fn create_job(
             // Create a background job that performs the export
             let find_query = FindQuery {
                 query: params.query.unwrap_or_default(),
-                corpora: session_state.selected_corpora.iter().cloned().collect(),
+                corpora: session.selected_corpora().iter().cloned().collect(),
                 query_language: QueryLanguage::AQL,
                 limit: None,
                 order: ResultOrder::Normal,
@@ -151,7 +146,7 @@ async fn create_job(
 }
 
 async fn job_status(
-    session: ReadableSession,
+    session: Session,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
     let result = app_state
@@ -165,11 +160,11 @@ async fn job_status(
 }
 
 async fn cancel_job(
-    session: ReadableSession,
+    session: Session,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let session_id = session.id();
-    if let Some((_, job)) = app_state.background_jobs.remove(session_id) {
+    let session_id = session.id().to_string();
+    if let Some((_, job)) = app_state.background_jobs.remove(&session_id) {
         job.handle.abort();
     }
     let result = app_state
@@ -183,12 +178,12 @@ async fn cancel_job(
 }
 
 async fn download_file(
-    session: ReadableSession,
+    session: Session,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let session_id = session.id();
+    let session_id = session.id().to_string();
 
-    if let Some((_, job)) = app_state.background_jobs.remove(session_id) {
+    if let Some((_, job)) = app_state.background_jobs.remove(&session_id) {
         let file = job.handle.await??;
         let tokio_file = tokio::fs::File::open(file.path()).await?;
         let stream = ReaderStream::new(tokio_file);
@@ -214,9 +209,9 @@ enum JobState {
     Finished,
 }
 
-fn current_job(session: &ReadableSession, app_state: &GlobalAppState) -> JobState {
-    let session_id = session.id();
-    if let Some(mut job) = app_state.background_jobs.get_mut(session_id) {
+fn current_job(session: &Session, app_state: &GlobalAppState) -> JobState {
+    let session_id = session.id().to_string();
+    if let Some(mut job) = app_state.background_jobs.get_mut(&session_id) {
         if job.handle.is_finished() {
             JobState::Finished
         } else {
@@ -231,18 +226,16 @@ async fn create_example_output(
     query: &str,
     params: &FormParams,
     state: &GlobalAppState,
-    session: &ReadableSession,
+    session: &Session,
 ) -> std::result::Result<String, String> {
-    let session_state = SessionState::from(session);
     let example_query = FindQuery {
         query: query.to_string(),
-        corpora: session_state.selected_corpora.iter().cloned().collect(),
+        corpora: session.selected_corpora().iter().cloned().collect(),
         query_language: QueryLanguage::AQL,
         limit: None,
         order: ResultOrder::NotSorted,
     };
     let config = params.config.clone();
-    let session: &Session = session;
 
     if !example_query.corpora.is_empty() && !example_query.query.is_empty() {
         let mut exporter = CSVExporter::new(example_query, config, None);

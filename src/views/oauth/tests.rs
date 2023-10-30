@@ -1,13 +1,13 @@
 use std::{collections::HashMap, sync::Arc};
 
-use axum_sessions::async_session::{MemoryStore, Session, SessionStore};
-use cookie::{Cookie, CookieJar, Key};
+use cookie::{Cookie, CookieJar};
 use hyper::{Body, Request, StatusCode};
 use mockito::Server;
 use oauth2::{basic::BasicTokenType, AccessToken, PkceCodeVerifier, StandardTokenResponse};
 use scraper::Selector;
 use test_log::test;
 use tower::ServiceExt;
+use tower_sessions::{sqlx::SqlitePool, Session, SessionRecord, SessionStore, SqliteStore};
 use url::Url;
 
 use crate::{
@@ -15,7 +15,6 @@ use crate::{
     config::CliConfig,
     state::GlobalAppState,
     tests::{get_body, get_html},
-    FALLBACK_COOKIE_KEY,
 };
 
 #[test(tokio::test)]
@@ -64,24 +63,24 @@ async fn login_rediction() {
     assert!(query_params.contains_key("state"));
 }
 
-async fn create_dummy_session() -> (String, String, MemoryStore) {
-    let session = Session::new();
+async fn create_dummy_session() -> (String, String, SqliteStore) {
+    let session = Session::new(None);
     let session_id = session.id().to_string();
 
-    let session_store = MemoryStore::new();
-    let unsigned_cookie_value = session_store.store_session(session).await.unwrap().unwrap();
+    let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
+    let session_store = SqliteStore::new(pool);
+    session_store.migrate().await.unwrap();
+    let record: SessionRecord = SessionRecord::from(&session);
+    session_store.save(&record).await.unwrap();
 
     // Create a session cookie, which needs to be signed with the app key
     let mut cookie_jar = CookieJar::new();
-    let mut session_cookie = Cookie::named("sid");
-    session_cookie.set_value(unsigned_cookie_value);
+    let session_cookie = Cookie::build(("tower.sid", session_id.clone()));
 
-    cookie_jar
-        .signed_mut(&Key::from(FALLBACK_COOKIE_KEY))
-        .add_original(session_cookie);
+    cookie_jar.add_original(session_cookie);
     (
         session_id,
-        cookie_jar.get("sid").unwrap().to_string(),
+        cookie_jar.get("tower.sid").unwrap().to_string(),
         session_store,
     )
 }
@@ -195,6 +194,12 @@ async fn callback_sets_login_info() {
     // Check the response page
     let body = get_body(response).await;
     insta::assert_snapshot!("callback_sets_login_info", body);
+
+    // Creating an authentifactted client should work
+    let client = app_state
+        .create_client(&crate::state::SessionArg::Id(session_id))
+        .unwrap();
+    insta::assert_debug_snapshot!("client", client);
 }
 
 #[test(tokio::test)]

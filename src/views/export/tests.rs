@@ -424,6 +424,64 @@ async fn syntax_error() {
 }
 
 #[test(tokio::test)]
+async fn semantic_error() {
+    let mut env = start_end2end_servers().await;
+
+    select_corpus_and_goto_export_pcc(&mut env).await;
+
+    let find_mock_with_error = env
+        .backend
+        .mock("POST", "/search/find")
+        .with_header("content-type", "application/json")
+        .with_body(
+            r##"{
+                "AQLSemanticError": {
+                    "desc": "Variable \"#2\" not bound (use linguistic operators)",
+                    "location": {
+                        "start": {
+                            "line": 2,
+                            "column": 1
+                        },
+                        "end": {
+                            "line": 2,
+                            "column": 4
+                        }
+                    }
+                }
+            }"##,
+        )
+        .with_status(400)
+        .create();
+
+    let textarea = env
+        .webdriver
+        .find(Locator::XPath("//textarea"))
+        .await
+        .unwrap();
+    textarea.click().await.unwrap();
+    textarea.send_keys("pos &\npos").await.unwrap();
+
+    // Wait until the error message is shown (this will take same time since there is a delay when sending the keys)
+    let error_locator = Locator::Css("#export-example-output > div.is-danger");
+    env.webdriver
+        .wait()
+        .at_most(Duration::from_secs(5))
+        .for_element(error_locator)
+        .await
+        .unwrap();
+
+    let error_div = env.webdriver.find(error_locator).await.unwrap();
+    assert_eq!(
+        error_div.text().await.unwrap(),
+        "Semantic error in query: [2:1-2:4] Variable \"#2\" not bound (use linguistic operators)"
+    );
+
+    find_mock_with_error.expect(1).assert();
+
+    env.close().await;
+}
+
+#[test(tokio::test)]
 async fn backend_down() {
     let mut env = start_end2end_servers().await;
 

@@ -5,6 +5,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Automatically create the SQLite file given with `--session-file` if it does
+  not exist yet, instead of aborting.
+
+### Changed
+
+- Use Moka Cache for storing the sessions when no SQLite file is given.
+
 ## [0.1.0] - 2023-10-24
 
 Initial release of annis-web.

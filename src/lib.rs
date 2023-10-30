@@ -6,26 +6,26 @@ pub(crate) mod errors;
 pub mod state;
 mod views;
 
-use async_sqlx_session::SqliteSessionStore;
 use axum::{
     body::{self, Empty, Full},
+    error_handling::HandleErrorLayer,
     extract::Path,
     http::{header, HeaderValue, Response, StatusCode},
     response::{IntoResponse, Redirect},
     routing::get,
-    Router,
+    BoxError, Router,
 };
-use axum_sessions::{async_session::SessionStore, SameSite, SessionLayer};
 use config::CliConfig;
 use include_dir::{include_dir, Dir};
 use state::GlobalAppState;
 use std::{sync::Arc, time::Duration};
+use tower::ServiceBuilder;
+use tower_sessions::{
+    cookie::SameSite, sqlx::SqlitePool, MokaStore, SessionManagerLayer, SessionStore, SqliteStore,
+};
 
 static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/static");
 static TEMPLATES_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates");
-
-static FALLBACK_COOKIE_KEY: &[u8] =
-    "ginoh3ya5eiLi1nohph0equ6KiwicooweeNgovoojeQuaejaixiequah6eenoo2k".as_bytes();
 
 pub type Result<T> = std::result::Result<T, errors::AppError>;
 
@@ -52,17 +52,24 @@ pub async fn app(config: &CliConfig) -> Result<Router> {
     let global_state = GlobalAppState::new(config)?;
     let global_state = Arc::new(global_state);
 
-    let db_uri = if let Some(session_file) = &config.session_file {
-        format!("sqlite://{}", session_file.to_string_lossy())
-    } else {
-        // Fallback to a temporary in-memory Sqlite databse
-        "sqlite::memory:".to_string()
-    };
-    let store = SqliteSessionStore::new(&db_uri).await?;
-    store.migrate().await?;
-    store.spawn_cleanup_task(Duration::from_secs(60 * 60));
+    if let Some(session_file) = &config.session_file {
+        let db_uri = format!("sqlite://{}?mode=rwc", session_file.to_string_lossy());
+        let db_pool = SqlitePool::connect(&db_uri).await?;
+        let store = SqliteStore::new(db_pool);
+        store.migrate().await?;
 
-    app_with_state(global_state, store).await
+        tokio::task::spawn(
+            store
+                .clone()
+                .continuously_delete_expired(Duration::from_secs(60 * 60)),
+        );
+
+        app_with_state(global_state, store).await
+    } else {
+        // Fallback to a a store based on a cache
+        let store = MokaStore::new(Some(1_000));
+        app_with_state(global_state, store).await
+    }
 }
 
 async fn app_with_state<S: SessionStore>(
@@ -78,8 +85,11 @@ async fn app_with_state<S: SessionStore>(
         .nest("/oauth", views::oauth::create_routes()?)
         .with_state(global_state.clone());
 
-    let session_layer =
-        SessionLayer::new(session_store, FALLBACK_COOKIE_KEY).with_same_site_policy(SameSite::Lax);
+    let session_service = ServiceBuilder::new()
+        .layer(HandleErrorLayer::new(|_: BoxError| async {
+            StatusCode::BAD_REQUEST
+        }))
+        .layer(SessionManagerLayer::new(session_store).with_same_site(SameSite::Lax));
 
     tokio::task::spawn(async move {
         loop {
@@ -88,7 +98,7 @@ async fn app_with_state<S: SessionStore>(
         }
     });
 
-    Ok(routes.layer(session_layer))
+    Ok(routes.layer(session_service))
 }
 
 #[cfg(test)]

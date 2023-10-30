@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use axum::{
-    http::{header::InvalidHeaderValue, StatusCode},
+    http::{self, header::InvalidHeaderValue, StatusCode},
     response::{Html, IntoResponse},
 };
 use minijinja::context;
@@ -10,6 +10,7 @@ use reqwest::Url;
 use serde::Deserialize;
 use thiserror::Error;
 use tokio::task::JoinError;
+use tower_sessions::session::SessionError;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Deserialize)]
 pub struct LineColumn {
@@ -90,7 +91,7 @@ pub enum AppError {
     #[error(transparent)]
     Axum(#[from] axum::http::Error),
     #[error(transparent)]
-    AxumSerdeJson(#[from] axum_sessions::async_session::serde_json::Error),
+    SerdeJson(#[from] serde_json::Error),
     #[error("Got status code '{status_code}' when fetching URL '{url}' from backend.")]
     Backend { status_code: StatusCode, url: Url },
     #[error("{0}")]
@@ -127,12 +128,28 @@ pub enum AppError {
             StandardErrorResponse<BasicErrorResponseType>,
         >,
     ),
+    #[error(transparent)]
+    Session(#[from] SessionError),
     #[error("JWT token did not contain any payload")]
     JwtMissingPayload,
     #[error(transparent)]
     Base64DecodeError(#[from] base64::DecodeError),
     #[error("OAuth2 server not fully configured.")]
     Oauth2ServerConfigMissing,
+    #[error("HTTP error {code}: {message}")]
+    GenericHttpError {
+        code: http::StatusCode,
+        message: String,
+    },
+}
+
+impl From<(http::StatusCode, &'static str)> for AppError {
+    fn from(value: (http::StatusCode, &'static str)) -> Self {
+        AppError::GenericHttpError {
+            code: value.0,
+            message: value.1.to_string(),
+        }
+    }
 }
 
 impl IntoResponse for AppError {
