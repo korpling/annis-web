@@ -20,7 +20,7 @@ jobs:
           chromedriver --port=4444 &
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
       - name: Generate code coverage
-        run: cargo llvm-cov --all-features --codecov --ignore-filename-regex 'tests?\.rs' --output-path lcov.info
+        run: cargo llvm-cov --all-features --ignore-filename-regex 'tests?\.rs'  --codecov --output-path codecov.json
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
