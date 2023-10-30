@@ -1,3 +1,4 @@
+use axum::{async_trait, extract::FromRequestParts, http::request::Parts};
 use chrono::Utc;
 use dashmap::DashMap;
 use minijinja::Value;
@@ -9,7 +10,7 @@ use tokio::{sync::mpsc::Receiver, task::JoinHandle};
 use tower_sessions::Session;
 use url::Url;
 
-use crate::{auth::LoginInfo, config::CliConfig, Result, TEMPLATES_DIR};
+use crate::{auth::LoginInfo, config::CliConfig, errors::AppError, Result, TEMPLATES_DIR};
 
 pub const STATE_KEY: &str = "state";
 
@@ -19,13 +20,23 @@ pub struct SessionState {
     pub session_id: String,
 }
 
-impl TryFrom<&Session> for SessionState {
-    type Error = crate::errors::AppError;
+#[async_trait]
+impl<S> FromRequestParts<S> for SessionState
+where
+    S: Send + Sync,
+{
+    type Rejection = AppError;
 
-    fn try_from(value: &Session) -> std::result::Result<Self, Self::Error> {
-        let mut result: SessionState = value.get(STATE_KEY)?.unwrap_or_default();
-        result.session_id = value.id().to_string();
-        Ok(result)
+    async fn from_request_parts(
+        req: &mut Parts,
+        state: &S,
+    ) -> std::result::Result<Self, Self::Rejection> {
+        let session = Session::from_request_parts(req, state).await?;
+        let mut state: SessionState = session.get(STATE_KEY)?.unwrap_or_default();
+        state.session_id = session.id().to_string();
+        session.insert(STATE_KEY, state.clone())?;
+
+        Ok(state)
     }
 }
 

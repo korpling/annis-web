@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use axum::{
-    http::{header::InvalidHeaderValue, StatusCode},
+    http::{self, header::InvalidHeaderValue, StatusCode},
     response::{Html, IntoResponse},
 };
 use minijinja::context;
@@ -136,6 +136,20 @@ pub enum AppError {
     Base64DecodeError(#[from] base64::DecodeError),
     #[error("OAuth2 server not fully configured.")]
     Oauth2ServerConfigMissing,
+    #[error("HTTP error {code}: {message}")]
+    GenericHttpError {
+        code: http::StatusCode,
+        message: String,
+    },
+}
+
+impl From<(http::StatusCode, &'static str)> for AppError {
+    fn from(value: (http::StatusCode, &'static str)) -> Self {
+        AppError::GenericHttpError {
+            code: value.0,
+            message: value.1.to_string(),
+        }
+    }
 }
 
 impl IntoResponse for AppError {

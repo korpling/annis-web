@@ -30,10 +30,9 @@ struct Corpus {
 
 async fn show(
     session: Session,
+    session_state: SessionState,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let session_state = SessionState::try_from(&session)?;
-
     let selected_corpora = session_state.selected_corpora.clone();
 
     let corpora: Vec<_> = corpora::list(&SessionArg::Session(session.clone()), app_state.as_ref())
@@ -68,11 +67,10 @@ struct Params {
 
 async fn update(
     session: Session,
+    mut session_state: SessionState,
     State(app_state): State<Arc<GlobalAppState>>,
     Form(payload): Form<Params>,
 ) -> Result<impl IntoResponse> {
-    let mut session_state = SessionState::try_from(&session)?;
-
     let corpora = corpora::list(&SessionArg::Session(session.clone()), app_state.as_ref()).await?;
     let mut filtered_corpora: Vec<_> = corpora
         .iter()

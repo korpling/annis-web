@@ -53,10 +53,9 @@ async fn redirect_to_login(
 
 async fn logout(
     session: Session,
+    session_state: SessionState,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let session_state = SessionState::try_from(&session)?;
-
     app_state.login_info.remove(&session.id().to_string());
     let template = app_state.templates.get_template("oauth.html")?;
 
@@ -74,11 +73,10 @@ struct CallBackParams {
 
 async fn login_callback(
     session: Session,
+    session_state: SessionState,
     State(app_state): State<Arc<GlobalAppState>>,
     Query(params): Query<CallBackParams>,
 ) -> Result<impl IntoResponse> {
-    let session_state = SessionState::try_from(&session)?;
-
     let template = app_state.templates.get_template("oauth.html")?;
 
     if let Some(error) = params.error {

@@ -10,7 +10,6 @@ use axum::{
 };
 use minijinja::context;
 use std::sync::Arc;
-use tower_sessions::Session;
 
 pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
     let result = Router::new().route("/", get(show));
@@ -18,11 +17,9 @@ pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
 }
 
 async fn show(
-    session: Session,
+    session_state: SessionState,
     State(app_state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let session_state = SessionState::try_from(&session)?;
-
     let html = app_state
         .templates
         .get_template("about.html")?

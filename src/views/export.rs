@@ -48,13 +48,12 @@ struct FormParams {
 
 async fn show_page(
     session: Session,
+    session_state: SessionState,
     Query(params): Query<FormParams>,
     State(state): State<Arc<GlobalAppState>>,
 ) -> Result<impl IntoResponse> {
-    let session_state = SessionState::try_from(&session)?;
-
     let example = if let Some(query) = &params.query {
-        create_example_output(query, &params, &state, &session).await
+        create_example_output(query, &params, &state, &session, &session_state).await
     } else {
         Ok(DEFAULT_EXAMPLE.to_string())
     };
@@ -105,11 +104,10 @@ async fn show_page(
 
 async fn create_job(
     session: Session,
+    session_state: SessionState,
     State(app_state): State<Arc<GlobalAppState>>,
     Form(params): Form<FormParams>,
 ) -> Result<impl IntoResponse> {
-    let session_state = SessionState::try_from(&session)?;
-
     // Only allow one background job per session
     let session_arg = SessionArg::Id(session.id().to_string());
     app_state
@@ -232,8 +230,8 @@ async fn create_example_output(
     params: &FormParams,
     state: &GlobalAppState,
     session: &Session,
+    session_state: &SessionState,
 ) -> std::result::Result<String, String> {
-    let session_state = SessionState::try_from(session).map_err(|e| e.to_string())?;
     let example_query = FindQuery {
         query: query.to_string(),
         corpora: session_state.selected_corpora.iter().cloned().collect(),
@@ -242,7 +240,6 @@ async fn create_example_output(
         order: ResultOrder::NotSorted,
     };
     let config = params.config.clone();
-    let session: &Session = session;
 
     if !example_query.corpora.is_empty() && !example_query.query.is_empty() {
         let mut exporter = CSVExporter::new(example_query, config, None);
