@@ -49,7 +49,7 @@ We recommend installing the following Cargo subcommands for developing annis-web
 
 ### Running the web server
 
-When developing, you can run a webserver that is automatically re-compiled when
+When developing, you can run a web server that is automatically re-compiled when
 any of the source files changes.
 
 ```bash

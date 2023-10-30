@@ -11,8 +11,9 @@ use tower::ServiceExt;
 use tower_sessions::{sqlx::SqlitePool, Session, SessionRecord, SessionStore, SqliteStore};
 use url::Url;
 
+use crate::auth::LoginInfo;
+
 use crate::{
-    auth::LoginInfo,
     config::CliConfig,
     state::GlobalAppState,
     tests::{get_body, get_html},
@@ -104,7 +105,7 @@ async fn logout_removes_login_info() {
     let (session_id, session_cookie, session_store) = create_dummy_session().await;
 
     let state = Arc::new(GlobalAppState::new(&config).unwrap());
-    let l = LoginInfo::new(token_response, None).unwrap();
+    let l = LoginInfo::from_token(token_response, None).unwrap();
     state.login_info.insert(session_id.clone(), l);
 
     // Create an app with the prepared session store
