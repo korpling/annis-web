@@ -53,7 +53,7 @@ pub async fn app(config: &CliConfig) -> Result<Router> {
     let global_state = Arc::new(global_state);
 
     if let Some(session_file) = &config.session_file {
-        let db_uri = format!("sqlite://{}", session_file.to_string_lossy());
+        let db_uri = format!("sqlite://{}?mode=rwc", session_file.to_string_lossy());
         let db_pool = SqlitePool::connect(&db_uri).await?;
         let store = SqliteStore::new(db_pool);
         store.migrate().await?;
