@@ -45,7 +45,7 @@ We recommend installing the following Cargo subcommands for developing annis-web
   third party license file
 - [cargo-watch](https://crates.io/crates/cargo-watch) allows automatic re-compilation
 - [cargo-llvm-cov](https://crates.io/crates/cargo-llvm-cov) for determining the code coverage
-- [cargo-insta](https://crates.io/crates/cargo-insta) allows to review the test snapshot files.
+- [cargo-insta](https://crates.io/crates/cargo-insta) allows reviewing the test snapshot files.
 
 ### Running the web server
 

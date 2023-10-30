@@ -1,5 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
+use chrono::Duration;
 use cookie::{Cookie, CookieJar};
 use hyper::{Body, Request, StatusCode};
 use mockito::Server;
@@ -23,7 +24,7 @@ async fn login_rediction() {
     config.oauth2_auth_url = Some("http://localhost:8080/auth".to_string());
     config.oauth2_token_url = Some("http://localhost:8080/token".to_string());
 
-    let app = crate::app(&config).await.unwrap();
+    let app = crate::app(&config, Duration::seconds(1)).await.unwrap();
 
     let response = app
         .oneshot(
@@ -107,7 +108,7 @@ async fn logout_removes_login_info() {
     state.login_info.insert(session_id.clone(), l);
 
     // Create an app with the prepared session store
-    let app = crate::app_with_state(state.clone(), session_store)
+    let app = crate::app_with_state(state.clone(), session_store, Duration::seconds(1))
         .await
         .unwrap();
     let response = app
@@ -166,7 +167,7 @@ async fn callback_sets_login_info() {
         .insert(state_id.to_string(), pkce_verifier);
 
     // Create an app with the prepared session store
-    let app = crate::app_with_state(app_state.clone(), session_store)
+    let app = crate::app_with_state(app_state.clone(), session_store, Duration::seconds(1))
         .await
         .unwrap();
 
@@ -221,7 +222,7 @@ async fn show_callback_error() {
         .insert(state_id.to_string(), pkce_verifier);
 
     // Create an app with the prepared session store
-    let app = crate::app_with_state(app_state.clone(), session_store)
+    let app = crate::app_with_state(app_state.clone(), session_store, Duration::seconds(1))
         .await
         .unwrap();
     let response = app
@@ -250,7 +251,7 @@ async fn callback_without_params() {
     config.oauth2_auth_url = Some("http://localhost:8080/auth".to_string());
     config.oauth2_token_url = Some("http://localhost:8080/token".to_string());
 
-    let app = crate::app(&config).await.unwrap();
+    let app = crate::app(&config, Duration::seconds(1)).await.unwrap();
     let response = app
         .oneshot(
             Request::builder()
@@ -269,7 +270,9 @@ async fn callback_without_params() {
 
 #[test(tokio::test)]
 async fn non_configured_deactivates_login() {
-    let app = crate::app(&CliConfig::default()).await.unwrap();
+    let app = crate::app(&CliConfig::default(), Duration::seconds(1))
+        .await
+        .unwrap();
 
     let response = app
         .oneshot(
@@ -294,7 +297,7 @@ async fn login_button_shown() {
     let mut config = CliConfig::default();
     config.oauth2_auth_url = Some("http://localhost:8080/auth".to_string());
     config.oauth2_token_url = Some("http://localhost:8080/token".to_string());
-    let app = crate::app(&config).await.unwrap();
+    let app = crate::app(&config, Duration::seconds(1)).await.unwrap();
 
     let response = app
         .oneshot(

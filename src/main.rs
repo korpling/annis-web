@@ -1,4 +1,5 @@
 use annis_web::{app, config::CliConfig};
+use chrono::Duration;
 use clap::Parser;
 use std::{net::SocketAddr, str::FromStr};
 use tracing::{error, info};
@@ -13,7 +14,7 @@ async fn main() {
     let cli = CliConfig::parse();
 
     let addr = SocketAddr::from(([127, 0, 0, 1], cli.port));
-    match app(&cli).await {
+    match app(&cli, Duration::hours(1)).await {
         Ok(router) => {
             info!("Starting server with address http://{addr}", addr = addr);
             let server = axum::Server::bind(&addr).serve(router.into_make_service());

@@ -34,6 +34,7 @@ async fn show(
 #[cfg(test)]
 mod tests {
 
+    use chrono::Duration;
     use hyper::{Body, Request, StatusCode};
     use test_log::test;
     use tower::ServiceExt;
@@ -42,7 +43,9 @@ mod tests {
 
     #[test(tokio::test)]
     async fn about_page_shown() {
-        let app = crate::app(&CliConfig::default()).await.unwrap();
+        let app = crate::app(&CliConfig::default(), Duration::seconds(1))
+            .await
+            .unwrap();
 
         let response = app
             .oneshot(

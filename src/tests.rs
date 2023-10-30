@@ -7,6 +7,7 @@ use axum::{
     body::{Body, HttpBody},
     http::{Request, Response, StatusCode},
 };
+use chrono::Duration;
 use cookie::Cookie;
 use fantoccini::{wd::Capabilities, ClientBuilder};
 use scraper::Html;
@@ -81,7 +82,12 @@ pub async fn start_end2end_servers() -> TestEnvironment {
     let http_server = tokio::spawn(async move {
         axum::Server::from_tcp(listener)
             .unwrap()
-            .serve(crate::app(&config).await.unwrap().into_make_service())
+            .serve(
+                crate::app(&config, Duration::seconds(1))
+                    .await
+                    .unwrap()
+                    .into_make_service(),
+            )
             .await
             .unwrap();
     });
@@ -115,7 +121,9 @@ where
 
 #[test(tokio::test)]
 async fn existing_static_resource() {
-    let app = crate::app(&CliConfig::default()).await.unwrap();
+    let app = crate::app(&CliConfig::default(), Duration::seconds(1))
+        .await
+        .unwrap();
 
     let response = app
         .oneshot(
@@ -137,7 +145,9 @@ async fn existing_static_resource() {
 
 #[test(tokio::test)]
 async fn missing_static_resource() {
-    let app = crate::app(&CliConfig::default()).await.unwrap();
+    let app = crate::app(&CliConfig::default(), Duration::seconds(1))
+        .await
+        .unwrap();
 
     let response = app
         .oneshot(
@@ -160,7 +170,7 @@ async fn session_file_created() {
     let mut config = CliConfig::default();
     config.session_file = Some(dbfile.clone());
 
-    let app = crate::app(&config).await.unwrap();
+    let app = crate::app(&config, Duration::seconds(1)).await.unwrap();
 
     let response = app
         .oneshot(

@@ -15,10 +15,11 @@ use axum::{
     routing::get,
     BoxError, Router,
 };
+use chrono::Duration;
 use config::CliConfig;
 use include_dir::{include_dir, Dir};
 use state::GlobalAppState;
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 use tower::ServiceBuilder;
 use tower_sessions::{
     cookie::SameSite, sqlx::SqlitePool, MokaStore, SessionManagerLayer, SessionStore, SqliteStore,
@@ -48,7 +49,7 @@ async fn static_file(Path(path): Path<String>) -> Result<impl IntoResponse> {
     Ok(response)
 }
 
-pub async fn app(config: &CliConfig) -> Result<Router> {
+pub async fn app(config: &CliConfig, cleanup_interval: Duration) -> Result<Router> {
     let global_state = GlobalAppState::new(config)?;
     let global_state = Arc::new(global_state);
 
@@ -61,20 +62,21 @@ pub async fn app(config: &CliConfig) -> Result<Router> {
         tokio::task::spawn(
             store
                 .clone()
-                .continuously_delete_expired(Duration::from_secs(60 * 60)),
+                .continuously_delete_expired(cleanup_interval.to_std()?),
         );
 
-        app_with_state(global_state, store).await
+        app_with_state(global_state, store, cleanup_interval).await
     } else {
         // Fallback to a a store based on a cache
         let store = MokaStore::new(Some(1_000));
-        app_with_state(global_state, store).await
+        app_with_state(global_state, store, cleanup_interval).await
     }
 }
 
 async fn app_with_state<S: SessionStore>(
     global_state: Arc<GlobalAppState>,
     session_store: S,
+    cleanup_interval: Duration,
 ) -> Result<Router> {
     let routes = Router::new()
         .route("/", get(|| async { Redirect::temporary("corpora") }))
@@ -90,10 +92,11 @@ async fn app_with_state<S: SessionStore>(
             StatusCode::BAD_REQUEST
         }))
         .layer(SessionManagerLayer::new(session_store).with_same_site(SameSite::Lax));
+    let cleanup_interval = cleanup_interval.to_std()?;
 
     tokio::task::spawn(async move {
         loop {
-            tokio::time::sleep(Duration::from_secs(60)).await;
+            tokio::time::sleep(cleanup_interval).await;
             global_state.cleanup().await;
         }
     });
