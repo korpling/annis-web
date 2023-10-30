@@ -234,7 +234,7 @@ mod tests {
     use oauth2::{basic::BasicTokenType, AccessToken, StandardTokenResponse};
 
     #[test]
-    fn client_access_time_updated() {
+    fn client_access_time_updated_existing() {
         let config = CliConfig::default();
         let state = GlobalAppState::new(&config).unwrap();
 
@@ -266,7 +266,46 @@ mod tests {
 
         let session_arg = SessionArg::Session(session.clone());
         state.create_client(&session_arg).unwrap();
-        // The user session expiration time must be updated
+        // The login info expiration time must be updated to match the session
+        assert_eq!(
+            Some(session_expiration.unix_timestamp()),
+            state.login_info.get(&session_id).unwrap().expires_unix()
+        );
+    }
+
+    #[test]
+    fn client_access_time_updated_set_from_session() {
+        let config = CliConfig::default();
+        let state = GlobalAppState::new(&config).unwrap();
+
+        // Create a session that should be updated when accessed
+        let now = OffsetDateTime::now_utc();
+
+        // The user session will only expire in 1 day
+        let session_expiration = now.checked_add(time::Duration::days(1)).unwrap();
+        let raw_session = tower_sessions::Session::new(Some(session_expiration));
+        let session_id = raw_session.id().to_string();
+
+        let mut session = Session::default();
+        session.session_id = session_id.clone();
+        session.session = raw_session;
+
+        let access_token = AccessToken::new("ABC".into());
+        let token_response = StandardTokenResponse::new(
+            access_token,
+            BasicTokenType::Bearer,
+            oauth2::EmptyExtraTokenFields {},
+        );
+        // Simulate an old access to the login info, which does not have a expiration date
+        let expired_login_info = LoginInfo::from_token(token_response, None).unwrap();
+
+        state
+            .login_info
+            .insert(session.session_id.clone(), expired_login_info.clone());
+
+        let session_arg = SessionArg::Session(session.clone());
+        state.create_client(&session_arg).unwrap();
+        // The login info expiration time must be updated to match the session
         assert_eq!(
             Some(session_expiration.unix_timestamp()),
             state.login_info.get(&session_id).unwrap().expires_unix()
