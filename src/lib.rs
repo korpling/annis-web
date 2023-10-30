@@ -20,7 +20,9 @@ use include_dir::{include_dir, Dir};
 use state::GlobalAppState;
 use std::{sync::Arc, time::Duration};
 use tower::ServiceBuilder;
-use tower_sessions::{cookie::SameSite, sqlx::SqlitePool, SessionManagerLayer, SqliteStore};
+use tower_sessions::{
+    cookie::SameSite, sqlx::SqlitePool, MokaStore, SessionManagerLayer, SessionStore, SqliteStore,
+};
 
 static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/static");
 static TEMPLATES_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/templates");
@@ -50,28 +52,29 @@ pub async fn app(config: &CliConfig) -> Result<Router> {
     let global_state = GlobalAppState::new(config)?;
     let global_state = Arc::new(global_state);
 
-    let db_uri = if let Some(session_file) = &config.session_file {
-        format!("sqlite://{}", session_file.to_string_lossy())
+    if let Some(session_file) = &config.session_file {
+        let db_uri = format!("sqlite://{}", session_file.to_string_lossy());
+        let db_pool = SqlitePool::connect(&db_uri).await?;
+        let store = SqliteStore::new(db_pool);
+        store.migrate().await?;
+
+        tokio::task::spawn(
+            store
+                .clone()
+                .continuously_delete_expired(Duration::from_secs(60 * 60)),
+        );
+
+        app_with_state(global_state, store).await
     } else {
-        // Fallback to a temporary in-memory Sqlite databse
-        "sqlite::memory:".to_string()
-    };
-    let db_pool = SqlitePool::connect(&db_uri).await?;
-    let store = SqliteStore::new(db_pool);
-    store.migrate().await?;
-
-    tokio::task::spawn(
-        store
-            .clone()
-            .continuously_delete_expired(Duration::from_secs(60 * 60)),
-    );
-
-    app_with_state(global_state, store).await
+        // Fallback to a a store based on a cache
+        let store = MokaStore::new(Some(1_000));
+        app_with_state(global_state, store).await
+    }
 }
 
-async fn app_with_state(
+async fn app_with_state<S: SessionStore>(
     global_state: Arc<GlobalAppState>,
-    session_store: SqliteStore,
+    session_store: S,
 ) -> Result<Router> {
     let routes = Router::new()
         .route("/", get(|| async { Redirect::temporary("corpora") }))

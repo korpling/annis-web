@@ -116,7 +116,7 @@ async fn login_callback(
             schedule_refresh_token(
                 &token,
                 client.clone(),
-                &session.id().to_string(),
+                session.id(),
                 token_request_time,
                 app_state.clone(),
                 Duration::from_secs(10),
