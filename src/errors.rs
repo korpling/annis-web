@@ -4,6 +4,7 @@ use axum::{
     http::{self, header::InvalidHeaderValue, StatusCode},
     response::{Html, IntoResponse},
 };
+use chrono::OutOfRangeError;
 use minijinja::context;
 use oauth2::{basic::BasicErrorResponseType, StandardErrorResponse};
 use reqwest::Url;
@@ -141,6 +142,8 @@ pub enum AppError {
         code: http::StatusCode,
         message: String,
     },
+    #[error(transparent)]
+    ChronoOutOfRangeError(#[from] OutOfRangeError),
 }
 
 impl From<(http::StatusCode, &'static str)> for AppError {

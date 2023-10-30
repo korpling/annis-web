@@ -20,35 +20,17 @@ pub struct LoginInfo {
     oauth_token: AnnisTokenResponse,
 
     /// Unix time stamp when the session attached to this login information expires.
-    pub user_session_expiry: Option<i64>,
+    user_session_expiry: Option<i64>,
 
     /// An authentificated HTTP client
     client: reqwest::Client,
 }
 
-fn parse_unverified_username(token: &str) -> Result<Option<String>> {
-    let splitted: Vec<_> = token.splitn(3, '.').collect();
-
-    if let Some(raw_claims) = splitted.get(1) {
-        let claims_json = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(raw_claims)?;
-        let claims: serde_json::Value =
-            serde_json::from_str(&String::from_utf8_lossy(&claims_json))?;
-        let mut user_name = None;
-        if let Some(claims) = claims.as_object() {
-            if let Some(preferred_username) = claims.get("preferred_username") {
-                user_name = preferred_username.as_str();
-            } else if let Some(sub) = claims.get("sub") {
-                user_name = sub.as_str();
-            }
-        }
-        Ok(user_name.map(str::to_string))
-    } else {
-        Err(AppError::JwtMissingPayload)
-    }
-}
-
 impl LoginInfo {
-    pub fn new(oauth_token: AnnisTokenResponse, user_session_expiry: Option<i64>) -> Result<Self> {
+    pub fn from_token(
+        oauth_token: AnnisTokenResponse,
+        user_session_expiry: Option<i64>,
+    ) -> Result<Self> {
         let mut default_headers = reqwest::header::HeaderMap::new();
 
         let value =
@@ -62,6 +44,14 @@ impl LoginInfo {
             client: client_builder.build()?,
         };
         Ok(result)
+    }
+
+    pub fn expires_unix(&self) -> Option<i64> {
+        self.user_session_expiry
+    }
+
+    pub fn set_expiration_unix(&mut self, exp: Option<i64>) {
+        self.user_session_expiry = exp;
     }
 
     pub fn renew_token(&mut self, oauth_token: AnnisTokenResponse) -> Result<()> {
@@ -93,6 +83,27 @@ impl LoginInfo {
         // but just display whatever ID the user claims to have. Validation is
         // performed in the backend, so we can ignore the signature here.
         parse_unverified_username(self.api_token())
+    }
+}
+
+fn parse_unverified_username(token: &str) -> Result<Option<String>> {
+    let splitted: Vec<_> = token.splitn(3, '.').collect();
+
+    if let Some(raw_claims) = splitted.get(1) {
+        let claims_json = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(raw_claims)?;
+        let claims: serde_json::Value =
+            serde_json::from_str(&String::from_utf8_lossy(&claims_json))?;
+        let mut user_name = None;
+        if let Some(claims) = claims.as_object() {
+            if let Some(preferred_username) = claims.get("preferred_username") {
+                user_name = preferred_username.as_str();
+            } else if let Some(sub) = claims.get("sub") {
+                user_name = sub.as_str();
+            }
+        }
+        Ok(user_name.map(str::to_string))
+    } else {
+        Err(AppError::JwtMissingPayload)
     }
 }
 
@@ -222,7 +233,7 @@ mod tests {
 
         app_state.login_info.insert(
             session_id.to_string(),
-            LoginInfo::new(token.clone(), None).unwrap(),
+            LoginInfo::from_token(token.clone(), None).unwrap(),
         );
 
         let token_request_time = Instant::now();

@@ -1,3 +1,5 @@
+use crate::auth::LoginInfo;
+use crate::{config::CliConfig, errors::AppError, Result, TEMPLATES_DIR};
 use axum::{async_trait, extract::FromRequestParts, http::request::Parts};
 use chrono::Utc;
 use dashmap::DashMap;
@@ -9,8 +11,6 @@ use tempfile::NamedTempFile;
 use time::OffsetDateTime;
 use tokio::{sync::mpsc::Receiver, task::JoinHandle};
 use url::Url;
-
-use crate::{auth::LoginInfo, config::CliConfig, errors::AppError, Result, TEMPLATES_DIR};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Session {
@@ -187,16 +187,17 @@ impl GlobalAppState {
             self.login_info
                 .alter(&session.id().to_string(), |_, mut l| {
                     if let (Some(old_expiry), Some(new_expiry)) =
-                        (l.user_session_expiry, session.expiration_time())
+                        (l.expires_unix(), session.expiration_time())
                     {
                         // Check if the new expiration date is actually longer before replacing it
                         if old_expiry < new_expiry.unix_timestamp() {
-                            l.user_session_expiry = Some(new_expiry.unix_timestamp());
+                            l.set_expiration_unix(Some(new_expiry.unix_timestamp()));
                         }
                     } else {
                         // Use the new expiration date
-                        l.user_session_expiry =
-                            session.expiration_time().map(|t| t.unix_timestamp());
+                        l.set_expiration_unix(
+                            session.expiration_time().map(|t| t.unix_timestamp()),
+                        );
                     }
                     l
                 });
@@ -214,11 +215,100 @@ impl GlobalAppState {
     /// Cleans up ressources coupled to sessions that are expired or non-existing.
     pub async fn cleanup(&self) {
         self.login_info.retain(|_session_id, login_info| {
-            if let Some(expiry) = login_info.user_session_expiry {
+            if let Some(expiry) = login_info.expires_unix() {
                 Utc::now().timestamp() < expiry
             } else {
                 true
             }
         });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use crate::config::CliConfig;
+
+    use super::*;
+
+    use oauth2::{basic::BasicTokenType, AccessToken, StandardTokenResponse};
+
+    #[test]
+    fn client_access_time_updated_existing() {
+        let config = CliConfig::default();
+        let state = GlobalAppState::new(&config).unwrap();
+
+        // Create a session that should be updated when accessed
+        let now = OffsetDateTime::now_utc();
+
+        // The user session will only expire in 1 day
+        let session_expiration = now.checked_add(time::Duration::days(1)).unwrap();
+        let raw_session = tower_sessions::Session::new(Some(session_expiration));
+        let session_id = raw_session.id().to_string();
+
+        let mut session = Session::default();
+        session.session_id = session_id.clone();
+        session.session = raw_session;
+
+        let access_token = AccessToken::new("ABC".into());
+        let token_response = StandardTokenResponse::new(
+            access_token,
+            BasicTokenType::Bearer,
+            oauth2::EmptyExtraTokenFields {},
+        );
+        // Simulate an old access to the login info, which would trigger a cleanup
+        let expired_login_info =
+            LoginInfo::from_token(token_response, Some(now.unix_timestamp() - 1)).unwrap();
+
+        state
+            .login_info
+            .insert(session.session_id.clone(), expired_login_info.clone());
+
+        let session_arg = SessionArg::Session(session.clone());
+        state.create_client(&session_arg).unwrap();
+        // The login info expiration time must be updated to match the session
+        assert_eq!(
+            Some(session_expiration.unix_timestamp()),
+            state.login_info.get(&session_id).unwrap().expires_unix()
+        );
+    }
+
+    #[test]
+    fn client_access_time_updated_set_from_session() {
+        let config = CliConfig::default();
+        let state = GlobalAppState::new(&config).unwrap();
+
+        // Create a session that should be updated when accessed
+        let now = OffsetDateTime::now_utc();
+
+        // The user session will only expire in 1 day
+        let session_expiration = now.checked_add(time::Duration::days(1)).unwrap();
+        let raw_session = tower_sessions::Session::new(Some(session_expiration));
+        let session_id = raw_session.id().to_string();
+
+        let mut session = Session::default();
+        session.session_id = session_id.clone();
+        session.session = raw_session;
+
+        let access_token = AccessToken::new("ABC".into());
+        let token_response = StandardTokenResponse::new(
+            access_token,
+            BasicTokenType::Bearer,
+            oauth2::EmptyExtraTokenFields {},
+        );
+        // Simulate an old access to the login info, which does not have a expiration date
+        let expired_login_info = LoginInfo::from_token(token_response, None).unwrap();
+
+        state
+            .login_info
+            .insert(session.session_id.clone(), expired_login_info.clone());
+
+        let session_arg = SessionArg::Session(session.clone());
+        state.create_client(&session_arg).unwrap();
+        // The login info expiration time must be updated to match the session
+        assert_eq!(
+            Some(session_expiration.unix_timestamp()),
+            state.login_info.get(&session_id).unwrap().expires_unix()
+        );
     }
 }

@@ -1,5 +1,6 @@
+use crate::auth::LoginInfo;
 use crate::{
-    auth::{schedule_refresh_token, LoginInfo},
+    auth::schedule_refresh_token,
     errors::AppError,
     state::{GlobalAppState, Session},
     Result,
@@ -99,7 +100,7 @@ async fn login_callback(
                 .await;
             let token = token?;
 
-            let login_info = LoginInfo::new(
+            let login_info = LoginInfo::from_token(
                 token.clone(),
                 session.expiration_time().map(|t| t.unix_timestamp()),
             )?;

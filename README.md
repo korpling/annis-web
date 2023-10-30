@@ -1,3 +1,6 @@
+[![codecov](https://codecov.io/gh/korpling/annis-web/graph/badge.svg?token=FX7LX6OA37)](https://codecov.io/gh/korpling/annis-web)
+
+
 # ANNIS frontend experiments
 
 ANNIS is an open source, versatile web browser-based search and visualization
@@ -42,11 +45,11 @@ We recommend installing the following Cargo subcommands for developing annis-web
   third party license file
 - [cargo-watch](https://crates.io/crates/cargo-watch) allows automatic re-compilation
 - [cargo-llvm-cov](https://crates.io/crates/cargo-llvm-cov) for determining the code coverage
-- [cargo-insta](https://crates.io/crates/cargo-insta) allows to review the test snapshot files.
+- [cargo-insta](https://crates.io/crates/cargo-insta) allows reviewing the test snapshot files.
 
 ### Running the web server
 
-When developing, you can run a webserver that is automatically re-compiled when
+When developing, you can run a web server that is automatically re-compiled when
 any of the source files changes.
 
 ```bash
