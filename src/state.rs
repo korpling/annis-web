@@ -21,7 +21,7 @@ pub struct Session {
 }
 
 impl Session {
-    pub const SELECTED_CORPORA_KEY: &str = "selected_corpora";
+    pub const SELECTED_CORPORA_KEY: &'static str = "selected_corpora";
 
     fn update_session(
         session: &tower_sessions::Session,
