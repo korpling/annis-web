@@ -120,7 +120,7 @@ impl CSVExporter {
                 .await?;
                 // Collect annotations for the matched nodes
                 for (pos_in_match, node_name) in node_ids.iter().enumerate() {
-                    if let Some(n_id) = g.get_node_id_from_name(node_name)? {
+                    if let Some(n_id) = g.get_node_annos().get_node_id_from_name(node_name)? {
                         let annos = g
                             .get_node_annos()
                             .get_annotations_for_item(&n_id)?
@@ -188,7 +188,7 @@ impl CSVExporter {
                 let text = self.get_spannd_text(g)?;
                 record.push(text);
                 for (m_nr, annos) in &self.annotations_for_matched_nodes {
-                    if let Some(id) = g.get_node_id_from_name(&node_ids[*m_nr])? {
+                    if let Some(id) = g.get_node_annos().get_node_id_from_name(&node_ids[*m_nr])? {
                         // Get the annotation values for this node
                         for anno_key in annos {
                             let value = g
