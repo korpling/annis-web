@@ -7,13 +7,10 @@ $red: #e53935;
 $blue: #0D6986;
 $dark-blue: #07485B;
 
-// Update Bulma's global variables
-$body-background-color: $annis-color;
-$primary: $dark-blue;
-$link: $blue;
-$background: $annis-color;
 
-$family-sans-serif: "Alegreya Sans", sans-serif;
-$family-monospace: "Roboto Mono", monospace;
-
-@import "../bulma-0.9.4/bulma.sass";
+@use "../bulma/sass" with ($family-primary: '"Alegreya Sans", sans-serif',
+    $family-code: '"Roboto Mono", monospace',
+    $body-background-color: $annis-color,
+    $primary: $dark-blue,
+    $link: $blue,
+    $background: $annis-color );
