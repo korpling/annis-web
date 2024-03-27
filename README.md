@@ -86,3 +86,11 @@ To execute the tests and calculate the code coverage, you can use `cargo-llvm-co
 cargo llvm-cov --open --ignore-filename-regex 'tests?\.rs'
 ```
 
+
+### Compiling the CSS
+
+Make sure you use Dart Sass to compile the Bulma-based ANNIS stylesheets.
+
+```bash
+sass --style compressed --source-map bulma-annis/sass/annis.scss static/annis.min.css
+```
