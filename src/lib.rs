@@ -83,6 +83,7 @@ async fn app_with_state<S: SessionStore>(
         .route("/static/*path", get(static_file))
         .nest("/corpora", views::corpora::create_routes()?)
         .nest("/export", views::export::create_routes()?)
+        .nest("/frequency", views::frequency::create_routes()?)
         .nest("/about", views::about::create_routes()?)
         .nest("/oauth", views::oauth::create_routes()?)
         .with_state(global_state.clone());
