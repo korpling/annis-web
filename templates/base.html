@@ -12,9 +12,7 @@
     </title>
   </head>
   <body>
-    <nav class="navbar is-light"
-         role="navigation"
-         aria-label="main navigation">
+    <nav class="navbar" role="navigation" aria-label="main navigation">
       <div class="navbar-brand">
         <img src="{{ url_prefix }}static/icons/annis_192.png"
              width="52px"
@@ -54,11 +52,11 @@
                 {% if current_username is defined %}
                   <span class="navbar-item">Logged in as "{{ current_username }}"</span>
                   <div class="buttons">
-                    <a class="button is-light"  href="{{ url_prefix }}oauth/logout"">Log Out</a>
+                    <a class="button"  href="{{ url_prefix }}oauth/logout"">Log Out</a>
                   </div>
                 {% else %}
                   <div class="buttons">
-                    <a class="button is-light"  href="{{ url_prefix }}oauth/login"">Log in</a>
+                    <a class="button"  href="{{ url_prefix }}oauth/login"">Log in</a>
                   </div>
                 {% endif %}
               {% endwith %}

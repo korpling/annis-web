@@ -17,9 +17,7 @@ expression: body
     </title>
   </head>
   <body>
-    <nav class="navbar is-light"
-         role="navigation"
-         aria-label="main navigation">
+    <nav class="navbar" role="navigation" aria-label="main navigation">
       <div class="navbar-brand">
         <img src="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/icons/annis_192.png"
              width="52px"
@@ -57,7 +55,7 @@ expression: body
                 
                   <span class="navbar-item">Logged in as "testuser"</span>
                   <div class="buttons">
-                    <a class="button is-light"  href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;oauth/logout"">Log Out</a>
+                    <a class="button"  href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;oauth/logout"">Log Out</a>
                   </div>
                 
               

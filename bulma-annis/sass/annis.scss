@@ -4,6 +4,7 @@ $annis-color: #ecf0f6;
 
 @use "../bulma/sass" with ($family-primary: '"Alegreya Sans", sans-serif',
     $family-monospace: "Roboto Mono",
+    $navbar-background-color: $annis-color,
     // https://colordesigner.io/color-scheme-builder#ECF0F6-FFE11A-e53935-0D6986-07485B
     $link: #45a0a3,
     $primary: #07485B,
