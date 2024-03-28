@@ -8,8 +8,8 @@ expression: body
     <link rel="shortcut icon" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/icons/favicon.ico">
     <link rel="stylesheet" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/fonts.css" />
     <link rel="stylesheet" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/annis.min.css" />
-    <script src="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/htmx-1.9.4.min.js"></script>
-    <script src="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/hyperscript-0.9.11.min.js"></script>
+    <script src="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/htmx-1.9.11.min.js"></script>
+    <script src="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/hyperscript-0.9.12.min.js"></script>
     <title>ANNIS experiments:
       
   Login
@@ -17,7 +17,9 @@ expression: body
     </title>
   </head>
   <body>
-    <nav class="navbar" role="navigation" aria-label="main navigation">
+    <nav class="navbar is-light"
+         role="navigation"
+         aria-label="main navigation">
       <div class="navbar-brand">
         <img src="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;static/icons/annis_192.png"
              width="52px"
@@ -45,6 +47,7 @@ expression: body
              href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;corpora">Corpora  <span class="ml-1 tag is-small is-warning"
         title=''>0</span></a>
           <a class="navbar-item" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;export">Export</a>
+          <a class="navbar-item" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;frequency">Frequency</a>
           <a class="navbar-item" href="http:&#x2f;&#x2f;127.0.0.1:3000&#x2f;about">About</a>
         </div>
         <div class="navbar-end">
@@ -63,7 +66,7 @@ expression: body
         </div>
       </div>
     </nav>
-    <div class="box">
+    <section class="section">
       
   
     
@@ -71,6 +74,6 @@ expression: body
     
   
 
-    </div>
+    </section>
   </body>
 </html>

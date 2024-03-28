@@ -12,7 +12,9 @@
     </title>
   </head>
   <body>
-    <nav class="navbar" role="navigation" aria-label="main navigation">
+    <nav class="navbar is-light"
+         role="navigation"
+         aria-label="main navigation">
       <div class="navbar-brand">
         <img src="{{ url_prefix }}static/icons/annis_192.png"
              width="52px"
@@ -65,9 +67,9 @@
         </div>
       </div>
     </nav>
-    <div class="box">
+    <section class="section">
       {% block content %}
       {% endblock content %}
-    </div>
+    </section>
   </body>
 </html>

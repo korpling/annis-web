@@ -33,7 +33,11 @@ async fn show_page(
     Query(params): Query<FormParams>,
 ) -> Result<impl IntoResponse> {
     let freq_def = if let Some(query) = params.query {
-        default_frequency_definition(&query, &state, &session).await
+        if query.is_empty() {
+            Ok(Vec::default())
+        } else {
+            default_frequency_definition(&query, &state, &session).await
+        }
     } else {
         Ok(Vec::default())
     };

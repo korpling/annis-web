@@ -3,33 +3,40 @@
   Frequency Analysis
 {% endblock title %}
 {% block content %}
-  <article>
-    <h1 class="title">Frequency Analysis</h1>
-    <p class="subtitle">TODO</p>
-    <form>
-      <div class="grid">
-        <div class="cell field"
-             hx-include="closest form"
-             hx-target="#frequency-table-definition"
-             hx-select="#frequency-table-definition"
-             hx-swap="outerHTML">
-          <label class="label">Query</label>
-          <div class="control">
-            <textarea name="query"
-                      id="aql-input"
-                      class="textarea is-family-code"
-                      placeholder='To search for all token use the following query: tok '
-                      hx-get="{{ url_prefix }}frequency"
-                      hx-trigger="keyup changed delay:500ms"></textarea>
-          </div>
-          <p class="help">
-            Query used to execute the search. See the
-            <a href="https://korpling.github.io/ANNIS/4.10/user-guide/aql/">documentation</a>
-            for more information on the ANNIS Query Language (AQL),
-          </p>
+  <h1 class="title">
+    Frequency Analysis
+    <img class="htmx-indicator"
+         width="28px"
+         height="auto"
+         id="frequency-spinner"
+         alt="Progress indicator using an infinity symbol."
+         src="{{ url_prefix }}static/icons/Infinity-1s-28px.apng">
+  </h1>
+  <p class="subtitle">TODO</p>
+  <form>
+    <div class="grid">
+      <div class="cell field"
+           hx-include="closest form"
+           hx-target="#frequency-table-definition"
+           hx-select="#frequency-table-definition"
+           hx-swap="outerHTML">
+        <label class="label">Query</label>
+        <div class="control">
+          <textarea name="query"
+                    id="aql-input"
+                    class="textarea is-family-code"
+                    placeholder='To search for all token use the following query: tok '
+                    hx-get="{{ url_prefix }}frequency"
+                    hx-trigger="keyup changed delay:500ms"
+                    hx-indicator="#frequency-spinner"></textarea>
         </div>
-        <div class="cell" id="frequency-table-definition">{% include "frequency/table-definition.html" %}</div>
+        <p class="help">
+          Query used to execute the search. See the
+          <a href="https://korpling.github.io/ANNIS/4.10/user-guide/aql/">documentation</a>
+          for more information on the ANNIS Query Language (AQL),
+        </p>
       </div>
-    </form>
-  </article>
+      <div class="cell" id="frequency-table-definition">{% include "frequency/table-definition.html" %}</div>
+    </div>
+  </form>
 {% endblock content %}
