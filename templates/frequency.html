@@ -6,5 +6,43 @@
   <article>
     <h1 class="title">Frequency Analysis</h1>
     <p class="subtitle">TODO</p>
+    <form>
+      <div class="grid">
+        <div class="cell field"
+             hx-include="closest form"
+             hx-target="#export-example-output"
+             hx-select="#export-example-output"
+             hx-swap="outerHTML">
+          <label class="label">Query</label>
+          <div class="control">
+            <textarea name="query"
+                      id="aql-input"
+                      class="textarea is-family-code"
+                      placeholder='To search for all token use the following query: tok '
+                      hx-get="{{ url_prefix }}export"
+                      hx-trigger="keyup changed delay:500ms"></textarea>
+          </div>
+          <p class="help">
+            Query used to execute the search. See the
+            <a href="https://korpling.github.io/ANNIS/4.10/user-guide/aql/">documentation</a>
+            for more information on the ANNIS Query Language (AQL),
+          </p>
+        </div>
+        <div class="cell">
+          <table class="table">
+            <tr>
+              <th>Node number/name</th>
+              <th>Selected annotatation of node</th>
+            </tr>
+            {% for d in freq_def %}
+              <tr>
+                <td>{{ d.node_ref }}</td>
+                <td>{{ d.name }}</td>
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </form>
   </article>
 {% endblock content %}
