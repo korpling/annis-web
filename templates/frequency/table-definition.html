@@ -1,0 +1,16 @@
+{% if freq_def.Ok is defined %}
+  <table class="table">
+    <tr>
+      <th>Node number/name</th>
+      <th>Selected annotatation of node</th>
+    </tr>
+    {% for d in freq_def.Ok %}
+      <tr>
+        <td>{{ d.node_ref }}</td>
+        <td>{{ d.name }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+{% elif freq_def.Err is defined %}
+  <div class="notification is-danger">{{ freq_def.Err }}</div>
+{% endif %}

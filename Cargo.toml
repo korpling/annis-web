@@ -19,8 +19,8 @@ clap = {version = "4.3.21", features = ["derive", "env"]}
 csv = "1.1"
 dashmap = "5.5.0"
 futures = "0.3"
-graphannis = "2"
-graphannis-core = "2.4.7"
+graphannis = "3"
+graphannis-core = "3"
 include_dir = "0.7"
 mime_guess = "2"
 minijinja = {version = "1.0.6", features = ["builtins", "loader"]}

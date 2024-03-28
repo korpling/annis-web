@@ -1,16 +1,18 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::State,
+    extract::{Query, State},
     response::{Html, IntoResponse},
     routing::get,
     Router,
 };
 use graphannis::corpusstorage::FrequencyDefEntry;
 use minijinja::context;
+use serde::Deserialize;
 
 use crate::{
-    state::{GlobalAppState, Session},
+    client::{self},
+    state::{GlobalAppState, Session, SessionArg},
     Result,
 };
 
@@ -20,21 +22,21 @@ pub fn create_routes() -> Result<Router<Arc<GlobalAppState>>> {
     Ok(result)
 }
 
+#[derive(Deserialize, Debug)]
+struct FormParams {
+    query: Option<String>,
+}
+
 async fn show_page(
     session: Session,
     State(state): State<Arc<GlobalAppState>>,
+    Query(params): Query<FormParams>,
 ) -> Result<impl IntoResponse> {
-    let mut freq_def = Vec::new();
-    freq_def.push(FrequencyDefEntry {
-        ns: None,
-        name: "pos".into(),
-        node_ref: "1".into(),
-    });
-    freq_def.push(FrequencyDefEntry {
-        ns: None,
-        name: "tok".into(),
-        node_ref: "2".into(),
-    });
+    let freq_def = if let Some(query) = params.query {
+        default_frequency_definition(&query, &state, &session).await
+    } else {
+        Ok(Vec::default())
+    };
     let result = state
         .templates
         .get_template("frequency.html")?
@@ -44,4 +46,31 @@ async fn show_page(
         })?;
 
     Ok(Html(result))
+}
+
+async fn default_frequency_definition(
+    query: &str,
+    state: &GlobalAppState,
+    session: &Session,
+) -> std::result::Result<Vec<FrequencyDefEntry>, String> {
+    let descriptions = client::search::node_descriptions(
+        &SessionArg::Session(session.clone()),
+        &query,
+        graphannis::corpusstorage::QueryLanguage::AQL,
+        &state,
+    )
+    .await
+    .map_err(|e| format!("{e}"))?;
+
+    let mut result = Vec::with_capacity(descriptions.len());
+
+    for node in descriptions {
+        result.push(FrequencyDefEntry {
+            ns: None,
+            name: node.anno_name.unwrap_or("tok".into()),
+            node_ref: node.variable,
+        });
+    }
+
+    Ok(result)
 }
